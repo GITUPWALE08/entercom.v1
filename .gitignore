@@ -56,3 +56,9 @@ mobile/dist/
 # Logs
 logs/
 *.log
+
+
+#unnecessary docs
+generate_tests_impl.py
+remediate.py
+.config/

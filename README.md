@@ -43,4 +43,4 @@ This repository uses **one Git repository with four top-level project roots** so
 
 ## License
 
-Proprietary — All rights reserved.
+ENTERCOM Proprietary — All rights reserved.
