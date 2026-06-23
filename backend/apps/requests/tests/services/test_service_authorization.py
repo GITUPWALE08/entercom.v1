@@ -6,6 +6,7 @@ from apps.requests.services.assignment_service import AssignmentService
 from apps.requests.services.quote_service import QuoteService
 from apps.requests.services.verification_service import VerificationService
 from apps.requests.services.escalation_service import EscalationService
+from apps.requests.domain.exceptions import PermissionDeniedTransitionError
 
 User = get_user_model()
 
@@ -164,3 +165,74 @@ class TestServiceLayerNegativeAuthorization:
                 actor=customer_a,
                 technician_id=tech_assigned.id
             )
+
+    def test_technician_cannot_approve_quote(self, tech_assigned, base_request):
+        base_request.status = LifecycleState.AWAITING_QUOTE
+        base_request.save()
+        QuoteService.create_quote(request_id=base_request.id, actor=tech_assigned, data={"amount": 100.0})
+        
+        base_request.status = LifecycleState.AWAITING_CUSTOMER_APPROVAL
+        base_request.save()
+
+        # Technician attempts to approve the quote they just created
+        with pytest.raises(PermissionDenied, match="Missing.*permission|Unauthorized"):
+            QuoteService.handle_customer_action(
+                request_id=base_request.id, 
+                actor=tech_assigned, 
+                action_type="approve"
+            )
+
+    def test_customer_cannot_submit_verification_evidence(self, customer_a, base_request):
+        base_request.status = LifecycleState.IN_PROGRESS
+        base_request.save()
+
+        # Customer attempts to act as the technician and submit work evidence
+        with pytest.raises(PermissionDenied, match="Missing.*permission|Unauthorized"):
+            VerificationService.submit(
+                request_id=base_request.id,
+                actor=customer_a,
+                evidence={"photos": ["http://test.com/fake_work.jpg"]}
+            )
+
+    def test_customer_cannot_escalate_request(self, customer_a, base_request):
+        base_request.status = LifecycleState.SUBMITTED
+        base_request.save()
+
+        # Customer attempts to trigger a manual manager escalation
+        with pytest.raises(PermissionDeniedTransitionError, match="Missing.*permission|Unauthorized"):
+            EscalationService.process_escalation(
+                request_id=base_request.id,
+                trigger_type="MANUAL",
+                actor=customer_a
+            )
+
+    def test_staff_cannot_accept_assignment(self, staff_user, tech_assigned, base_request):
+        # Staff assigns the request to the tech
+        base_request.status = LifecycleState.AWAITING_ASSIGNMENT
+        base_request.save()
+        AssignmentService.assign(
+            request_id=base_request.id,
+            actor=staff_user,
+            technician_id=tech_assigned.id
+        )
+
+        # Staff attempts to accept the assignment on behalf of the technician
+        with pytest.raises(PermissionDenied, match="Missing.*permission|Unauthorized"):
+            AssignmentService.accept(
+                request_id=base_request.id,
+                actor=staff_user
+            )
+
+    def test_unassigned_tech_cannot_update_request_description(self, tech_unassigned, base_request):
+        base_request.status = LifecycleState.IN_PROGRESS
+        base_request.save()
+
+        from apps.requests.services.request_service import RequestService
+        # Tech not assigned attempts to update the request metadata
+        with pytest.raises(PermissionDenied, match="Missing.*permission|Unauthorized"):
+            RequestService.update_request(
+                request_id=base_request.id,
+                user=tech_unassigned,
+                data={"description": "Hacked description"}
+            )
+

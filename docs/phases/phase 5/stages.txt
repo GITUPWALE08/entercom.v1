@@ -1,0 +1,444 @@
+Recommended Documentation Generation Order
+
+Architecture
+docs/architecture/orders/product-domain.md
+
+docs/architecture/orders/order-domain.md
+
+docs/architecture/payment/payment-domain.md
+
+Then:
+
+Workflows
+docs/workflows/product-order-flow.md
+
+docs/workflows/payment-lifecycle.md
+
+docs/workflows/paystack-webhook-flow.md
+
+Then:
+
+Architecture Supporting Docs
+product-services.md
+order-services.md
+payment-services.md
+
+product-events.md
+order-events.md
+payment-events.md
+
+product-permissions.md
+order-permissions.md
+payment-permissions.md
+
+product-auditing.md
+order-auditing.md
+payment-auditing.md
+
+After those are approved, implementation can follow exactly like Phases 3 and 4:
+
+Models
+Services
+Events
+Background Jobs
+APIs
+Tests
+
+
+
+docs/architecture/payment/payment-auditing.md
+order-events.md
+Defines:
+Order Events
+order.created
+order.payment_initialized
+order.paid
+order.cancelled
+order.fulfillment_eligible
+order.fulfilled
+
+For each:
+Producer
+Trigger
+Payload
+Consumers
+
+Audit Requirements
+payment-events.md
+Defines:
+payment.initialized
+payment.paid
+payment.failed
+payment.cancelled
+payment.webhook_received
+payment.webhook_rejected
+
+This becomes important for:
+Phase 6 Notifications
+Phase 6 WebSockets
+Phase 9 Analytics
+order-permissions.md
+
+Define RBAC now.
+Example:
+Customer
+create order
+view own order
+initialize payment
+Staff
+view order
+fulfill order
+Manager
+cancel order
+override fulfillment
+Superadmin
+full access
+
+Without this document the API layer will become ambiguous.
+
+payment-auditing.md
+
+Financial actions should be isolated.
+
+Audit requirements for:
+payment.initialized
+payment.paid
+payment.failed
+payment.cancelled
+webhook.received
+webhook.rejected
+inventory.reduced
+Workflow Layer
+
+You already have:
+
+product-order-flow.md
+payment-lifecycle.md
+paystack-webhook-flow.md
+
+I would leave these alone.
+
+They're good MVP workflows.
+
+Implementation Layer
+
+Before code generation I strongly recommend creating:
+
+docs/implementation/orders/order-model-design.md
+
+docs/implementation/orders/order-service-design.md
+
+docs/implementation/orders/order-api-design.md
+order-model-design.md
+
+This should define:
+
+Product
+id
+name
+description
+current_price
+quantity_available
+low_stock_threshold
+attributes (JSON)
+status
+category
+ProductImage
+product
+image
+position
+
+Maximum 4 images rule.
+
+Order
+id
+request
+customer
+
+status
+created_at
+updated_at
+
+States:
+
+pending_payment
+paid
+fulfilled
+cancelled
+OrderItem
+order
+product
+
+quantity
+
+unit_price_snapshot
+line_total_snapshot
+Payment
+order
+
+status
+
+paystack_reference
+
+correlation_id
+
+initialized_at
+paid_at
+expires_at
+order-service-design.md
+
+Define:
+
+ProductService
+
+Responsibilities:
+
+catalog browsing
+stock validation
+inventory reduction
+OrderService
+
+Responsibilities:
+
+create order
+
+cancel order
+
+mark fulfilled
+PaymentService
+
+Responsibilities:
+
+initialize payment
+
+process webhook
+
+expire payments
+order-api-design.md
+
+Define endpoints now.
+
+Example:
+
+Products
+GET /api/v1/products/
+
+GET /api/v1/products/{id}/
+Orders
+POST /api/v1/orders/
+
+GET /api/v1/orders/
+
+GET /api/v1/orders/{id}/
+Payments
+POST /api/v1/orders/{id}/initialize-payment/
+
+POST /api/v1/payments/webhooks/paystack/
+Remaining Architectural Decisions
+
+After reviewing all uploaded documents, only a few unresolved items remain:
+
+1. Product Categories
+
+Your document says:
+
+Resolution:
+Products require a Category
+
+You should create:
+
+Category
+
+as a first-class entity.
+
+2. Fulfillment Actor
+
+Need explicit rule:
+
+Who can mark fulfilled?
+
+Staff only?
+Manager only?
+Staff + Manager?
+3. Order Cancellation
+
+Need explicit rule:
+
+Can customer cancel before payment?
+
+Can staff cancel before payment?
+
+Can paid orders be cancelled?
+
+For MVP I would document:
+
+pending_payment -> cancellable
+
+paid -> not cancellable
+
+unless business wants otherwise.
+
+4. Low Stock Behaviour
+
+Need explicit rule:
+
+When quantity_available <= low_stock_threshold
+
+what happens?
+
+For MVP:
+
+Audit event only
+
+No notifications yet
+
+since notifications are Phase 6.
+
+
+
+
+
+
+
+1. Models
+docs/implementation/product/product-model-design.md
+
+docs/implementation/order/order-model-design.md
+
+docs/implementation/payment/payment-model-design.md
+
+Define:
+entities
+fields
+indexes
+constraints
+relationships
+ownership
+snapshot fields
+soft delete policy
+validation ownership
+
+2. Services
+docs/implementation/product/product-service-design.md
+docs/implementation/order/order-service-design.md
+docs/implementation/payment/payment-service-design.md
+
+Define:
+service responsibilities
+transaction boundaries
+emitted events
+audit actions
+permission checks
+ownership rules
+
+3. Permissions
+docs/implementation/product/product-permission-mapping.md
+docs/implementation/order/order-permission-mapping.md
+docs/implementation/payment/payment-permission-mapping.md
+
+Map:
+permission
+→ service action
+→ role
+→ restrictions
+
+4. APIs
+docs/implementation/product/product-api-design.md
+docs/implementation/order/order-api-design.md
+docs/implementation/payment/payment-api-design.md
+
+Define:
+endpoints
+serializers
+filters
+pagination
+request payloads
+response payloads
+validation ownership
+
+5. Event Contracts
+docs/implementation/product/product-event-contracts.md
+docs/implementation/order/order-event-contracts.md
+docs/implementation/payment/payment-event-contracts.md
+
+Define:
+payload schema
+required fields
+producer
+consumers
+versioning
+
+6. Audit Specifications
+docs/implementation/product/product-audit-spec.md
+docs/implementation/order/order-audit-spec.md
+docs/implementation/payment/payment-audit-spec.md
+
+Define:
+action names
+metadata fields
+actor requirements
+correlation_id usage
+immutable expectations
+
+7. Background Jobs
+docs/implementation/payment/payment-background-jobs.md
+docs/implementation/order/order-background-jobs.md
+Examples:
+Payment Expiry Job
+Webhook Reconciliation Job (future placeholder)
+Inventory Low Stock Job
+
+8. WebSocket Specification
+Phase 6 owns actual websocket implementation, but Phase 5 should document future hooks.
+docs/implementation/order/order-websocket-spec.md
+docs/implementation/payment/payment-websocket-spec.md
+
+Define only:
+Future Realtime Events
+order.created
+order.fulfilled
+payment.paid
+payment.failed
+
+No implementation yet.
+
+9. Test Strategy
+docs/implementation/product/product-test-strategy.md
+docs/implementation/order/order-test-strategy.md
+docs/implementation/payment/payment-test-strategy.md
+Define:
+Model tests
+Service tests
+Permission tests
+API tests
+Event tests
+Audit tests
+Background job tests
+Integration tests
+
+
+Recommended Creation Order
+
+To minimize rework:
+
+1. product-model-design.md
+2. order-model-design.md
+3. payment-model-design.md
+
+4. product-service-design.md
+5. order-service-design.md
+6. payment-service-design.md
+
+7. permission mappings
+
+8. event contracts
+
+9. audit specs
+
+10. API designs
+
+11. background jobs
+
+12. websocket specs
+
+13. test strategy

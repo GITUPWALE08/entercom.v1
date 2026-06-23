@@ -1,0 +1,292 @@
+Stage 1 — Architecture Documentation
+
+Create foundational docs first.
+
+I recommend:
+
+docs/workflows/request-lifecycle.md
+docs/workflows/quote-flow.md
+docs/workflows/escalation-flow.md
+docs/workflows/verification-flow.md   (already exists, refine)
+docs/workflows/technician-flow.md     (already exists, refine)
+
+docs/architecture/request/request/request-domain.md
+docs/workflows/sla-policy.md
+docs/workflows/cancellation-policy.md
+docs/workflows/assignment-policy.md
+
+
+Need to define purpose of each.
+
+1. request-domain.md
+
+This becomes:
+
+"What is a request?"
+
+Must define:
+
+Categories
+Parent-child relationship
+Priorities
+Ownership
+Required fields
+Optional fields
+SLA concepts
+Emergency queue concepts
+Relation to booking/payment
+
+Example sections:
+
+Purpose
+Request categories
+Request priorities
+Request hierarchy
+Required attributes
+Ownership
+Lifecycle overview
+Cross-phase relationships
+
+This becomes the single source of truth.
+
+2. request-lifecycle.md
+
+Already exists but too abstract.
+
+Needs expansion:
+
+Should answer:
+
+What states exist?
+Who may move between states?
+What blocks transitions?
+What requires approval?
+What requires payment?
+What requires verification?
+
+Need transition tables.
+
+Example:
+
+Current	Action	Result	Permission
+3. quote-flow.md (NEW)
+
+Needed because your business revolves around quotations.
+
+Must define:
+
+Initial quote
+Revision
+Customer rejection
+Approval
+Expiration
+Superseded quotes
+Audit requirements
+
+This was not in existing docs.
+
+Need dedicated documentation.
+
+4. escalation-flow.md (NEW)
+
+Must define:
+
+Triggers:
+
+3 technician declines
+SLA breach
+emergency/device outage
+manual escalation
+
+Need:
+
+Trigger
+Escalation target
+Priority increase?
+Approval?
+Audit?
+Timeout?
+5. verification-flow.md (Refine existing)
+
+Need to add:
+
+Installation → mandatory verification
+
+Inspection → optional
+
+Information → none
+
+Support → none
+
+Need matrix.
+
+6. technician-flow.md (Refine existing)
+
+Need to define:
+
+Assignment
+
+↓
+
+Accept
+
+OR
+
+Decline
+
+↓
+
+Reassign
+
+↓
+
+Escalate after threshold
+
+Stage 2 — Workflow Mapping
+
+Only after docs exist.
+
+Need to draw workflows.
+
+Not code.
+
+Actual business flows.
+
+Example:
+
+Inspection:
+
+Customer
+ ↓
+Inspection request
+ ↓
+Staff review
+ ↓
+Technician assigned
+ ↓
+Inspection performed
+ ↓
+Quote generated
+ ↓
+Customer approves
+ ↓
+Child installation request created
+
+Installation:
+
+Request
+↓
+Review
+↓
+Payment
+↓
+Assignment
+↓
+Work
+↓
+Verification
+↓
+Completion
+
+Need diagrams.
+
+Stage 3 — Security Review
+
+Before implementation ask:
+
+For every transition:
+
+Need answers:
+
+Who can trigger?
+
+Who can override?
+
+Who approves?
+
+Who audits?
+
+Who sees?
+
+This prevents Phase 2 security work from being bypassed.
+
+Stage 4 — Data Design
+
+Only now discuss:
+
+Requests
+
+Quotes
+
+Assignments
+
+Escalations
+
+History
+
+No code.
+
+Only relationships.
+
+Stage 5 — Service Design
+
+Still no implementation.
+
+Need service contracts:
+
+Example:
+
+RequestService
+
+create()
+cancel()
+transition()
+escalate()
+
+QuoteService
+
+submit()
+approve()
+reject()
+
+AssignmentService
+
+assign()
+accept()
+decline()
+
+
+Stage 6 — Test Requirements
+
+Define required tests before coding.
+
+Same as RBAC hardening.
+
+Stage 7 — Implementation
+Django models
+State machine/service layer
+RBAC permissions
+API endpoints
+Domain events
+Background jobs
+WebSocket hooks
+Tests
+
+Phase 3 Implementation Order
+✅ Domain documentation
+✅ Architecture documentation
+✅ Implementation specifications
+✅ Test strategy
+✅ Django Models
+✅ State Machine Engine
+Service Layer
+Repositories / Query Layer (if needed)
+Domain Events
+Audit Integration
+Background Jobs
+API Layer
+Permissions
+WebSockets
+Testing
+
+

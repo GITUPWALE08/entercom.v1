@@ -1,0 +1,205 @@
+Phase 5 Scope (MVP)
+
+Domains:
+Products
+Inventory
+Orders
+Payments
+Paystack Integration
+
+Explicitly excluded:
+Coupons
+Discounts
+Returns
+Refunds
+Chargebacks
+Deposits
+Installments
+Shipping
+Delivery Tracking
+Warehouses
+Stock Reservations
+Subscriptions
+
+
+Phase 5 Deliverables
+Architecture Layer
+1. docs/architecture/payment/payment-domain.md
+Defines:
+Payment aggregate
+Payment lifecycle
+Payment ownership
+Paystack relationship
+Request relationship
+
+2. docs/architecture/payment/payment-events.md
+Defines:
+payment.created
+payment.pending
+payment.paid
+payment.failed
+payment.cancelled
+
+For each:
+Trigger
+Producer
+Consumers
+Payload
+Audit requirements
+
+3. docs/architecture/payment/payment-services.md
+Defines:
+PaymentService
+PaystackService
+WebhookService
+Responsibilities only.
+No code.
+
+4. docs/architecture/payment/payment-permissions.md
+Defines:
+payment.view_own
+payment.view
+payment.create
+payment.verify
+payment.manage
+
+Roles:
+Customer
+Staff
+Manager
+Superadmin
+
+5. docs/architecture/payment/payment-auditing.md
+Defines:
+payment.created
+payment.pending
+payment.paid
+payment.failed
+payment.cancelled
+Immutable audit requirements.
+
+
+Product / Order Architecture
+6. docs/architecture/orders/product-domain.md
+Defines:
+Product
+Category
+Inventory
+
+Ownership.
+Lifecycle.
+States.
+
+7. docs/architecture/orders/order-domain.md
+Defines:
+Order
+OrderItem
+
+States:
+pending_payment
+paid
+processing
+fulfilled
+cancelled
+
+8. docs/architecture/orders/order-events.md
+Defines:
+order.created
+order.paid
+order.fulfilled
+order.cancelled
+stock.updated
+
+9. docs/architecture/orders/order-services.md
+Defines:
+ProductService
+InventoryService
+OrderService
+
+10. docs/architecture/orders/order-permissions.md
+Defines RBAC.
+
+11. docs/architecture/orders/order-auditing.md
+Defines audit inventory.
+
+
+Workflow Layer
+12. docs/workflows/product-order-flow.md
+Defines:
+Request(product_order)
+    ↓
+Order
+    ↓
+Payment
+    ↓
+Paid
+    ↓
+Assignment Eligible
+    ↓
+Fulfilled
+
+13. docs/workflows/payment-lifecycle.md
+Defines:
+pending
+paid
+failed
+cancelled
+No extra states.
+
+14. docs/workflows/paystack-webhook-flow.md
+Defines:
+Webhook
+Verify Signature
+Idempotency Check
+Transaction
+Update Payment
+Update Order
+Emit Events
+
+Implementation Layer
+
+After architecture approval:
+Models
+product-model-design.md
+order-model-design.md
+payment-model-design.md
+Services
+payment-service-design.md
+order-service-design.md
+APIs
+payment-api-design.md
+order-api-design.md
+Events
+payment-event-contracts.md
+order-event-contracts.md
+Testing
+payment-test-strategy.md
+order-test-strategy.md
+
+Recommended Build Order
+Exactly like Phase 3 and Phase 4:
+
+Step 1
+Architecture
+
+Step 2
+Workflows
+
+Step 3
+Models
+
+Step 4
+Services
+
+Step 5
+Events
+
+Step 6
+Background Jobs
+
+Step 7
+REST APIs
+
+Step 8
+Tests
+

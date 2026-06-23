@@ -1,0 +1,71 @@
+1. Architecture
+2. Workflows
+3. Service Design
+4. API Design
+5. Event Contracts
+6. Audit Requirements
+7. Test Strategy
+8. Implementation
+9. Audit
+
+
+docs/architecture/booking/booking-domain.md
+
+docs/architecture/booking/booking-glossary.md
+
+docs/workflows/booking-lifecycle.md
+
+docs/workflows/scheduling-flow.md
+
+docs/workflows/technician-flow.md
+
+docs/workflows/availability-policy.md
+
+docs/workflows/rescheduling-flow.md
+
+docs/workflows/calendar-policy.md
+
+docs/workflows/no-show-policy.md
+
+docs/workflows/booking-cancellation-policy.md
+
+docs/workflows/booking-conflict-resolution.md
+
+docs/workflows/booking-flow.md
+
+
+booking-services.md
+booking-state-machine.md
+booking-events.md
+booking-permissions.md
+booking-auditing.md
+booking-notification-points.md
+booking-data-ownership.md
+
+Only after those are approved would I move to:
+
+docs/implementation/booking/
+
+and begin:
+
+✅ booking-model-design.md
+✅ booking-service-design.md
+✅ booking-permission-mapping.md
+✅ booking-api-design.md
+✅ booking-event-contracts.md
+✅ booking-audit-spec.md
+✅ booking-background-jobs.md
+✅ booking-websocket-spec.md
+✅ booking-test-strategy.md
+
+Booking states
+Scheduling states
+Reschedule limits
+Technician availability rules
+Timezone rules
+Working hours
+Blackout dates
+Emergency booking behavior
+Conflict handling
+Cancellation behavior
+SLA impact

@@ -1,0 +1,613 @@
+PROJECT:
+Entercom Backend (Modular Monolith)
+Business:
+Solar installation
+CCTV / security installation
+Smart home installation
+Inspection services
+Maintenance services
+Product sales
+Customer support
+
+Website:
+entercomsecurity.com
+
+Architecture style:
+Modular monolith
+Service-layer driven
+Fail-closed security
+Audit-first design
+RBAC enforced
+JWT auth
+WebSocket limited use
+
+--------------------------------------------------
+IMPLEMENTATION STATUS
+--------------------------------------------------
+
+Phase 1:
+Repository + architecture setup
+Status: COMPLETE
+
+Phase 2:
+Authentication + RBAC
+Status: COMPLETE / FOUNDATION SOLID
+
+Implemented foundations include:
+
+✓ Custom user model
+✓ Email authentication
+✓ JWT auth
+✓ Refresh rotation
+✓ Logout-all invalidation
+✓ Session tracking
+✓ RBAC foundation
+✓ Role hierarchy protection
+✓ Audit logging
+✓ Password reset
+✓ WebSocket auth foundation
+✓ Role assignment approval flow
+✓ Cache invalidation
+✓ Refresh replay protection
+✓ WebSocket denial audits
+✓ Password reset logging
+✓ Refresh token blacklist
+✓ Device/IP tracking
+
+Known decisions:
+
+- Admin unlock audit skipped intentionally
+- Documented in spec
+- Project not production complete
+- Phase 2 considered stable foundation
+
+Added security improvement:
+
+Password reset now invalidates active sessions
+
+Need implemented:
+
+JWT role_version claim enforcement
+(Phase 2 hardening follow-up)
+
+--------------------------------------------------
+PHASE ROADMAP
+--------------------------------------------------
+
+Phase 1:
+Repository setup
+
+Phase 2:
+Authentication + RBAC
+
+Phase 3:
+Request lifecycle system
+
+Phase 4:
+Booking & scheduling
+
+Phase 5:
+Payments & product ordering
+
+Phase 6:
+Notifications & WebSockets
+
+Phase 7:
+Support chat
+
+Phase 8:
+AI assistant
+
+Phase 9:
+Analytics/export
+
+--------------------------------------------------
+PHASE 3 PURPOSE
+--------------------------------------------------
+
+Goal:
+
+Design how operational work moves through company processes.
+
+NOT merely "ticket creation"
+
+Must support:
+
+Request creation
+Assignment
+Quotes
+Verification
+Escalation
+Completion
+Cancellation
+Audit
+SLA
+Approval flows
+Technician workflow
+
+--------------------------------------------------
+BUSINESS DOMAIN UNDERSTANDING
+--------------------------------------------------
+
+Company performs:
+
+1.
+Inspections
+
+2.
+Installations
+
+3.
+Maintenance
+
+4.
+Repair/support
+
+5.
+Information requests
+
+6.
+Product orders
+
+7.
+Emergency/device outage response
+
+8.
+Appointment booking
+
+Some requests convert into others.
+
+Example:
+
+Inspection
+→ Quote
+→ Customer approval
+→ Installation request
+
+Therefore:
+
+Requests may have parent-child relationships
+
+Historical traceability required
+
+--------------------------------------------------
+REQUEST CATEGORIES (LOCKED DRAFT)
+--------------------------------------------------
+
+Potential categories:
+
+INSTALLATION
+
+INSPECTION
+
+MAINTENANCE
+
+REPAIR
+
+DEVICE_OUTAGE
+
+BOOKING
+
+SUPPORT
+
+INFORMATION
+
+PRODUCT_ORDER
+
+CONSULTATION
+
+WARRANTY
+
+Need later confirmation.
+
+--------------------------------------------------
+REQUEST PRIORITY
+--------------------------------------------------
+
+Priority levels:
+
+EMERGENCY
+
+URGENT
+
+HIGH
+
+NORMAL
+
+LOW
+
+Emergency requests:
+
+Separate queue
+
+DO NOT bypass queue
+
+--------------------------------------------------
+KNOWN BUSINESS FLOWS
+--------------------------------------------------
+
+FLOW:
+Inspection → Installation
+
+Customer submits inspection request
+
+↓
+
+Staff reviews
+
+↓
+
+Technician assigned
+
+↓
+
+Inspection occurs
+
+↓
+
+Technician submits quote
+
+↓
+
+Customer receives quote
+
+↓
+
+Customer approves/rejects
+
+↓
+
+Installation request created
+
+↓
+
+Payment
+
+↓
+
+Assignment
+
+↓
+
+Work
+
+↓
+
+Verification
+
+↓
+
+Completion
+
+--------------------------------------------------
+
+FLOW:
+Booking inspection
+
+Customer requests inspection
+
+↓
+
+Staff approves slot
+
+↓
+
+Booking confirmed
+
+--------------------------------------------------
+
+FLOW:
+Technician decline
+
+Assignment
+
+↓
+
+Decline
+
+↓
+
+Reassign
+
+↓
+
+3 declines
+
+↓
+
+Escalation
+
+--------------------------------------------------
+
+--------------------------------------------------
+REQUEST RULES DISCOVERED
+--------------------------------------------------
+
+1.
+One request → one booking
+
+FK relationships allowed
+
+2.
+Not all requests need location
+
+Required:
+
+Inspection
+
+Installation
+
+Maintenance
+
+Optional otherwise
+
+3.
+Not all requests need verification
+
+Mandatory:
+
+Installation
+
+Optional:
+
+Inspection
+
+Not required:
+
+Information
+Support
+
+4.
+Only product orders require payment
+
+5.
+Some requests evolve into child requests
+
+Example:
+
+Inspection completed
+
+↓
+
+Installation request created
+
+Parent-child retained
+
+--------------------------------------------------
+QUOTE FLOW REQUIREMENTS
+--------------------------------------------------
+
+Required:
+
+Initial quote
+
+↓
+
+Revised quote
+
+↓
+
+Approved quote
+
+Need auditability
+
+Customer may:
+
+Approve
+
+Reject
+
+Request revision
+
+Need version history
+
+Quotes should never overwrite old quotes
+
+--------------------------------------------------
+ESCALATION REQUIREMENTS
+--------------------------------------------------
+
+Triggers include:
+
+3 technician declines
+
+SLA breach
+
+Manual escalation
+
+Device outage
+
+Need:
+
+Escalation history
+
+Audit
+
+Reason tracking
+
+--------------------------------------------------
+VERIFICATION REQUIREMENTS
+--------------------------------------------------
+
+Verification exists to approve work completion.
+
+Technician:
+
+Cannot self-approve
+
+Staff:
+
+Review
+
+Manager:
+
+Override with audit
+
+Evidence:
+
+Photos
+
+Checklist
+
+Acknowledgement
+
+Evidence immutable after approval
+
+--------------------------------------------------
+PHASE 3 DOCUMENTATION PLAN
+--------------------------------------------------
+
+Create docs BEFORE implementation.
+
+Recommended docs:
+
+docs/architecture/request/request-domain.md
+
+docs/workflows/request-lifecycle.md
+
+docs/workflows/quote-flow.md
+
+docs/workflows/escalation-flow.md
+
+docs/workflows/verification-flow.md
+
+docs/workflows/technician-flow.md
+
+--------------------------------------------------
+DOCUMENT ORDER
+--------------------------------------------------
+
+1.
+
+request-domain.md
+
+Defines:
+
+What is a request
+
+Categories
+
+Priority
+
+Ownership
+
+Relationships
+
+2.
+
+request-lifecycle.md
+
+Defines:
+
+State transitions
+
+Permissions
+
+Approvals
+
+3.
+
+quote-flow.md
+
+Defines:
+
+Quote lifecycle
+
+4.
+
+escalation-flow.md
+
+Defines:
+
+Escalation triggers
+
+5.
+
+verification-flow.md
+
+Defines:
+
+Completion control
+
+6.
+
+technician-flow.md
+
+Defines:
+
+Assignment behaviour
+
+--------------------------------------------------
+PHASE 3 IMPLEMENTATION ORDER
+--------------------------------------------------
+
+DO NOT IMPLEMENT FIRST
+
+Order:
+
+Scope
+
+↓
+
+Documentation
+
+↓
+
+Workflow diagrams
+
+↓
+
+Security review
+
+↓
+
+Data design
+
+↓
+
+Service contracts
+
+↓
+
+Tests
+
+↓
+
+Implementation
+
+--------------------------------------------------
+IMPORTANT DESIGN CONSTRAINTS
+--------------------------------------------------
+
+Assistant should NOT assume missing workflows.
+
+Assistant must ask for clarification.
+
+Security constraints from Phase 2 remain active.
+
+Fail-closed architecture remains mandatory.
+
+Audit logging remains mandatory.
+
+Service layer owns transitions.
+
+Serializer/UI must never own business rules.
+
+--------------------------------------------------
+OPEN QUESTIONS
+--------------------------------------------------
+
+Need future decision:
+
+Should DEVICE_OUTAGE be:
+
+A request category
+
+OR
+
+Priority/escalation flag?
+
+This affects architecture.
+
+Status:
+UNRESOLVED

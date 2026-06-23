@@ -1,0 +1,176 @@
+ENTERCOM APPLICATION DISCOVERY QUESTIONNAIRE
+
+(Information Required for System Design & Development of MVP)
+
+---
+
+This document outlines the key information required to design and develop the Entercom Unified Application.
+
+The goal is to fully understand your current operations, services, and processes so the system can be built to accurately reflect how your business works and improve efficiency.
+
+Please provide as much detail as possible. If any section is unclear, feel free to skip and we will discuss it further.
+
+---
+
+1. 🏢 Products & Services
+
+* What products do you currently sell?
+  (e.g., CCTV cameras, smart doors, solar systems, etc.)
+
+* What services do you offer?
+  (e.g., installation, maintenance, repairs, inspections)
+
+* Which services:
+
+  * Require physical installation?
+  * Require site inspection before pricing?
+
+---
+
+2. 🔁 Current Workflow (Very Important)
+
+Please describe your current process step-by-step:
+
+👉 From when a customer contacts you to when the job is completed.
+
+Include:
+
+* How customers reach you (calls, WhatsApp, walk-in, etc.)
+* Who receives the request
+* How the request is recorded
+* How jobs are assigned
+* How work is completed and confirmed
+
+---
+
+3. 👨‍🔧 Technician Operations
+
+* Do technicians specialize in different types of work (e.g., solar, CCTV)?
+* Can technicians reject assigned jobs? (Yes/No)
+
+If yes:
+
+* What happens when a job is rejected?
+* Who is responsible for reassigning the job?
+
+---
+
+4. 📅 Scheduling
+
+* How do you currently schedule jobs?
+* What are your working hours?
+* Can a technician handle multiple jobs per day?
+* What happens if a job is delayed or not completed on time?
+
+---
+
+5. 💰 Pricing Structure (No Exact Prices Needed)
+
+* How do you determine:
+
+  * Installation cost?
+  * Service/maintenance cost?
+
+* What factors affect pricing?
+
+  * Size of project?
+  * Number of devices?
+  * Distance/location?
+
+* Do you offer packages or bundled services?
+
+---
+
+6. 📦 Inventory & Devices
+
+* Do your devices already have unique IDs or serial numbers?
+
+* Or should the system generate IDs during inventory assignment?
+
+* How do you currently track devices and inventory?
+
+---
+
+7. 🔗 Existing Software & Tools
+
+* What applications or software are currently used for:
+
+  * Cameras?
+  * Smart devices?
+
+(We will have to review these for integrations.)
+
+---
+
+8. 🤖 Support & Knowledge Base
+
+* Do you have any of the following:
+
+  * Product manuals
+  * Installation guides
+  * Troubleshooting guides
+  * Frequently Asked Questions (FAQs)
+
+* What are the most common customer issues or complaints?
+
+---
+
+9. 👥 Users & Roles
+
+Please confirm the types of users in your organization:
+
+* Managers
+* Staff (office team)
+* Technicians
+
+For each role, what actions should they be able to perform?
+
+---
+
+10. 🔔 Notifications
+
+* How do you currently notify customers about updates?
+  (e.g., SMS, calls, WhatsApp, email)
+
+* What notification methods do your customers prefer? (As that will allow what method to be priotized)
+
+---
+
+11. 💳 Payments
+
+* How do customers currently make payments?
+  (cash, bank transfer, online, etc.)
+
+* When should payment occur?
+
+  * Before service (upfront)?
+  * Partial payment (deposit)?
+  * After service completion?
+
+* Preferred payment platforms (if any):
+
+  * Remita
+  * Bank transfer
+  * Others (please specify)
+
+---
+
+12. ⚠️ Current Challenges (Most Important Section)
+
+What are the biggest challenges you currently face in your operations?
+
+Examples:
+
+* Delays in responding to customers
+* Missed or forgotten jobs
+* Difficulty tracking technicians
+* Customer complaints
+
+---
+
+13. ⏱️ Response & Service Expectations
+
+* How quickly should customer requests be responded to?
+* What types of requests are considered urgent?
+
+---

@@ -1,0 +1,122 @@
+{
+  "phase": 5,
+  "entities": {
+    "product": [
+      "ProductCategory",
+      "Product",
+      "ProductImage"
+    ],
+    "order": [
+      "Order",
+      "OrderItem"
+    ],
+    "payment": [
+      "Payment"
+    ]
+  },
+  "state_machines": {
+    "Product": [
+      "active",
+      "archived"
+    ],
+    "ProductCategory": [
+      "active",
+      "archived"
+    ],
+    "Order": [
+      "created",
+      "pending_payment",
+      "paid",
+      "fulfilled",
+      "cancelled"
+    ],
+    "Payment": [
+      "pending",
+      "paid",
+      "failed",
+      "cancelled"
+    ]
+  },
+  "constraints": [
+    "Product.images_count <= 4",
+    "Product.quantity_available >= 0",
+    "Product.low_stock_threshold >= 0",
+    "ProductCategory.slug is UNIQUE",
+    "Order.request_id is UNIQUE",
+    "Order.total_amount >= 0",
+    "OrderItem.quantity > 0",
+    "Payment.order_id is UNIQUE",
+    "Payment.provider_reference is UNIQUE",
+    "Paid orders cannot be cancelled",
+    "payment.paid can only be produced by WebhookService with verified signature"
+  ],
+  "events": [
+    "product.created",
+    "product.updated",
+    "product.archived",
+    "category.created",
+    "category.updated",
+    "category.archived",
+    "inventory.reduced",
+    "inventory.adjusted",
+    "inventory.low_stock",
+    "order.created",
+    "order.cancelled",
+    "order.fulfilled",
+    "payment.initialized",
+    "payment.paid",
+    "payment.failed",
+    "payment.cancelled",
+    "payment.expired",
+    "webhook.received",
+    "webhook.rejected"
+  ],
+  "audit_actions": [
+    "product.created",
+    "product.updated",
+    "product.archived",
+    "category.created",
+    "category.updated",
+    "category.archived",
+    "inventory.reduced",
+    "inventory.adjusted",
+    "inventory.low_stock",
+    "order.created",
+    "order.cancelled",
+    "order.fulfilled",
+    "order.payment_required",
+    "payment.initialized",
+    "payment.paid",
+    "payment.failed",
+    "payment.cancelled",
+    "payment.expired",
+    "webhook.received",
+    "webhook.rejected"
+  ],
+  "permissions": [
+    "product.view",
+    "product.create",
+    "product.update",
+    "product.archive",
+    "category.view",
+    "category.create",
+    "category.update",
+    "category.archive",
+    "inventory.view",
+    "inventory.adjust",
+    "inventory.manage",
+    "order.create",
+    "order.view_own",
+    "order.view",
+    "order.cancel",
+    "order.fulfill",
+    "order.override_fulfillment",
+    "payment.initialize",
+    "payment.view_own",
+    "payment.view",
+    "payment.cancel",
+    "payment.reconcile",
+    "webhook.process",
+    "webhook.view"
+  ]
+}

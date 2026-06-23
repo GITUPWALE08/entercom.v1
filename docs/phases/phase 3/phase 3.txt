@@ -1,0 +1,300 @@
+Updated Phase 3 Scope (locked recommendation)
+
+Build only:
+
+apps/requests/
+
+with:
+
+Models:
+
+ServiceRequest
+RequestAssignment
+RequestStatusHistory
+RequestEscalation
+RequestQuote
+RequestQuoteRevision
+
+Enums:
+
+RequestStatus
+RequestCategory
+Priority
+QuoteStatus
+AssignmentDecision
+EscalationReason
+
+Services:
+
+request_service.py
+assignment_service.py
+quote_service.py
+escalation_service.py
+transition_service.py
+Revised Request Categories
+
+I think MVP should become:
+
+INSTALLATION
+INSPECTION
+MAINTENANCE
+REPAIR
+DEVICE_OUTAGE
+SUPPORT
+INFORMATION
+PRODUCT_ORDER
+CONSULTATION
+WARRANTY_CLAIM
+
+Remove:
+
+BOOKING
+
+because booking is Phase 4.
+
+Revised Priorities
+
+Final recommendation:
+
+EMERGENCY
+URGENT
+HIGH
+NORMAL
+LOW
+
+Rules:
+
+DEVICE_OUTAGE
+
+→ defaults to EMERGENCY
+
+Inspection
+
+→ LOW
+
+Installation
+
+→ NORMAL
+
+Maintenance
+
+→ NORMAL/HIGH
+
+Request states (important)
+
+Need richer states than docs originally suggested.
+
+Recommended:
+
+DRAFT
+SUBMITTED
+UNDER_REVIEW
+QUOTED
+WAITING_CUSTOMER
+awaiting_payment (Deprecated Legacy Terminology: PAYMENT_PENDING)
+ASSIGNED
+IN_PROGRESS
+PENDING_VERIFICATION
+COMPLETED
+CANCELLED
+ESCALATED
+
+Not every request uses every state.
+
+Example:
+
+Information request:
+
+SUBMITTED
+→ COMPLETED
+
+Installation:
+
+SUBMITTED
+→ UNDER_REVIEW
+→ QUOTED
+→ WAITING_CUSTOMER
+→ awaiting_payment (Deprecated Legacy Terminology: PAYMENT_PENDING)
+→ ASSIGNED
+→ IN_PROGRESS
+→ PENDING_VERIFICATION
+→ COMPLETED
+Quotes require full history
+
+Because you said:
+
+Initial quote → revised quote → approved quote
+
+I would NOT do:
+
+ServiceRequest.quote
+
+Bad.
+
+Do:
+
+RequestQuote
+
+request FK
+version
+created_by
+amount
+summary
+status
+customer_response
+approved_at
+rejected_at
+superseded_by
+
+Statuses:
+
+PENDING
+REJECTED
+APPROVED
+SUPERSEDED
+EXPIRED
+
+Then:
+
+Quote v1
+
+↓
+
+Customer rejects
+
+↓
+
+Quote v2
+
+↓
+
+Customer approves
+
+↓
+
+Request continues
+
+This gives proper auditability.
+
+Assignment model must support escalation
+
+Need:
+
+RequestAssignment
+
+request
+technician
+assigned_by
+accepted_at
+declined_at
+decline_reason
+status
+
+Status:
+
+PENDING
+ACCEPTED
+DECLINED
+
+Rule:
+
+3 distinct technician declines
+
+↓
+
+auto create:
+
+RequestEscalation
+
+↓
+
+manager queue
+
+That belongs in Phase 3.
+
+RequestEscalation model
+
+Needed because SLA is mandatory.
+
+Example:
+
+RequestEscalation
+
+request
+reason
+triggered_by
+resolved_by
+severity
+status
+created_at
+resolved_at
+
+Reasons:
+
+SLA_BREACH
+TECHNICIAN_DECLINE_LIMIT
+MANUAL
+DEVICE_OUTAGE
+PAYMENT_DELAY
+Request model (first draft)
+
+I think your MVP core object becomes:
+
+ServiceRequest
+
+id (UUID)
+
+customer FK
+
+category
+priority
+status
+
+title
+description
+
+location_address (nullable)
+
+requires_verification
+requires_payment
+
+assigned_team (future)
+
+sla_due_at
+
+created_at
+updated_at
+completed_at
+cancelled_at
+
+No booking FK yet.
+
+No payment FK yet.
+
+Prepare for them later.
+
+One concern before coding
+
+Need final answer on this because it changes schema:
+
+For installation flow:
+
+Customer submits inspection request
+
+↓
+
+Inspection quote approved
+
+↓
+
+Customer submits installation request
+
+Child request linked to parent
+
+Example:
+
+Inspection Request
+        ↓
+Installation Request
+
+(parent_request FK)

@@ -1,0 +1,45 @@
+# Local development stack. Production uses Render (API), Vercel (web), EAS (mobile),
+# and Supabase (PostgreSQL + Storage). Redis on Render or managed Redis in production.
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: entercom
+      POSTGRES_PASSWORD: entercom
+      POSTGRES_DB: entercom
+    ports:
+      - "5432:5432"
+    volumes:
+      - entercom_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U entercom -d entercom"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # Optional: run API in Docker once Dockerfile is tuned for your team workflow.
+  # api:
+  #   build:
+  #     context: ./backend
+  #     dockerfile: Dockerfile
+  #   env_file: ./backend/.env.example
+  #   ports:
+  #     - "8000:8000"
+  #   depends_on:
+  #     db:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+
+volumes:
+  entercom_pgdata:

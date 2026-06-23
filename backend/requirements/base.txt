@@ -1,0 +1,25 @@
+# Core
+Django>=5.1,<5.2
+djangorestframework>=3.15,<3.16
+django-environ>=0.11,<0.12
+django-cors-headers>=4.6,<5
+
+# API schema
+drf-spectacular>=0.28,<0.29
+
+# Auth
+djangorestframework-simplejwt>=5.3,<5.4
+
+# Async / realtime
+channels[daphne]>=4.0,<5
+channels-redis>=4.2,<5
+
+# Workers & cache
+celery[redis]>=5.4,<5.5
+redis>=5.0,<6
+
+# Database
+psycopg[binary]>=3.2,<3.3
+
+# ASGI server (production composition via Render; local dev)
+uvicorn[standard]>=0.32,<0.33

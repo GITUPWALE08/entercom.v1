@@ -1,0 +1,184 @@
+Phase 4 Implementation Sequence
+Step 1
+
+Booking Models
+
+Examples:
+
+Booking
+BookingDay
+TechnicianWorkingHours
+BlackoutDate
+RescheduleRecord
+NoShowRecord
+
+Generated from:
+
+booking-model-design.md
+Step 2
+
+Booking Permissions / RBAC
+
+Generated from:
+
+booking-permission-mapping.md
+Step 3
+
+Booking Services
+
+Generated from:
+
+booking-service-design.md
+
+Examples:
+
+BookingService
+SchedulingService
+AvailabilityService
+NoShowService
+Step 4
+
+Booking Events
+
+Generated from:
+
+booking-event-contracts.md
+
+Examples:
+
+booking.created
+booking.scheduled
+booking.rescheduled
+booking.completed
+booking.no_show
+booking.duration_extended
+Step 5
+
+Background Jobs
+
+Generated from:
+
+booking-background-jobs.md
+
+Examples:
+
+reminder jobs
+booking expiry jobs
+no-show checks
+Step 6
+
+WebSocket Integration
+
+Generated from:
+
+booking-websocket-spec.md
+Step 7
+
+REST APIs
+
+Generated from:
+
+booking-api-design.md
+Step 8
+
+Tests
+
+Generated from:
+
+booking-test-strategy.md
+
+
+
+
+
+
+
+
+Phase 4A — Data Layer
+Booking models
+Availability models
+BlackoutDate models
+Constraints
+Indexes
+Migrations
+
+Output:
+
+apps/bookings/models/
+Phase 4B — Domain Services
+AvailabilityService
+BookingService
+SchedulingService
+
+Output:
+
+apps/bookings/services/
+
+No API yet.
+
+Phase 4C — Event Layer
+contracts.py
+publishers.py
+event registry
+
+Output:
+
+apps/bookings/events/
+Phase 4D — Audit Layer
+audit writers
+audit contracts
+
+Output:
+
+apps/bookings/audit/
+Phase 4E — API Layer
+serializers
+views
+permissions
+endpoints
+
+Output:
+
+apps/bookings/api/
+Phase 4F — WebSocket Layer
+
+Only after services are stable.
+
+Output:
+
+apps/bookings/websocket/
+Phase 4G — Background Jobs
+
+Only after booking flows pass tests.
+
+Output:
+
+apps/bookings/tasks/
+Phase 4H — Tests
+Unit
+Integration
+Concurrency
+Authorization
+Event
+WebSocket
+E2E
+
+One thing I would strongly recommend before implementation starts:
+
+Create:
+
+docs/implementation/booking/implementation-order.md
+
+This prevents the same problem that often happens in large Django projects where APIs, events, and websockets get built before the domain layer is stable.
+
+For scalability and maintainability, the Booking domain should remain:
+
+Models
+ ↓
+Services
+ ↓
+Events
+ ↓
+API / WebSocket / Tasks
+
+and never the reverse.

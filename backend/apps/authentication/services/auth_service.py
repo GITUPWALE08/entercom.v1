@@ -1,0 +1,329 @@
+from __future__ import annotations
+
+import logging
+from datetime import timedelta
+from typing import Any
+
+from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
+from django.utils import timezone
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from rest_framework.exceptions import AuthenticationFailed
+from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from apps.audit_logs.services.audit_service import log_action
+from apps.authentication.models import UserSession
+
+User = get_user_model()
+logger = logging.getLogger(__name__)
+
+
+class AuthService:
+    """Business logic for JWT authentication, session tracking, and account locking."""
+
+    SESSION_INACTIVITY_DAYS = 20
+
+    @staticmethod
+    def login(email: str, password: str, request_metadata: dict[str, Any]) -> tuple[User, RefreshToken]:
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            log_action(
+                action="auth.login_failed",
+                resource_type="user",
+                resource_id=email,
+                reason="User not found",
+                metadata={"email": email},
+            )
+            raise AuthenticationFailed("Invalid email or password")
+        
+        if not user.check_password(password):
+            user.failed_login_attempts += 1
+            if user.failed_login_attempts >= 5:
+                AuthService.lock_account(user)
+                raise AuthenticationFailed("Account locked due to too many failed attempts")
+
+            user.save()
+            log_action(
+                actor=user,
+                action="auth.login_failed",
+                resource_type="user",
+                resource_id=str(user.id),
+                reason="Invalid password",
+                metadata={"attempts": user.failed_login_attempts},
+            )
+            raise AuthenticationFailed("Invalid email or password")
+
+        if not user.is_active:
+            log_action(
+                actor=user,
+                action="auth.login_failed",
+                resource_type="user",
+                resource_id=str(user.id),
+                reason="Account inactive",
+            )
+            raise AuthenticationFailed("Account is inactive")
+
+        if user.locked_until and user.locked_until > timezone.now():
+            log_action(
+                actor=user,
+                action="auth.login_failed",
+                resource_type="user",
+                resource_id=str(user.id),
+                reason="Account locked",
+                metadata={"locked_until": user.locked_until.isoformat()},
+            )
+            raise AuthenticationFailed(f"Account is locked until {user.locked_until}")
+
+        user.failed_login_attempts = 0
+        user.locked_until = None
+        user.last_login = timezone.now()
+        user.last_login_ip = request_metadata.get("ip_address")
+        user.save()
+
+        refresh = RefreshToken.for_user(user)
+        refresh["role_version"] = user.role_version
+        refresh.access_token["role_version"] = user.role_version
+        AuthService.track_session(user, refresh, request_metadata)
+
+        log_action(
+            actor=user,
+            action="auth.login_success",
+            resource_type="user",
+            resource_id=str(user.id),
+        )
+
+        return user, refresh
+
+    @staticmethod
+    def logout(refresh_token_str: str, user: User | None = None) -> None:
+        try:
+            token = RefreshToken(refresh_token_str)
+            jti = token["jti"]
+            token.blacklist()
+            UserSession.objects.filter(refresh_jti=jti).update(is_active=False)
+
+            log_action(
+                actor=user,
+                action="auth.logout",
+                resource_type="user",
+                resource_id=str(user.id) if user else "unknown",
+                metadata={"jti": str(jti)},
+            )
+        except Exception as exc:
+            log_action(
+                actor=user,
+                action="auth.logout_failed",
+                resource_type="user",
+                resource_id=str(user.id) if user else "unknown",
+                reason=str(exc),
+            )
+            raise AuthenticationFailed("Invalid or expired refresh token") from exc
+
+    @staticmethod
+    def logout_all(user: User) -> None:
+        tokens = OutstandingToken.objects.filter(user=user)
+        for token in tokens:
+            BlacklistedToken.objects.get_or_create(token=token)
+
+        UserSession.objects.filter(user=user).update(is_active=False)
+
+        log_action(
+            actor=user,
+            action="auth.logout_all",
+            resource_type="user",
+            resource_id=str(user.id),
+            metadata={"count": tokens.count()},
+        )
+
+    @staticmethod
+    def refresh(refresh_token_str: str, request_metadata: dict[str, Any]) -> RefreshToken:
+        try:
+            old_token = RefreshToken(refresh_token_str)
+            old_jti = old_token["jti"]
+
+            try:
+                session = UserSession.objects.get(refresh_jti=old_jti)
+                if not session.is_active:
+                    raise AuthenticationFailed("Session is inactive")
+                if session.expires_at < timezone.now():
+                    session.is_active = False
+                    session.save()
+                    raise AuthenticationFailed("Session has expired due to inactivity")
+            except UserSession.DoesNotExist:
+                raise AuthenticationFailed("Session tracking not found for token")
+
+            user_id = old_token["user_id"]
+            user = User.objects.get(id=user_id)
+
+            if not user.is_active:
+                raise AuthenticationFailed("User account is inactive")
+
+            session.is_active = False
+            session.save()
+            old_token.blacklist()
+
+            if old_token["role_version"] != user.role_version:
+                raise AuthenticationFailed("Permissions changed. Login again.")
+
+            new_token = RefreshToken.for_user(user)
+            new_token["role_version"] = user.role_version
+            new_token.access_token["role_version"] = user.role_version
+            AuthService.track_session(user, new_token, request_metadata)
+
+            log_action(
+                actor=user,
+                action="auth.token_refresh",
+                resource_type="user",
+                resource_id=str(user.id),
+                metadata={"old_jti": str(old_jti), "new_jti": str(new_token["jti"])},
+            )
+
+            return new_token
+        except AuthenticationFailed as exc:
+            log_action(
+                action="auth.token_refresh_failed",
+                resource_type="user",
+                reason=str(exc),
+                metadata={"error": type(exc).__name__},
+            )
+            raise
+        except Exception as exc:
+            log_action(
+                action="auth.token_refresh_failed",
+                resource_type="user",
+                reason=str(exc),
+                metadata={"error": type(exc).__name__},
+            )
+            raise AuthenticationFailed("Invalid or expired refresh token") from exc
+
+    @staticmethod
+    def request_password_reset(email: str) -> None:
+        """Always completes without revealing whether the account exists."""
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            log_action(
+                action="auth.password_reset_requested",
+                resource_type="user",
+                resource_id=email,
+                reason="Reset requested",
+                metadata={"email": email, "account_exists": False},
+            )
+            return
+
+        uid = urlsafe_base64_encode(force_bytes(user.pk))
+        token = default_token_generator.make_token(user)
+        log_action(
+            actor=user,
+            action="auth.password_reset_requested",
+            resource_type="user",
+            resource_id=str(user.id),
+            metadata={"uid": uid, "token_issued": bool(token)},
+        )
+
+    @staticmethod
+    def complete_password_reset(
+        *, user_id: str, token: str, new_password: str
+    ) -> User:
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            log_action(
+                action="auth.password_reset_failed",
+                resource_type="user",
+                resource_id=user_id,
+                reason="User not found",
+            )
+            raise AuthenticationFailed("Invalid password reset request")
+
+        if not default_token_generator.check_token(user, token):
+            log_action(
+                actor=user,
+                action="auth.password_reset_failed",
+                resource_type="user",
+                resource_id=str(user.id),
+                reason="Invalid or expired token",
+            )
+            raise AuthenticationFailed("Invalid or expired password reset token")
+
+        user.set_password(new_password)
+        user.last_password_change_at = timezone.now()
+        user.save()
+
+        log_action(
+            actor=user,
+            action="auth.password_reset_completed",
+            resource_type="user",
+            resource_id=str(user.id),
+        )
+        
+        revoke_all_sessions(user)
+
+        return user
+
+    @staticmethod
+    def lock_account(user: User) -> None:
+        user.locked_until = timezone.now() + timedelta(hours=24)
+        user.save()
+
+        log_action(
+            actor=user,
+            action="auth.account_locked",
+            resource_type="user",
+            resource_id=str(user.id),
+            reason="Too many failed attempts",
+        )
+
+
+    @staticmethod
+    def track_session(
+        user: User, refresh_token: RefreshToken, request_metadata: dict[str, Any]
+    ) -> UserSession:
+        jti = refresh_token["jti"]
+        now = timezone.now()
+        expires_at = now + timedelta(days=AuthService.SESSION_INACTIVITY_DAYS)
+
+        ua = request_metadata.get("user_agent", "")
+        browser = "Unknown"
+        device = "Unknown"
+
+        if "Chrome" in ua:
+            browser = "Chrome"
+        elif "Firefox" in ua:
+            browser = "Firefox"
+        elif "Safari" in ua:
+            browser = "Safari"
+        elif "Edge" in ua:
+            browser = "Edge"
+
+        if "Mobile" in ua:
+            device = "Mobile"
+        elif "iPhone" in ua:
+            device = "iPhone"
+        elif "Android" in ua:
+            device = "Android"
+        else:
+            device = "Desktop"
+
+        return UserSession.objects.create(
+            user=user,
+            refresh_jti=jti,
+            device_name=device,
+            browser=browser,
+            ip_address=request_metadata.get("ip_address"),
+            expires_at=expires_at,
+        )
+
+
+def revoke_all_sessions(user):
+    UserSession.objects.filter(
+        user=user,
+        is_active=True
+    ).update(is_active=False)
+
+    OutstandingToken.objects.filter(
+        user=user
+    ).delete()
