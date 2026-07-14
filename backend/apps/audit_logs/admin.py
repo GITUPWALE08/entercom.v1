@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.audit_logs.models import AuditLogEntry
+from apps.audit_logs.models import *
 
 
 @admin.register(AuditLogEntry)

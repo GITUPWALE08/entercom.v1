@@ -30,7 +30,8 @@ This document covers:
 | `GET` | `/products/` | List products | `product.view` | `ProductService.list_products` |
 | `GET` | `/products/{id}/` | Retrieve product | `product.view` | `ProductService.get_product` |
 | `POST` | `/products/` | Create product | `product.create` | `ProductService.create_product` |
-| `PATCH`| `/products/{id}/` | Update product | `product.update` / `product.archive` | `ProductService.update_product` / `archive_product` |
+| `PATCH`| `/products/{id}/` | Update product / threshold | `product.update` / `inventory.manage` | `ProductService.update_product` / `InventoryService.update_threshold` |
+| `POST` | `/products/{id}/inventory-adjust/` | Adjust stock | `inventory.adjust` | `InventoryService.adjust_inventory` |
 | `GET` | `/categories/` | List categories | `category.view` | `CategoryService.list_categories` |
 | `GET` | `/categories/{id}/` | Retrieve category | `category.view` | `CategoryService.get_category` |
 | `POST` | `/categories/` | Create category | `category.create`| `CategoryService.create_category` |

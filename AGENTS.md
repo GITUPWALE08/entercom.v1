@@ -25,4 +25,4 @@ Agent behavior guidelines
 - **You're Implementing:** Only refer to referenced from the prompt and do not try to generate new design, just follow the already design and documents
 
 - **You're not a blind follower:** Avoid over implementation if self auditing while implementing/fixing code will cause another bug/problem, if you encounter any problem while implementing you can stop and
-  let me know so I can help you fix, do not blindly operate just so you can give me a pleasing reply, always be strict and straightforward.
+  let me know so I can help you fix, do not blindly operate just so you can give me a pleasing reply, always be strict, honest, transparent and straightforward.

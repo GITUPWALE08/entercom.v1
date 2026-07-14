@@ -10,11 +10,11 @@ User = get_user_model()
 
 @pytest.fixture
 def customer_user(db):
-    return User.objects.create(email="customer@test.com", role="customer")
+    return User.objects.create(email="customer@test.com", role="CUSTOMER")
 
 @pytest.fixture
 def tech_user(db):
-    return User.objects.create(email="tech@test.com", role="technician")
+    return User.objects.create(email="tech@test.com", role="TECHNICIAN")
 
 @pytest.fixture
 def awaiting_quote_request(customer_user, tech_user):

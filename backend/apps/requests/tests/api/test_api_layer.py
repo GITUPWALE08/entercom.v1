@@ -16,21 +16,21 @@ def api_client():
 
 @pytest.fixture
 def customer_user():
-    user = User.objects.create(email="customer@test.com", role="customer")
+    user = User.objects.create(email="customer@test.com", role="CUSTOMER")
     # Assign permissions manually or assume role matrix is active via RBACChecker
     return user
 
 @pytest.fixture
 def staff_user():
-    return User.objects.create(email="staff@test.com", role="staff")
+    return User.objects.create(email="staff@test.com", role="STAFF")
 
 @pytest.fixture
 def tech_user():
-    return User.objects.create(email="tech@test.com", role="technician")
+    return User.objects.create(email="tech@test.com", role="TECHNICIAN")
 
 @pytest.fixture
 def manager_user():
-    return User.objects.create(email="manager@test.com", role="manager")
+    return User.objects.create(email="manager@test.com", role="MANAGER")
 
 @pytest.fixture
 def draft_request(customer_user):

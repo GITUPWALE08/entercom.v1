@@ -16,6 +16,10 @@ class Actor:
         self.id = id
         self.role = role
 
+    @property
+    def type(self) -> str:
+        return 'system' if self.role == Role.SYSTEM else 'user'
+
 class BasePermissionChecker:
     @staticmethod
     def has_role(actor: Actor, allowed_roles: list[Role]) -> bool:

@@ -2,11 +2,11 @@ from enum import Enum
 
 class Role(str, Enum):
     """Core system roles as defined in the RBAC mapping."""
-    CUSTOMER = "customer"
-    TECHNICIAN = "technician"
-    STAFF = "staff"
-    MANAGER = "manager"
-    SUPERADMIN = "superadmin"
+    CUSTOMER = "CUSTOMER"
+    TECHNICIAN = "TECHNICIAN"
+    STAFF = "STAFF"
+    MANAGER = "MANAGER"
+    SUPERADMIN = "SUPER_ADMIN"
 
 class Permission(str, Enum):
     """Granular permissions mapping to specific domain actions."""

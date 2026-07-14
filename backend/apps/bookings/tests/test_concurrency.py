@@ -5,6 +5,7 @@ from django.utils import timezone
 from apps.bookings.services.scheduling_service import SchedulingService
 import uuid
 
+@pytest.mark.django_db(transaction=True)
 class TestConcurrency:
 
     @patch('apps.bookings.services.scheduling_service.Booking.objects.select_for_update')
@@ -18,7 +19,7 @@ class TestConcurrency:
         # Thread 1 commits and locks the slot, resulting in has_conflict returning True for Thread 2
         mock_has_conflict.return_value = True
         
-        mock_booking = MagicMock(status="unscheduled", technician_id=1)
+        mock_booking = MagicMock(status="unscheduled", technician_id=1, duration_days=1)
         mock_qs = MagicMock()
         mock_qs.get.return_value = mock_booking
         mock_sfu.return_value = mock_qs

@@ -36,30 +36,17 @@ class UserAdminCreationForm(UserCreationForm):
         return cleaned_data
 
     def save(self, commit=True) -> User:
-        if not commit:
-            # UserCreationForm's save() with commit=False is tricky because 
-            # create_user() always saves to DB to ensure normalization/cleaning.
-            # However, for Admin forms, commit is usually True.
-            user = User(
-                email=User.objects.normalize_email(self.cleaned_data["email"]),
-                first_name=self.cleaned_data["first_name"].strip(),
-                last_name=self.cleaned_data["last_name"].strip(),
-                role=self.cleaned_data["role"],
-                is_staff=self.cleaned_data.get("is_staff", False),
-                is_superuser=self.cleaned_data.get("is_superuser", False),
-            )
-            user.set_password(self.cleaned_data["password1"])
-            return user
-
-        return User.objects.create_user(
-            email=self.cleaned_data["email"],
-            password=self.cleaned_data["password1"],
-            first_name=self.cleaned_data["first_name"],
-            last_name=self.cleaned_data["last_name"],
-            role=self.cleaned_data["role"],
-            is_staff=self.cleaned_data.get("is_staff", False),
-            is_superuser=self.cleaned_data.get("is_superuser", False),
-        )
+        user = super().save(commit=False)
+        user.email = User.objects.normalize_email(self.cleaned_data["email"])
+        user.first_name = self.cleaned_data["first_name"].strip()
+        user.last_name = self.cleaned_data["last_name"].strip()
+        # role, is_staff, is_superuser are already mapped by ModelForm
+        
+        if commit:
+            user.save()
+            if hasattr(self, "save_m2m"):
+                self.save_m2m()
+        return user
 
 
 class UserAdminChangeForm(UserChangeForm):

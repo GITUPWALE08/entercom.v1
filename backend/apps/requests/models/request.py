@@ -62,6 +62,7 @@ class Request(models.Model):
     
     description = models.TextField()
     location = models.JSONField(null=True, blank=True)
+    requires_technician = models.BooleanField(default=False)
     
     assigned_technician = models.ForeignKey(
         settings.AUTH_USER_MODEL,

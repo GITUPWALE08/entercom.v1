@@ -22,6 +22,7 @@ from apps.requests.services.quote_service import QuoteService
 from apps.requests.services.verification_service import VerificationService
 from apps.requests.services.escalation_service import EscalationService
 from apps.requests.models import StateHistory
+from apps.requests.domain.exceptions import DomainException
 
 logger = logging.getLogger(__name__)
 
@@ -49,6 +50,7 @@ class RequestViewSet(viewsets.ViewSet):
         'create': Permission.REQUEST_CREATE,
         'partial_update': Permission.REQUEST_UPDATE,
         'submit': Permission.REQUEST_SUBMIT,
+        'pickup': Permission.REQUEST_TRIAGE,
         'assign': Permission.REQUEST_ASSIGN,
         'accept': Permission.ASSIGNMENT_ACCEPT,
         'decline': Permission.ASSIGNMENT_DECLINE,
@@ -92,17 +94,17 @@ class RequestViewSet(viewsets.ViewSet):
         queryset = RequestService.list_requests(user=request.user)
         page = self.paginate_queryset(queryset)
         if page is not None:
-            serializer = RequestListSerializer(page, many=True)
+            serializer = RequestListSerializer(page, many=True, context={'request': request})
             return self.get_paginated_response(serializer.data, "Requests retrieved successfully")
 
-        serializer = RequestListSerializer(queryset, many=True)
+        serializer = RequestListSerializer(queryset, many=True, context={'request': request})
         return success_response("Requests retrieved successfully", serializer.data)
 
     @extend_schema(summary="Retrieve Request", responses={200: RequestListSerializer})
     def retrieve(self, request, pk=None):
         obj = self.get_object()
         self.check_object_permissions(request, obj)
-        serializer = RequestListSerializer(obj)
+        serializer = RequestListSerializer(obj, context={'request': request})
         return success_response("Request retrieved successfully", serializer.data)
 
     @extend_schema(summary="Create Request", request=CreateRequestSerializer, responses={201: OpenApiResponse(description="Created"), 400: OpenApiResponse(description="Validation Error")})
@@ -112,7 +114,10 @@ class RequestViewSet(viewsets.ViewSet):
             return error_response("Validation failed", serializer.errors)
         try:
             result = RequestService.create_request(user=request.user, data=serializer.validated_data)
-            return success_response("Request created successfully", {"id": str(result.id), "public_id": getattr(result, 'public_id', '')}, status.HTTP_201_CREATED)
+            RequestService.submit(request_id=result.id, actor=request.user)
+            # Re-fetch or manually update the status for the response
+            result.refresh_from_db()
+            return success_response("Request created and submitted successfully", {"id": str(result.id), "public_id": getattr(result, 'public_id', '')}, status.HTTP_201_CREATED)
         except PermissionDenied:
             return error_response("Permission denied", status_code=status.HTTP_403_FORBIDDEN)
         except Exception as e:
@@ -129,6 +134,8 @@ class RequestViewSet(viewsets.ViewSet):
         try:
             result = RequestService.update_request(request_id=pk, user=request.user, data=serializer.validated_data)
             return success_response("Request updated successfully", {"id": str(result.id)})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.error(f"Service error: {e}")
             return error_response("Unexpected error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -149,7 +156,27 @@ class RequestViewSet(viewsets.ViewSet):
         try:
             result = RequestService.submit(request_id=pk, actor=request.user)
             return success_response("Request submitted successfully", {"id": str(result.id), "status": result.status})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            import traceback
+            traceback.print_exc()
+            logger.error(f"Service error: {e}")
+            return error_response("Unexpected error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @extend_schema(summary="Pick Up Request", request=None, responses={200: OpenApiResponse(description="Success"), 409: OpenApiResponse(description="Conflict")})
+    @action(detail=True, methods=['post'], url_path='pick-up')
+    def pickup(self, request, pk=None):
+        obj = self.get_object()
+        self.check_object_permissions(request, obj)
+        try:
+            result = RequestService.pickup(request_id=pk, actor=request.user)
+            return success_response("Request picked up successfully", {"id": str(result.id), "status": result.status})
+        except Exception as e:
+            error_msg = str(e).lower()
+            if "already" in error_msg or "claimed" in error_msg or "not allowed" in error_msg or "not in submitted" in error_msg:
+                return error_response("Request has already been claimed.", status_code=status.HTTP_409_CONFLICT)
+            
             import traceback
             traceback.print_exc()
             logger.error(f"Service error: {e}")
@@ -166,6 +193,8 @@ class RequestViewSet(viewsets.ViewSet):
         try:
             result = AssignmentService.assign(request_id=pk, actor=request.user, technician_id=serializer.validated_data['technician_id'])
             return success_response("Technician assigned successfully", {"id": str(result.id), "status": result.status})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -180,6 +209,8 @@ class RequestViewSet(viewsets.ViewSet):
         try:
             result = AssignmentService.accept(request_id=pk, actor=request.user)
             return success_response("Assignment accepted successfully", {"id": str(result.id), "status": result.status})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -197,6 +228,8 @@ class RequestViewSet(viewsets.ViewSet):
         try:
             result = AssignmentService.decline(request_id=pk, actor=request.user, reason_code=serializer.validated_data['reason_code'])
             return success_response("Assignment declined successfully", {"id": str(result.id), "status": result.status})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -214,6 +247,8 @@ class RequestViewSet(viewsets.ViewSet):
         try:
             result = RequestService.cancel(request_id=pk, actor=request.user, reason_code=serializer.validated_data['reason_code'])
             return success_response("Request cancelled successfully", {"id": str(result.id), "status": result.status})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -231,6 +266,8 @@ class RequestViewSet(viewsets.ViewSet):
         try:
             result = EscalationService.process_escalation(request_id=pk, trigger_type=serializer.validated_data['reason'], actor=request.user)
             return success_response("Request escalated successfully", {"id": str(result.id), "status": getattr(result, 'status', 'escalated')})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -319,6 +356,8 @@ class RequestQuoteViewSet(viewsets.ViewSet):
         try:
             result = QuoteService.approve_quote(request_id=request_pk, actor=request.user)
             return success_response("Quote approved successfully", {"status": getattr(result, 'status', 'approved')})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -332,6 +371,8 @@ class RequestQuoteViewSet(viewsets.ViewSet):
         try:
             result = QuoteService.handle_customer_action(request_id=request_pk, actor=request.user, action_type="reject")
             return success_response("Quote rejected successfully", {"status": getattr(result, 'status', 'rejected')})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -345,6 +386,8 @@ class RequestQuoteViewSet(viewsets.ViewSet):
         try:
             result = QuoteService.handle_customer_action(request_id=request_pk, actor=request.user, action_type="revise")
             return success_response("Quote revision requested successfully", {"status": getattr(result, 'status', 'revision_requested')})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -364,6 +407,8 @@ class RequestQuoteViewSet(viewsets.ViewSet):
                 action_type=serializer.validated_data['action'], reason=serializer.validated_data.get('reason')
             )
             return success_response("Customer action processed successfully", {"status": getattr(result, 'status', 'processed')})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -393,6 +438,8 @@ class RequestVerificationViewSet(viewsets.ViewSet):
         try:
             result = VerificationService.submit(request_id=request_pk, actor=request.user, evidence=serializer.validated_data)
             return success_response("Verification submitted successfully", {"id": str(result.id), "status": "pending_verification"})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()
@@ -412,6 +459,8 @@ class RequestVerificationViewSet(viewsets.ViewSet):
                 action_type=serializer.validated_data['action'], notes=serializer.validated_data.get('notes')
             )
             return success_response("Verification reviewed successfully", {"id": str(getattr(result, 'id', '')), "status": getattr(result, 'status', 'reviewed')})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             import traceback
             traceback.print_exc()

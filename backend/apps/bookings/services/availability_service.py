@@ -10,6 +10,7 @@ from ..models.blackout_date import BlackoutDate
 from ..models.booking import Booking
 from ..permissions.checkers import BookingPermissionChecker
 from ..events.publishers import BookingEventPublisher
+from apps.audit_logs.services.audit_service import log_action
 
 logger = logging.getLogger(__name__)
 
@@ -210,7 +211,8 @@ class AvailabilityService:
             raise ValidationError("End time must be after start time.")
 
         # 1. Permission Check
-        if not BookingPermissionChecker.can_manage_blackouts(actor.role, user=actor, target_technician_id=technician_id):
+        mock_blackout = type('Obj', (object,), {'technician_id': technician_id})
+        if not BookingPermissionChecker.can_manage_blackout_dates(actor.role, user=actor, blackout_date=mock_blackout):
             raise PermissionDenied("Unauthorized to manage blackout dates.")
 
         # 2. Conflict Check: Must not overlap with scheduled/in_progress bookings
@@ -268,7 +270,7 @@ class AvailabilityService:
             raise ValidationError("Blackout date does not exist.")
 
         # 1. Permission Check
-        if not BookingPermissionChecker.can_manage_blackouts(actor.role, user=actor, target_technician_id=blackout.technician_id):
+        if not BookingPermissionChecker.can_manage_blackout_dates(actor.role, user=actor, blackout_date=blackout):
             raise PermissionDenied("Unauthorized to manage blackout dates.")
 
         technician_id = str(blackout.technician_id)

@@ -1,5 +1,6 @@
 import pytest
 import json
+from unittest.mock import patch
 from channels.testing import WebsocketCommunicator
 from django.contrib.auth import get_user_model
 from config.asgi import application
@@ -28,16 +29,17 @@ class TestServiceEventWebSocketIntegration:
         )
         return communicator
 
-    async def test_assign_tech_broadcasts_to_websocket(self):
+    @patch('django.db.transaction.on_commit', side_effect=lambda f: f())
+    async def test_assign_tech_broadcasts_to_websocket(self, mock_on_commit):
         # 1. Setup: Customer, Technician, Staff, and a Request
         staff = await sync_to_async(User.objects.create)(
-            email="staff_int@test.com", role="staff", role_version=1
+            email="staff_int@test.com", role="STAFF", role_version=1
         )
         tech = await sync_to_async(User.objects.create)(
-            email="tech_int@test.com", role="technician", role_version=1
+            email="tech_int@test.com", role="TECHNICIAN", role_version=1
         )
         customer = await sync_to_async(User.objects.create)(
-            email="cust_int@test.com", role="customer", role_version=1
+            email="cust_int@test.com", role="CUSTOMER", role_version=1
         )
         
         # Must be in AWAITING_ASSIGNMENT for assign_tech action
@@ -77,16 +79,17 @@ class TestServiceEventWebSocketIntegration:
         # 5. Cleanup
         await staff_communicator.disconnect()
 
-    async def test_tech_receives_event_after_assignment(self):
+    @patch('django.db.transaction.on_commit', side_effect=lambda f: f())
+    async def test_tech_receives_event_after_assignment(self, mock_on_commit):
         # Setup
         staff = await sync_to_async(User.objects.create)(
-            email="staff_int2@test.com", role="staff", role_version=1
+            email="staff_int2@test.com", role="STAFF", role_version=1
         )
         tech = await sync_to_async(User.objects.create)(
-            email="tech_int2@test.com", role="technician", role_version=1
+            email="tech_int2@test.com", role="TECHNICIAN", role_version=1
         )
         customer = await sync_to_async(User.objects.create)(
-            email="cust_int2@test.com", role="customer", role_version=1
+            email="cust_int2@test.com", role="CUSTOMER", role_version=1
         )
         
         req = await sync_to_async(Request.objects.create)(

@@ -8,6 +8,8 @@ class PaymentStatus(models.TextChoices):
     PAID = "paid", _("Paid")
     FAILED = "failed", _("Failed")
     CANCELLED = "cancelled", _("Cancelled")
+    REFUNDED = "refunded", _("Refunded")
+    ESCALATED = "escalated", _("Escalated")
 
 class Payment(models.Model):
     """

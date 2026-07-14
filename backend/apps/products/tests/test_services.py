@@ -85,6 +85,84 @@ def test_test_prod_009_archive_product(product, admin_user):
     product.refresh_from_db()
     assert product.status == ProductStatus.ARCHIVED
 
+def test_category_service_edge_cases(staff_user):
+    from apps.common.permissions import Actor, Role
+    import uuid
+    staff_actor = Actor(id=staff_user.id, role=Role.STAFF)
+    
+    # 1. create_category with duplicate slug
+    CategoryService.create_category(actor=staff_actor, correlation_id=str(uuid.uuid4()), name="Test", slug="test-slug")
+    with pytest.raises(ValidationError, match="slug must be unique"):
+        CategoryService.create_category(actor=staff_actor, correlation_id=str(uuid.uuid4()), name="Test2", slug="test-slug")
+        
+    # 2. update_category not found
+    with pytest.raises(ValidationError, match="Category not found"):
+        CategoryService.update_category(actor=staff_actor, correlation_id=str(uuid.uuid4()), category_id=uuid.uuid4(), changed_fields={"name": "foo"})
+        
+    # 3. archive_category not found
+    with pytest.raises(ValidationError, match="Category not found"):
+        CategoryService.archive_category(actor=staff_actor, correlation_id=str(uuid.uuid4()), category_id=uuid.uuid4())
+        
+    # 4. archive_category already archived
+    cat2 = CategoryService.create_category(actor=staff_actor, correlation_id=str(uuid.uuid4()), name="Cat2", slug="cat-2")
+    CategoryService.archive_category(actor=staff_actor, correlation_id=str(uuid.uuid4()), category_id=cat2.id)
+    ret = CategoryService.archive_category(actor=staff_actor, correlation_id=str(uuid.uuid4()), category_id=cat2.id)
+    assert ret.id == cat2.id
+
+def test_product_service_edge_cases(staff_user, category):
+    from apps.common.permissions import Actor, Role
+    import uuid
+    staff_actor = Actor(id=staff_user.id, role=Role.STAFF)
+    
+    # 1. create_product > 4 images
+    with pytest.raises(ValidationError, match="maximum of 4 images"):
+        ProductService.create_product(
+            actor=staff_actor, correlation_id=str(uuid.uuid4()), category_id=category.id,
+            name="Prod", unit_price=10, quantity_available=10, low_stock_threshold=2, sku="P1",
+            images=["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg"]
+        )
+    
+    # 2. update_product not found
+    with pytest.raises(ValidationError, match="Product not found"):
+        ProductService.update_product(actor=staff_actor, correlation_id=str(uuid.uuid4()), product_id=uuid.uuid4(), changed_fields={"name": "foo"})
+        
+    # 3. update_product with > 4 images
+    prod = ProductService.create_product(
+        actor=staff_actor, correlation_id=str(uuid.uuid4()), category_id=category.id,
+        name="Prod", unit_price=10, quantity_available=10, low_stock_threshold=2, sku="P1"
+    )
+    with pytest.raises(ValidationError, match="maximum of 4 images"):
+        ProductService.update_product(actor=staff_actor, correlation_id=str(uuid.uuid4()), product_id=prod.id, changed_fields={"images": ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg"]})
+
+    # 4. archive_product not found
+    with pytest.raises(ValidationError, match="Product not found"):
+        ProductService.archive_product(actor=staff_actor, correlation_id=str(uuid.uuid4()), product_id=uuid.uuid4())
+
+def test_inventory_service_edge_cases(staff_user, product):
+    from apps.common.permissions import Actor, Role
+    import uuid
+    staff_actor = Actor(id=staff_user.id, role=Role.STAFF)
+    
+    # 1. reduce_inventory product not found
+    with pytest.raises(ValidationError, match="not found"):
+        InventoryService.reduce_inventory(actor=staff_actor, correlation_id=str(uuid.uuid4()), order_id=uuid.uuid4(), reductions=[{"product_id": uuid.uuid4(), "quantity": 1}])
+        
+    # 2. adjust_inventory product not found
+    with pytest.raises(ValidationError, match="Product not found"):
+        InventoryService.adjust_inventory(actor=staff_actor, correlation_id=str(uuid.uuid4()), product_id=uuid.uuid4(), adjustment_amount=1, reason="Test")
+        
+    # 3. adjust_inventory resulting in low stock
+    product.quantity_available = 10
+    product.low_stock_threshold = 5
+    product.save()
+    InventoryService.adjust_inventory(actor=staff_actor, correlation_id=str(uuid.uuid4()), product_id=product.id, adjustment_amount=-6, reason="Test")
+    product.refresh_from_db()
+    assert product.quantity_available == 4
+    
+    # 4. update_threshold product not found
+    with pytest.raises(ValidationError, match="Product not found"):
+        InventoryService.update_threshold(actor=staff_actor, correlation_id=str(uuid.uuid4()), product_id=uuid.uuid4(), new_threshold=5)
+
 
 def test_test_prod_010_create_category(staff_user):
     """

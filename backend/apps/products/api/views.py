@@ -96,7 +96,7 @@ class ProductListView(APIView):
         if state:
             products = products.filter(status=state)
             
-        serializer = ProductSerializer(products, many=True)
+        serializer = ProductSerializer(products, many=True, context={'request': request})
         return Response(serializer.data)
 
     def post(self, request):
@@ -118,7 +118,7 @@ class ProductListView(APIView):
             description=data.get('description'),
             attributes=data.get('attributes')
         )
-        return Response(ProductSerializer(product).data, status=status.HTTP_201_CREATED)
+        return Response(ProductSerializer(product, context={'request': request}).data, status=status.HTTP_201_CREATED)
 
 class ProductDetailView(APIView):
     permission_classes = [IsAuthenticated]
@@ -126,7 +126,7 @@ class ProductDetailView(APIView):
     def get(self, request, pk):
         ProductPermissionChecker.check(get_actor(request), 'product.view')
         product = get_object_or_404(Product, pk=pk)
-        return Response(ProductSerializer(product).data)
+        return Response(ProductSerializer(product, context={'request': request}).data)
 
     def patch(self, request, pk):
         actor = get_actor(request)
@@ -140,13 +140,25 @@ class ProductDetailView(APIView):
         if 'category' in changed_fields:
             changed_fields['category_id'] = changed_fields.pop('category')
             
+        threshold = changed_fields.pop('low_stock_threshold', None)
+        changed_fields.pop('quantity_available', None) # Prohibit direct mutation
+        
+        if threshold is not None:
+            ProductPermissionChecker.check(actor, 'inventory.manage')
+            InventoryService.update_threshold(
+                actor=actor,
+                correlation_id=str(uuid.uuid4()),
+                product_id=pk,
+                new_threshold=threshold
+            )
+            
         product = ProductService.update_product(
             actor=actor,
             correlation_id=str(uuid.uuid4()),
             product_id=pk,
             changed_fields=changed_fields
         )
-        return Response(ProductSerializer(product).data)
+        return Response(ProductSerializer(product, context={'request': request}).data)
 
 class ProductArchiveView(APIView):
     permission_classes = [IsAuthenticated]
@@ -159,7 +171,7 @@ class ProductArchiveView(APIView):
             correlation_id=str(uuid.uuid4()),
             product_id=pk
         )
-        return Response(ProductSerializer(product).data)
+        return Response(ProductSerializer(product, context={'request': request}).data)
 
 class ProductInventoryAdjustView(APIView):
     permission_classes = [IsAuthenticated]
@@ -178,4 +190,4 @@ class ProductInventoryAdjustView(APIView):
             reason=serializer.validated_data['reason']
         )
         product = get_object_or_404(Product, pk=pk)
-        return Response(ProductSerializer(product).data)
+        return Response(ProductSerializer(product, context={'request': request}).data)

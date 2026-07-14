@@ -181,3 +181,110 @@ def test_test_ord_010_archived_product_rejection(customer_actor, customer_user, 
             items_data=items_data
         )
 
+def test_order_service_edge_cases(customer_actor, staff_actor, customer_user, request_obj, product):
+    # 1. create_order when order already exists
+    items_data = [{'product_id': product.id, 'quantity': 1}]
+    order = OrderService.create_order(
+        actor=customer_actor,
+        correlation_id=str(uuid.uuid4()),
+        request_id=request_obj.id,
+        customer_id=customer_user.id,
+        items_data=items_data
+    )
+    with pytest.raises(ValidationError, match="already exists"):
+        OrderService.create_order(
+            actor=customer_actor,
+            correlation_id=str(uuid.uuid4()),
+            request_id=request_obj.id, # same request id
+            customer_id=customer_user.id,
+            items_data=items_data
+        )
+
+    # 2. create_order with missing product
+    from apps.requests.models import Request as Req
+    new_req = Req.objects.create(id=uuid.uuid4(), customer=customer_user, category="other")
+    with pytest.raises(ValidationError, match="not found"):
+        OrderService.create_order(
+            actor=customer_actor,
+            correlation_id=str(uuid.uuid4()),
+            request_id=new_req.id,
+            customer_id=customer_user.id,
+            items_data=[{'product_id': uuid.uuid4(), 'quantity': 1}]
+        )
+        
+    # 3. create_order with quantity 0
+    with pytest.raises(ValidationError, match="greater than zero"):
+        OrderService.create_order(
+            actor=customer_actor,
+            correlation_id=str(uuid.uuid4()),
+            request_id=new_req.id,
+            customer_id=customer_user.id,
+            items_data=[{'product_id': product.id, 'quantity': 0}]
+        )
+
+    # 4. require_payment when order not found
+    with pytest.raises(ValidationError, match="Order not found"):
+        OrderService.require_payment(
+            actor=customer_actor,
+            correlation_id=str(uuid.uuid4()),
+            order_id=uuid.uuid4(),
+            payment_id=str(uuid.uuid4()),
+            amount=10
+        )
+
+    # 5. process_payment_paid_event when order not found
+    with pytest.raises(ValidationError, match="Order not found"):
+        OrderService.process_payment_paid_event(
+            actor=customer_actor,
+            correlation_id=str(uuid.uuid4()),
+            order_id=uuid.uuid4()
+        )
+
+    # 6. process_payment_paid_event when order not payable (CANCELLED)
+    order.status = OrderStatus.CANCELLED
+    order.save()
+    with pytest.raises(ValidationError, match="not in a payable state"):
+        OrderService.process_payment_paid_event(
+            actor=customer_actor,
+            correlation_id=str(uuid.uuid4()),
+            order_id=order.id
+        )
+
+    # 7. cancel_order when order not found
+    with pytest.raises(ValidationError, match="Order not found"):
+        OrderService.cancel_order(
+            actor=customer_actor,
+            correlation_id=str(uuid.uuid4()),
+            order_id=uuid.uuid4(),
+            cancellation_reason="foo"
+        )
+        
+    # 8. cancel_order when paid
+    order.status = OrderStatus.PAID
+    order.save()
+    with pytest.raises(ValidationError, match="Paid orders cannot be cancelled"):
+        OrderService.cancel_order(
+            actor=customer_actor,
+            correlation_id=str(uuid.uuid4()),
+            order_id=order.id,
+            cancellation_reason="foo"
+        )
+        
+    # 9. fulfill_order when order not found
+    with pytest.raises(ValidationError, match="Order not found"):
+        OrderService.fulfill_order(
+            actor=staff_actor,
+            correlation_id=str(uuid.uuid4()),
+            order_id=uuid.uuid4()
+        )
+        
+    # 10. fulfill_order when already fulfilled
+    order.status = OrderStatus.FULFILLED
+    order.save()
+    ret = OrderService.fulfill_order(
+        actor=staff_actor,
+        correlation_id=str(uuid.uuid4()),
+        order_id=order.id
+    )
+    assert ret.id == order.id
+

@@ -40,6 +40,17 @@ from .permissions import (
     CanReportNoShow
 )
 
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiParameter, OpenApiTypes, OpenApiResponse
+
+@extend_schema_view(
+    list=extend_schema(summary="List Bookings", description="Retrieve a list of bookings.", parameters=[
+        OpenApiParameter('status', type=OpenApiTypes.STR, required=False),
+        OpenApiParameter('technician_id', type=OpenApiTypes.UUID, required=False),
+        OpenApiParameter('start_date', type=OpenApiTypes.DATE, required=False),
+        OpenApiParameter('end_date', type=OpenApiTypes.DATE, required=False)
+    ]),
+    retrieve=extend_schema(summary="Retrieve Booking", description="Retrieve a specific booking by ID.")
+)
 class BookingViewSet(viewsets.ReadOnlyModelViewSet):
     """
     Read-only API for Bookings.
@@ -146,6 +157,7 @@ class BookingMutationViewSet(viewsets.ViewSet):
             return Response({"error": exc.message if hasattr(exc, 'message') else str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return super().handle_exception(exc)
 
+    @extend_schema(summary="Schedule Booking", request=ScheduleBookingSerializer, responses={200: BookingDetailSerializer})
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanScheduleBooking])
     def schedule(self, request, pk=None):
         booking = self.get_object()
@@ -160,6 +172,7 @@ class BookingMutationViewSet(viewsets.ViewSet):
         )
         return Response(BookingDetailSerializer(updated_booking).data)
 
+    @extend_schema(summary="Reschedule Booking", request=RescheduleBookingSerializer, responses={200: BookingDetailSerializer})
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanRescheduleBooking])
     def reschedule(self, request, pk=None):
         booking = self.get_object()
@@ -175,6 +188,7 @@ class BookingMutationViewSet(viewsets.ViewSet):
         )
         return Response(BookingDetailSerializer(updated_booking).data)
 
+    @extend_schema(summary="Extend Booking", request=ExtendBookingSerializer, responses={200: BookingDetailSerializer})
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanExtendBooking])
     def extend(self, request, pk=None):
         booking = self.get_object()
@@ -189,6 +203,7 @@ class BookingMutationViewSet(viewsets.ViewSet):
         )
         return Response(BookingDetailSerializer(updated_booking).data)
 
+    @extend_schema(summary="Report No-Show", request=ReportNoShowSerializer, responses={200: OpenApiResponse(description="Success")})
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanReportNoShow], url_path="no-show")
     def no_show(self, request, pk=None):
         booking = self.get_object()
@@ -223,6 +238,7 @@ class TechnicianAvailabilityViewSet(viewsets.ViewSet):
             return Response({"error": exc.message if hasattr(exc, 'message') else str(exc)}, status=status.HTTP_400_BAD_REQUEST)
         return super().handle_exception(exc)
 
+    @extend_schema(summary="Get Technician Availability", parameters=[OpenApiParameter('start_date', type=OpenApiTypes.DATE, required=True)], responses={200: OpenApiTypes.ANY})
     @action(detail=True, methods=['get'])
     def availability(self, request, pk=None):
         """GET /api/v1/technicians/{id}/availability/"""
@@ -246,6 +262,7 @@ class TechnicianAvailabilityViewSet(viewsets.ViewSet):
         formatted_slots = [{"start": s['start'].strftime('%H:%M'), "end": s['end'].strftime('%H:%M')} for s in slots]
         return Response(formatted_slots)
 
+    @extend_schema(summary="Update Working Hours", request=WorkingHoursSerializer, responses={200: WorkingHoursSerializer})
     @action(detail=True, methods=['put', 'patch'], permission_classes=[IsAuthenticated, CanManageWorkingHours], url_path="working-hours")
     def working_hours(self, request, pk=None):
         technician_id = pk
@@ -261,6 +278,7 @@ class TechnicianAvailabilityViewSet(viewsets.ViewSet):
         )
         return Response(WorkingHoursSerializer(working_hours).data)
 
+    @extend_schema(summary="Create Blackout Date", request=BlackoutDateSerializer, responses={201: BlackoutDateSerializer})
     @action(detail=True, methods=['post'], permission_classes=[IsAuthenticated, CanManageBlackouts], url_path="blackout-dates")
     def create_blackout(self, request, pk=None):
         technician_id = pk
@@ -276,6 +294,7 @@ class TechnicianAvailabilityViewSet(viewsets.ViewSet):
         )
         return Response(BlackoutDateSerializer(blackout).data, status=status.HTTP_201_CREATED)
 
+    @extend_schema(summary="Delete Blackout Date", responses={204: OpenApiResponse(description="No Content")})
     @action(detail=True, methods=['delete'], permission_classes=[IsAuthenticated, CanManageBlackouts], url_path=r'blackout-dates/(?P<blackout_id>[^/.]+)')
     def delete_blackout(self, request, pk=None, blackout_id=None):
         AvailabilityService.delete_blackout_date(

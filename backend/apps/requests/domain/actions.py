@@ -12,6 +12,7 @@ class RequestAction(str, Enum):
     REQUEST_REVISION = "request_revision"
     REJECT_QUOTE = "reject_quote"
     PAYMENT_WEBHOOK = "payment_webhook"
+    ORDER_FULFILLED = "order_fulfilled"
     ASSIGN_TECH = "assign_tech"
     ACCEPT = "accept"
     DECLINE = "decline"

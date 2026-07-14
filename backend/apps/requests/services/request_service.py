@@ -1,5 +1,3 @@
-from apps.requests.permissions.matrix import PermissionRegistry
-from apps.requests.permissions.constants import Role
 """
 RequestService: Orchestrates the core lifecycle transitions and canonical state management.
 Ref: docs/architecture/request/request-services.md (Section 5.1)
@@ -10,12 +8,19 @@ from typing import Any, Dict, List, Optional
 
 from django.contrib.auth import get_user_model
 from django.db import transaction
+from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 
 from apps.audit_logs.services.audit_service import log_action
 from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.state_machine import RequestStateMachine
 from apps.requests.events.publishers import DomainEventPublisher
 from apps.requests.models import LifecycleState, Request, StateHistory
+from apps.requests.permissions.constants import Permission, Role
+from apps.requests.permissions.checks import RBACChecker
+from apps.requests.domain.exceptions import InvalidTransitionError
+from apps.requests.permissions.matrix import PermissionRegistry
+from apps.requests.permissions.constants import Role
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -35,10 +40,9 @@ class RequestService:
         if not hasattr(user, "role"):
             return Request.objects.filter(customer=user)
             
-        if user.role in ["staff", "manager", "superadmin"]:
+        if user.role in ["STAFF", "MANAGER", "SUPER_ADMIN"]:
             return Request.objects.all()
-        elif user.role == "technician":
-            from django.db.models import Q
+        elif user.role == "TECHNICIAN":
             return Request.objects.filter(Q(assigned_technician=user) | Q(assignments__technician=user)).distinct()
         else:
             return Request.objects.filter(customer=user)
@@ -61,9 +65,6 @@ class RequestService:
         Creates a new Request in DRAFT state.
         Ref: docs/architecture/request/request-services.md (5.1)
         """
-        from apps.requests.permissions.constants import Permission, Role
-        from apps.requests.permissions.checks import RBACChecker
-        from django.core.exceptions import PermissionDenied
 
         # 1. RBAC Validation
         if not RBACChecker.check_scoped_permission(
@@ -83,6 +84,7 @@ class RequestService:
             status=LifecycleState.DRAFT,
             description=data["description"],
             location=data.get("location"),
+            requires_technician=data.get("requires_technician", False)
         )
 
         # Audit Integration
@@ -121,10 +123,6 @@ class RequestService:
         Updates basic request fields (description, location).
         Does NOT support status, technician, or customer mutation.
         """
-        from apps.requests.permissions.constants import Permission, Role
-        from apps.requests.permissions.checks import RBACChecker
-        from django.core.exceptions import PermissionDenied
-        from apps.requests.domain.exceptions import InvalidTransitionError
 
         request = Request.objects.select_for_update().get(pk=request_id)
         
@@ -143,6 +141,55 @@ class RequestService:
             
         allowed_fields = {"description", "location"}
         updates_made = {}
+        
+        target_action = data.get("action")
+        target_status = data.get("status")
+        
+        if target_action or (target_status and target_status != request.status):
+            machine = RequestStateMachine(request.status)
+            user_permissions = [p.value for p in PermissionRegistry.get_permissions_for_role(Role(user.role))] if hasattr(user, "role") else []
+            
+            from apps.requests.services.context_builder import RequestContextBuilder
+            context_obj = RequestContextBuilder(request).build()
+            
+            if target_action:
+                from apps.requests.domain.actions import RequestAction
+                try:
+                    action_enum = RequestAction(target_action)
+                except ValueError:
+                    raise InvalidTransitionError(f"Invalid action: {target_action}")
+                    
+                new_status = machine.transition(
+                    action=action_enum,
+                    user_permissions=user_permissions,
+                    context=context_obj
+                )
+            else:
+                allowed_transitions = machine.get_allowed_transitions()
+                valid_transition = next((t for t in allowed_transitions if t.target.value == target_status), None)
+                
+                if not valid_transition:
+                    raise InvalidTransitionError(f"Cannot transition from {request.status} to {target_status}")
+                    
+                new_status = machine.transition(
+                    action=valid_transition.action,
+                    user_permissions=user_permissions,
+                    context=context_obj
+                )
+            
+            prev_status = request.status
+            request.status = new_status
+            updates_made["status"] = new_status
+            
+            correlation_id = str(uuid.uuid4())
+            StateHistory.objects.create(
+                request=request,
+                from_state=prev_status,
+                to_state=new_status,
+                actor=user,
+                correlation_id=correlation_id,
+            )
+
         for field in allowed_fields:
             if field in data:
                 setattr(request, field, data[field])
@@ -166,6 +213,10 @@ class RequestService:
                 updates=updates_made
             ))
             
+            if "status" in updates_made:
+                from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
+                transaction.on_commit(lambda: RequestProcessOrchestrator.sync(request.id))
+            
         return request
 
     @staticmethod
@@ -175,9 +226,6 @@ class RequestService:
         Transitions a request from DRAFT to SUBMITTED.
         Ref: docs/architecture/request/request-services.md (5.1)
         """
-        from apps.requests.permissions.constants import Permission, Role
-        from apps.requests.permissions.checks import RBACChecker
-        from django.core.exceptions import PermissionDenied
 
         request = Request.objects.select_for_update().get(pk=request_id)
         
@@ -237,6 +285,9 @@ class RequestService:
             category=request.category,
         ))
 
+        from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
+        transaction.on_commit(lambda: RequestProcessOrchestrator.sync(request.id))
+
         return request
 
     @staticmethod
@@ -246,10 +297,7 @@ class RequestService:
         Terminal cancellation of a request.
         Ref: docs/workflows/cancellation-policy.md
         """
-        from apps.requests.permissions.constants import Permission, Role
-        from apps.requests.permissions.checks import RBACChecker
-        from django.core.exceptions import PermissionDenied
-
+        
         request = Request.objects.select_for_update().get(pk=request_id)
         
         # RBAC Validation
@@ -314,5 +362,170 @@ class RequestService:
             actor_id=actor.id,
             reason_code=reason_code,
         ))
+
+        return request
+
+    @staticmethod
+    @transaction.atomic
+    def handle_system_action(request_id: Any, action: RequestAction, context: Dict = None) -> Request:
+        request = Request.objects.select_for_update().get(pk=request_id)
+        if context is None:
+            context = {}
+            
+        context['requires_technician'] = request.requires_technician
+        prev_status = request.status
+        machine = RequestStateMachine(LifecycleState(request.status))
+        
+        # We use a system admin role permissions to bypass RBAC for system actions
+        system_permissions = [p.value for p in PermissionRegistry.get_permissions_for_role(Role.SUPER_ADMIN)]
+        
+        from apps.requests.services.context_builder import RequestContextBuilder
+        context_obj = RequestContextBuilder(request).build()
+        for k, v in context.items():
+            if hasattr(context_obj, k):
+                setattr(context_obj, k, v)
+        
+        new_status = machine.transition(
+            action=action,
+            user_permissions=system_permissions,
+            context=context_obj,
+        )
+        
+        request.status = new_status
+        request.save()
+        
+        correlation_id = str(uuid.uuid4())
+        StateHistory.objects.create(
+            request=request,
+            from_state=prev_status,
+            to_state=new_status,
+            actor=None,
+            reason=f"System action: {action.value}",
+            correlation_id=correlation_id,
+        )
+        return request
+
+    @staticmethod
+    @transaction.atomic
+    def pickup(request_id: Any, actor: User) -> Request:
+        """
+        Transitions a request from SUBMITTED to STAFF_REVIEW.
+        """
+        request = Request.objects.select_for_update().get(pk=request_id)
+        
+        if request.status != 'submitted':
+            raise ValueError("Request has already been claimed or is not in submitted state.")
+        
+        if not RBACChecker.check_scoped_permission(
+            role=Role(actor.role), 
+            permission=Permission.REQUEST_TRIAGE, 
+            user_id=actor.id,
+            resource=request
+        ):
+            raise PermissionDenied("Missing request.triage permission.")
+
+        prev_status = request.status
+        machine = RequestStateMachine(LifecycleState(request.status))
+        
+        from apps.requests.services.context_builder import RequestContextBuilder
+        context = RequestContextBuilder(request).build()
+        
+        new_status = machine.transition(
+            action=RequestAction.PICK_UP,
+            user_permissions=[p.value for p in PermissionRegistry.get_permissions_for_role(Role(actor.role))] if hasattr(actor, "role") else [],
+            context=context,
+        )
+        
+        request.status = new_status
+        request.save()
+
+        correlation_id = str(uuid.uuid4())
+        StateHistory.objects.create(
+            request=request,
+            from_state=prev_status,
+            to_state=new_status,
+            actor=actor,
+            correlation_id=correlation_id,
+            reason="Staff picked up request"
+        )
+        
+        log_action(
+            action="request.picked_up",
+            actor=actor,
+            resource_type="request",
+            resource_id=str(request.id),
+        )
+
+        from apps.requests.events.publishers import DomainEventPublisher
+        transaction.on_commit(lambda: DomainEventPublisher.publish_request_updated(
+            request_id=request.id,
+            correlation_id=correlation_id,
+            actor_id=actor.id,
+            updates={"status": new_status.value if hasattr(new_status, 'value') else new_status}
+        ))
+
+        from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
+        transaction.on_commit(lambda: RequestProcessOrchestrator.sync(request.id))
+
+        return request
+
+    @staticmethod
+    @transaction.atomic
+    def triage(request_id: Any, actor: User, action: RequestAction) -> Request:
+        """
+        Transitions a request out of STAFF_REVIEW (e.g., NEEDS_QUOTE, REQUIRE_PAYMENT, ASSIGN_DIRECTLY).
+        """
+        request = Request.objects.select_for_update().get(pk=request_id)
+        
+        if not RBACChecker.check_scoped_permission(
+            role=Role(actor.role), 
+            permission=Permission.REQUEST_TRIAGE, 
+            user_id=actor.id,
+            resource=request
+        ):
+            raise PermissionDenied("Missing request.triage permission.")
+
+        prev_status = request.status
+        machine = RequestStateMachine(LifecycleState(request.status))
+        
+        from apps.requests.services.context_builder import RequestContextBuilder
+        context = RequestContextBuilder(request).build()
+        
+        new_status = machine.transition(
+            action=action,
+            user_permissions=[p.value for p in PermissionRegistry.get_permissions_for_role(Role(actor.role))] if hasattr(actor, "role") else [],
+            context=context,
+        )
+        
+        request.status = new_status
+        request.save()
+
+        correlation_id = str(uuid.uuid4())
+        StateHistory.objects.create(
+            request=request,
+            from_state=prev_status,
+            to_state=new_status,
+            actor=actor,
+            correlation_id=correlation_id,
+            reason=f"Staff triage action: {action.value}"
+        )
+        
+        log_action(
+            action=f"request.triaged.{action.value}",
+            actor=actor,
+            resource_type="request",
+            resource_id=str(request.id),
+        )
+
+        from apps.requests.events.publishers import DomainEventPublisher
+        transaction.on_commit(lambda: DomainEventPublisher.publish_request_updated(
+            request_id=request.id,
+            correlation_id=correlation_id,
+            actor_id=actor.id,
+            updates={"status": new_status.value if hasattr(new_status, 'value') else new_status}
+        ))
+
+        from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
+        transaction.on_commit(lambda: RequestProcessOrchestrator.sync(request.id))
 
         return request

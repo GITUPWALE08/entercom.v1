@@ -26,6 +26,34 @@ class AuthService:
     SESSION_INACTIVITY_DAYS = 20
 
     @staticmethod
+    def register(data: dict[str, Any], request_metadata: dict[str, Any]) -> tuple[User, RefreshToken]:
+        email = data["email"]
+        if User.objects.filter(email=email).exists():
+            raise AuthenticationFailed("User with this email already exists")
+
+        user = User.objects.create_user(
+            email=email,
+            password=data["password"],
+            first_name=data.get("first_name", ""),
+            last_name=data.get("last_name", ""),
+            phone_number=data.get("phone_number", ""),
+        )
+
+        refresh = RefreshToken.for_user(user)
+        refresh["role_version"] = user.role_version
+        refresh.access_token["role_version"] = user.role_version
+        AuthService.track_session(user, refresh, request_metadata)
+
+        log_action(
+            actor=user,
+            action="auth.register_success",
+            resource_type="user",
+            resource_id=str(user.id),
+        )
+
+        return user, refresh
+
+    @staticmethod
     def login(email: str, password: str, request_metadata: dict[str, Any]) -> tuple[User, RefreshToken]:
         try:
             user = User.objects.get(email=email)

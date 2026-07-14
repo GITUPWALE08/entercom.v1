@@ -21,12 +21,16 @@ ROLE_PERMISSIONS = {
     # Order Domain
     "order.view": ["customer", "staff", "manager", "superadmin"],
     "order.create": ["customer", "staff", "manager", "superadmin"],
-    "order.update": ["staff", "manager", "superadmin"],
+    # "order.update": ["staff", "manager", "superadmin"],
     "order.cancel": ["customer", "staff", "manager", "superadmin"],
+    "order.fulfill": ["staff", "manager", "superadmin"],
+    "order.override_fulfillment": ["manager", "superadmin"],
     
     # Payment Domain
     "payment.view": ["customer", "staff", "manager", "superadmin"],
-    "payment.initialize": ["customer", "staff", "manager", "superadmin"],
+    "payment.initialize": ["customer", "staff", "manager", "superadmin", "system"],
+    "payment.cancel": ["customer", "staff", "manager", "superadmin", "system"],
+    "webhook.process": ["system"],
 }
 
 def require_permission(actor, permission: str):

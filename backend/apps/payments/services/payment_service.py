@@ -60,6 +60,52 @@ class PaymentService:
                 'paystack_reference': provider_reference
             }
         )
+        
+        from apps.orders.services.order_service import OrderService
+        OrderService.require_payment(
+            actor=actor,
+            correlation_id=correlation_id,
+            order_id=payment.order_id,
+            payment_id=payment.id,
+            amount=payment.amount
+        )
+
+        import requests
+        from django.conf import settings
+        from django.contrib.auth import get_user_model
+        
+        paystack_secret = getattr(settings, 'PAYSTACK_SECRET_KEY', '')
+        
+        if not paystack_secret or paystack_secret == 'sk_test_fake_secret':
+            # Mock URL for local testing without real keys
+            payment.authorization_url = f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/portal/customer/orders/{order_id}?mock_payment=true&reference={provider_reference}"
+        else:
+            User = get_user_model()
+            customer = User.objects.filter(id=customer_id).first()
+            email = customer.email if customer and customer.email else "customer@example.com"
+            
+            url = "https://api.paystack.co/transaction/initialize"
+            headers = {
+                "Authorization": f"Bearer {paystack_secret}",
+                "Content-Type": "application/json"
+            }
+            payload = {
+                "email": email,
+                "amount": int(float(amount) * 100),
+                "reference": provider_reference,
+                "currency": currency,
+                "callback_url": f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/portal/customer/orders/{order_id}"
+            }
+            try:
+                response = requests.post(url, json=payload, headers=headers)
+                response_data = response.json()
+                if response_data.get('status'):
+                    payment.authorization_url = response_data['data']['authorization_url']
+                else:
+                    raise ValidationError(f"Paystack initialization failed: {response_data.get('message')}")
+            except Exception as e:
+                raise ValidationError(f"Paystack request failed: {str(e)}")
+
         return payment
 
     @staticmethod
@@ -128,6 +174,92 @@ class PaymentService:
             data={
                 'payment_id': str(payment.id),
                 'order_id': str(payment.order_id)
+            }
+        )
+        return payment
+
+    @staticmethod
+    @transaction.atomic
+    def refund_payment(actor, correlation_id, payment_id):
+        require_permission(actor, 'payment.refund')
+        payment = Payment.objects.select_for_update().filter(id=payment_id).first()
+        if not payment:
+            raise ValidationError("Payment not found.")
+            
+        if payment.status != PaymentStatus.PAID:
+            raise ValidationError("Only paid payments can be refunded.")
+            
+        payment.status = PaymentStatus.REFUNDED
+        payment.save()
+
+        audit_logger.log(
+            action='payment.refunded',
+            actor_id=actor.id,
+            actor_type=actor.type,
+            correlation_id=correlation_id,
+            metadata={
+                'payment_id': str(payment.id),
+                'order_id': str(payment.order_id),
+                'amount': str(payment.amount)
+            }
+        )
+
+        event_publisher.publish(
+            event_name='payment.refunded',
+            event_version=1,
+            correlation_id=correlation_id,
+            occurred_at=timezone.now(),
+            producer='PaymentService',
+            data={
+                'payment_id': str(payment.id),
+                'order_id': str(payment.order_id),
+                'amount': float(payment.amount)
+            }
+        )
+        
+        from apps.orders.services.order_service import OrderService
+        OrderService.cancel_order(
+            actor=actor,
+            correlation_id=correlation_id,
+            order_id=payment.order_id,
+            cancellation_reason="Payment was refunded"
+        )
+        
+        return payment
+
+    @staticmethod
+    @transaction.atomic
+    def escalate_payment(actor, correlation_id, payment_id, reason):
+        require_permission(actor, 'payment.escalate')
+        payment = Payment.objects.select_for_update().filter(id=payment_id).first()
+        if not payment:
+            raise ValidationError("Payment not found.")
+            
+        payment.status = PaymentStatus.ESCALATED
+        payment.save()
+
+        audit_logger.log(
+            action='payment.escalated',
+            actor_id=actor.id,
+            actor_type=actor.type,
+            correlation_id=correlation_id,
+            metadata={
+                'payment_id': str(payment.id),
+                'order_id': str(payment.order_id),
+                'reason': reason
+            }
+        )
+
+        event_publisher.publish(
+            event_name='payment.escalated',
+            event_version=1,
+            correlation_id=correlation_id,
+            occurred_at=timezone.now(),
+            producer='PaymentService',
+            data={
+                'payment_id': str(payment.id),
+                'order_id': str(payment.order_id),
+                'reason': reason
             }
         )
         return payment

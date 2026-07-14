@@ -1,7 +1,7 @@
 from datetime import timedelta
 from pathlib import Path
 
-import environ
+import environ, os
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -15,7 +15,7 @@ environ.Env.read_env(BASE_DIR / ".env", overwrite=False)
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-dev-secret-change-me")
 DEBUG = env.bool("DEBUG", default=False)
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "flinch-fabulous-freehand.ngrok-free.dev"])
 
 ENABLE_SPECTACULAR = env.bool("ENABLE_SPECTACULAR", default=True)
 
@@ -26,7 +26,7 @@ LOCAL_APPS = [
     "apps.authentication",
     "apps.requests",
     "apps.bookings",
-    #"apps.notifications",
+    "apps.notification",
 
     #"apps.chat",
     #"apps.ai_support",
@@ -70,6 +70,24 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "core.middleware.request_id.RequestIdMiddleware",
 ]
+
+
+# --------------------------------------------------
+# CORS / CSRF
+# --------------------------------------------------
+
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    FRONTEND_URL,
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "https://*.onrender.com",
+]
+
 
 ROOT_URLCONF = "config.urls"
 WSGI_APPLICATION = "config.wsgi.application"
@@ -178,13 +196,18 @@ REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {"hosts": [REDIS_URL]},
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     }
 }
 
-CELERY_BROKER_URL = REDIS_URL
-CELERY_RESULT_BACKEND = REDIS_URL
+
+
+
+# 3. Set the broker/backend to memory (to satisfy Celery's internal checks)
+CELERY_BROKER_URL = "memory://"
+CELERY_RESULT_BACKEND = "cache+memory://"
+CELERY_TASK_ALWAYS_EAGER = True
+CELERY_TASK_EAGER_PROPAGATES = True
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
 CELERY_RESULT_SERIALIZER = "json"
@@ -210,7 +233,8 @@ SUPABASE_URL = env("SUPABASE_URL", default="")
 SUPABASE_SERVICE_ROLE_KEY = env("SUPABASE_SERVICE_ROLE_KEY", default="")
 SUPABASE_STORAGE_BUCKET = env("SUPABASE_STORAGE_BUCKET", default="")
 
-PAYSTACK_SECRET_KEY = env("PAYSTACK_SECRET_KEY", default="")
+PAYSTACK_SECRET_KEY = env("PAYSTACK_SECRET_KEY", default="sk_test_fake_secret")
+PAYSTACK_PUBLIC_KEY = env("PAYSTACK_PUBLIC_KEY", default="pk_test_fake_public")
 
 LOGGING = {
     "version": 1,

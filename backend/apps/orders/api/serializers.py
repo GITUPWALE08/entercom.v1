@@ -22,7 +22,8 @@ class OrderItemCreateSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(required=True, min_value=1)
 
 class OrderCreateSerializer(serializers.Serializer):
-    request_id = serializers.UUIDField(required=True)
+    request_id = serializers.UUIDField(required=False, allow_null=True)
+    requires_technician = serializers.BooleanField(required=False, default=False)
     items = OrderItemCreateSerializer(many=True, allow_empty=False)
 
 class OrderCancelSerializer(serializers.Serializer):

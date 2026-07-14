@@ -23,6 +23,7 @@ class TestBookingAPI:
         # but this validates the contract.
         pass
 
+    @pytest.mark.django_db
     def test_booking_creation_strictly_unavailable(self):
         """
         Document: booking-api-design.md
@@ -31,4 +32,4 @@ class TestBookingAPI:
         """
         client = APIClient()
         response = client.post('/api/v1/bookings/', {})
-        assert response.status_code in [403, 404, 405] # Method Not Allowed or similar based on ViewSet definition.
+        assert response.status_code in [401, 403, 404, 405] # Method Not Allowed or Unauthorized

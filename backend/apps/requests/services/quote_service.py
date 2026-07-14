@@ -190,6 +190,16 @@ class QuoteService:
             )
             latest_quote.status = QuoteStatus.APPROVED
             latest_quote.save()
+            
+            if upfront_req:
+                from apps.orders.services.order_service import OrderService
+                OrderService.create_order_from_quote(
+                    actor=actor,
+                    correlation_id=correlation_id,
+                    request_id=request.id,
+                    customer_id=actor.id,
+                    quote_amount=latest_quote.amount
+                )
 
             # CORRECTION: Explicit fields in metadata
             log_action(

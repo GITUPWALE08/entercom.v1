@@ -1,5 +1,5 @@
 import pytest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 from apps.bookings.websockets.event_dispatcher import BookingWebSocketDispatcher
 from apps.bookings.events.base import BaseBookingEvent
 from apps.bookings.events.types import BookingEventName
@@ -28,13 +28,14 @@ class TestWebSocketIntegration:
         
         BookingWebSocketDispatcher.dispatch(event)
         
+        mock_get_layer.assert_called_once()
         mock_async.assert_called_once()
         args, kwargs = mock_async.call_args
         # Verify it routes to the correct channel layer method
         assert args[0] == mock_layer.group_send
 
     @patch('apps.websocket.consumers.RequestConsumer._is_authorized_for_request')
-    @pytest.mark.asyncio
+    @pytest.mark.anyio
     async def test_unauthorized_rejection_and_reassignment_eviction(self, mock_auth):
         """
         Document: booking-test-strategy.md
@@ -48,7 +49,7 @@ class TestWebSocketIntegration:
             pytest.skip("Channels/WebSocket framework not fully configured for unit testing. Validating architectural contract.")
 
         consumer = RequestConsumer()
-        consumer.channel_layer = MagicMock()
+        consumer.channel_layer = AsyncMock()
         consumer.channel_name = "test_channel"
         consumer.subscribed_groups = {"request_req_123"}
         

@@ -8,6 +8,8 @@ class PaymentPermissions:
     VIEW = 'payment.view'
     CANCEL = 'payment.cancel'
     RECONCILE = 'payment.reconcile'
+    REFUND = 'payment.refund'
+    ESCALATE = 'payment.escalate'
 
 class WebhookPermissions:
     PROCESS = 'webhook.process'
@@ -43,6 +45,19 @@ class PaymentPermissionChecker(BasePermissionChecker):
             
         elif permission == PaymentPermissions.RECONCILE:
             cls.require_role(actor, [Role.MANAGER, Role.SUPERADMIN])
+            return True
+            
+        elif permission == PaymentPermissions.REFUND:
+            cls.require_role(actor, [Role.MANAGER, Role.SUPERADMIN])
+            if payment:
+                if payment.status != PaymentStatus.PAID:
+                    raise PermissionDenied("Can only refund a paid payment.")
+            return True
+            
+        elif permission == PaymentPermissions.ESCALATE:
+            cls.require_role(actor, [Role.CUSTOMER, Role.STAFF, Role.MANAGER, Role.SUPERADMIN])
+            if payment and actor.role == Role.CUSTOMER and str(payment.customer_id) != str(actor.id):
+                raise PermissionDenied("Cannot escalate another customer's payment.")
             return True
             
         elif permission == WebhookPermissions.PROCESS:

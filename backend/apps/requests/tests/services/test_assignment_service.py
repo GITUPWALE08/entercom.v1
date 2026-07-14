@@ -9,15 +9,15 @@ User = get_user_model()
 
 @pytest.fixture
 def customer_user(db):
-    return User.objects.create(email="customer@test.com", role="customer")
+    return User.objects.create(email="customer@test.com", role="CUSTOMER")
 
 @pytest.fixture
 def staff_user(db):
-    return User.objects.create(email="staff@test.com", role="staff")
+    return User.objects.create(email="staff@test.com", role="STAFF")
 
 @pytest.fixture
 def tech_user(db):
-    return User.objects.create(email="tech@test.com", role="technician")
+    return User.objects.create(email="tech@test.com", role="TECHNICIAN")
 
 @pytest.fixture
 def awaiting_assignment_request(customer_user):
@@ -79,7 +79,7 @@ class TestAssignmentService:
         )
         assert req.status == LifecycleState.AWAITING_ASSIGNMENT
         
-        tech2 = User.objects.create(email="tech2@test.com", role="technician")
+        tech2 = User.objects.create(email="tech2@test.com", role="TECHNICIAN")
         # Re-assign to tech2
         req = AssignmentService.assign(
             request_id=req.id,

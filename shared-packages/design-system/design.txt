@@ -1,0 +1,225 @@
+Step 1
+Foundation Integration
+
+This isn't generating pages.
+
+It's making the existing website capable of becoming a portal.
+
+Things like:
+
+React Router
+Folder structure
+Providers
+Axios
+React Query
+Zustand
+Authentication provider
+Route guards
+API client
+Shared layouts
+Shared UI
+
+Once that's stable,
+
+everything else becomes much easier.
+
+Step 2
+
+Authentication
+
+Login
+Logout
+Refresh
+Protected routes
+Session persistence
+Role routing
+Step 3
+
+Customer Portal
+
+This is the biggest module.
+
+Implement in order:
+
+Dashboard
+
+Requests
+
+Request Details
+
+Quotes
+
+Bookings
+
+Products
+
+Cart
+
+Checkout
+
+Orders
+
+Payments
+
+Profile
+Step 4
+
+Staff Portal
+
+Dashboard
+
+Requests
+
+Assignment
+
+Verification
+
+Products
+
+Inventory
+
+Orders
+
+Payments
+Step 5
+
+Manager Portal
+
+Dashboard
+
+Escalations
+
+Technicians
+
+Inventory
+
+Payments
+
+Analytics
+Step 6
+
+Admin Portal
+
+Dashboard
+
+Audit Logs
+
+System
+
+Configuration
+Step 7
+
+Shared Components
+
+Only after every portal exists:
+
+Skeleton loaders
+Toasts
+Empty states
+Error pages
+Tables
+Cards
+Forms
+Filters
+Search
+Pagination
+Step 8
+
+Final Integration
+
+Then perform:
+
+RBAC audit
+API audit
+React Query audit
+Responsiveness audit
+Accessibility audit
+UX audit
+
+4. Build Mobile App From Web Components
+
+Reuse:
+
+Design System
+API Map
+RBAC Map
+Business Flows
+
+Stack:
+
+Flutter
+
+Because the web version already solved:
+
+Forms
+Validation
+API integration
+Navigation
+RBAC
+
+Cursor will spend far fewer runs.
+
+5. Full Integration + UAT
+
+Test:
+
+Customer Flow
+
+Login
+Request
+Booking
+Order
+Payment
+
+Staff Flow
+
+Manage Products
+Manage Orders
+
+Manager Flow
+
+Inventory
+Approvals
+
+System Flow
+
+Webhook
+Payments
+Events
+
+Output:
+
+frontend-integration-report.md
+uat-report.md
+production-readiness-report.md
+What to give Cursor first
+
+Instead of:
+
+Here's our website URL
+
+give:
+
+Navbar code
+Hero code
+Footer code
+Tailwind config
+Global styles
+
+That is much better.
+
+You remove:
+
+AI guessing
+AI scraping
+AI interpretation
+
+and force it to build exactly from your existing brand.
+
+For a free Cursor agent, this is probably the most token-efficient path possible:
+
+1. Design System Extraction
+2. Frontend Architecture
+3. Web App
+4. Mobile App
+5. Integration Testing

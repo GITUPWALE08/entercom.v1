@@ -7,6 +7,7 @@ from apps.authentication.serializers.auth_serializers import (
     LoginSerializer,
     LogoutSerializer,
     RefreshSerializer,
+    RegisterSerializer,
     UserSummarySerializer,
 )
 from apps.authentication.services.auth_service import AuthService
@@ -43,6 +44,44 @@ class LoginView(APIView):
                 },
             },
             status=status.HTTP_200_OK,
+        )
+
+        
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(",")[0]
+        else:
+            ip = request.META.get("REMOTE_ADDR")
+        return ip
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthAnonRateThrottle]
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        request_metadata = {
+            "ip_address": self.get_client_ip(request),
+            "user_agent": request.META.get("HTTP_USER_AGENT", ""),
+        }
+
+        user, refresh = AuthService.register(
+            data=serializer.validated_data,
+            request_metadata=request_metadata,
+        )
+
+        return Response(
+            {
+                "user": UserSummarySerializer(user).data,
+                "tokens": {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                },
+            },
+            status=status.HTTP_201_CREATED,
         )
 
     def get_client_ip(self, request):

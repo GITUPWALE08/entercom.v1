@@ -1,7 +1,8 @@
-from typing import Dict, List, Optional
+from typing import List, Optional
 from .states import RequestState
 from .actions import RequestAction
-from .transitions import TRANSITIONS, Transition
+from .context import RequestContext
+from .transitions import TRANSITIONS, Transition, TriggerType
 from .exceptions import (
     InvalidTransitionError,
     PermissionDeniedTransitionError,
@@ -9,8 +10,15 @@ from .exceptions import (
 )
 
 class RequestStateMachine:
-    def __init__(self, current_state: RequestState):
-        self.current_state = current_state
+    def __init__(self, current_state):
+        if current_state is None:
+            raise ValueError("State cannot be None")
+        if hasattr(current_state, "value"):
+            current_state = current_state.value
+        try:
+            self.current_state = RequestState(current_state)
+        except ValueError:
+            raise ValueError(f"Invalid state: {current_state}")
 
     def _get_transitions_for_state(self, state: RequestState) -> List[Transition]:
         return [t for t in TRANSITIONS if t.source == state]
@@ -18,14 +26,27 @@ class RequestStateMachine:
     def get_allowed_transitions(self) -> List[Transition]:
         return self._get_transitions_for_state(self.current_state)
 
-    def transition(self, action: RequestAction, user_permissions: List[str], context: Dict = None, target_state: Optional[RequestState] = None) -> RequestState:
+    def get_allowed_automatic_transitions(self, context: RequestContext) -> List[Transition]:
+        """
+        Discovers all valid automatic or system transitions from the current state.
+        This allows the Orchestrator to dynamically progress the state machine
+        without hardcoded knowledge of actions.
+        """
+        valid_transitions = []
+        for t in self.get_allowed_transitions():
+            if t.trigger_type in [TriggerType.AUTOMATIC, TriggerType.SYSTEM, TriggerType.SCHEDULED]:
+                if t.guard is None or t.guard(context):
+                    valid_transitions.append(t)
+        return valid_transitions
+
+    def transition(self, action: RequestAction, user_permissions: List[str], context: RequestContext, target_state: Optional[RequestState] = None) -> RequestState:
         """
         Executes a state transition based on the provided action.
         
         Args:
             action: The action triggering the transition.
             user_permissions: A list of permission strings the actor holds.
-            context: A dictionary containing data needed for guard conditions.
+            context: A strongly typed RequestContext object containing data needed for guard conditions.
             target_state: (Optional) The specific target state if the action has multiple possible targets (e.g., resolve_escalation).
             
         Returns:
@@ -36,8 +57,12 @@ class RequestStateMachine:
             PermissionDeniedTransitionError: If the actor lacks the required permission.
             GuardConditionFailedError: If a guard condition fails.
         """
-        if context is None:
-            context = {}
+        if not isinstance(context, RequestContext):
+            # Fallback for legacy compatibility during refactor, convert to dict if possible
+            if isinstance(context, dict):
+                context = RequestContext(**context)
+            else:
+                context = RequestContext()
 
         allowed_transitions = [t for t in self.get_allowed_transitions() if t.action == action]
 

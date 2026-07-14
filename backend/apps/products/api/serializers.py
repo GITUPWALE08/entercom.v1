@@ -28,13 +28,41 @@ class ProductSerializer(serializers.Serializer):
     sku = serializers.CharField()
     description = serializers.CharField(allow_null=True)
     price = serializers.DecimalField(source='unit_price', max_digits=10, decimal_places=2)
-    quantity_available = serializers.IntegerField()
-    low_stock_threshold = serializers.IntegerField()
+    quantity_available = serializers.SerializerMethodField()
+    low_stock_threshold = serializers.SerializerMethodField()
     attributes = serializers.JSONField(allow_null=True)
     status = serializers.CharField()
     images = ProductImageSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField()
     updated_at = serializers.DateTimeField()
+
+    def get_quantity_available(self, obj):
+        request = self.context.get('request')
+        if request:
+            from apps.products.api.views import get_actor
+            from apps.products.permissions import ProductPermissionChecker
+            from django.core.exceptions import PermissionDenied
+            actor = get_actor(request)
+            try:
+                ProductPermissionChecker.check(actor, 'inventory.view')
+                return obj.quantity_available
+            except PermissionDenied:
+                pass
+        return 1 if obj.quantity_available > 0 else 0
+
+    def get_low_stock_threshold(self, obj):
+        request = self.context.get('request')
+        if request:
+            from apps.products.api.views import get_actor
+            from apps.products.permissions import ProductPermissionChecker
+            from django.core.exceptions import PermissionDenied
+            actor = get_actor(request)
+            try:
+                ProductPermissionChecker.check(actor, 'inventory.view')
+                return obj.low_stock_threshold
+            except PermissionDenied:
+                pass
+        return None
 
 class ProductCreateSerializer(serializers.Serializer):
     category = serializers.UUIDField(required=True)

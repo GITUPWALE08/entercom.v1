@@ -114,6 +114,30 @@ class InventoryService:
             InventoryService._emit_low_stock(actor, correlation_id, product)
 
     @staticmethod
+    @transaction.atomic
+    def update_threshold(actor, correlation_id, product_id, new_threshold):
+        require_permission(actor, 'inventory.manage')
+        product = Product.objects.select_for_update().filter(id=product_id).first()
+        if not product:
+            raise ValidationError("Product not found.")
+            
+        old_threshold = product.low_stock_threshold
+        product.low_stock_threshold = new_threshold
+        product.save()
+
+        audit_logger.log(
+            action='inventory.threshold_updated',
+            actor_id=actor.id,
+            actor_type=resolve_actor_type(actor),
+            correlation_id=correlation_id,
+            metadata={
+                'product_id': str(product.id),
+                'old_threshold': old_threshold,
+                'new_threshold': new_threshold
+            }
+        )
+
+    @staticmethod
     def _emit_low_stock(actor, correlation_id, product):
         audit_logger.log(
             action='inventory.low_stock',

@@ -23,6 +23,7 @@ ROLE_PERMISSIONS: Dict[Role, Set[Permission]] = {
         Permission.REQUEST_CANCEL,
         Permission.QUOTE_CREATE,
         Permission.VERIFICATION_VERIFY,
+        Permission.REQUEST_UPDATE,
     },
     Role.MANAGER: {
         Permission.REQUEST_ESCALATE,
@@ -30,6 +31,7 @@ ROLE_PERMISSIONS: Dict[Role, Set[Permission]] = {
         Permission.VERIFICATION_OVERRIDE,
         Permission.REQUEST_CANCEL_ACTIVE,
         Permission.REQUEST_CANCEL,
+        Permission.REQUEST_UPDATE,
     },
     Role.SUPERADMIN: {
         Permission.SYSTEM_OVERRIDE,

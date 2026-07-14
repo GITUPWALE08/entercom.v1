@@ -12,27 +12,27 @@ User = get_user_model()
 
 @pytest.fixture
 def customer_a(db):
-    return User.objects.create(email="customer_a@test.com", role="customer")
+    return User.objects.create(email="customer_a@test.com", role="CUSTOMER")
 
 @pytest.fixture
 def customer_b(db):
-    return User.objects.create(email="customer_b@test.com", role="customer")
+    return User.objects.create(email="customer_b@test.com", role="CUSTOMER")
 
 @pytest.fixture
 def tech_assigned(db):
-    return User.objects.create(email="tech_assigned@test.com", role="technician")
+    return User.objects.create(email="tech_assigned@test.com", role="TECHNICIAN")
 
 @pytest.fixture
 def tech_unassigned(db):
-    return User.objects.create(email="tech_unassigned@test.com", role="technician")
+    return User.objects.create(email="tech_unassigned@test.com", role="TECHNICIAN")
 
 @pytest.fixture
 def staff_user(db):
-    return User.objects.create(email="staff_auth@test.com", role="staff")
+    return User.objects.create(email="staff_auth@test.com", role="STAFF")
 
 @pytest.fixture
 def manager_user(db):
-    return User.objects.create(email="manager_auth@test.com", role="manager")
+    return User.objects.create(email="manager_auth@test.com", role="MANAGER")
 
 @pytest.fixture
 def base_request(customer_a, tech_assigned):

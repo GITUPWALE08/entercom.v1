@@ -25,7 +25,7 @@ This document covers:
 * `order.create`
 * `order.cancel`
 * `order.fulfill`
-* `order.override_fulfillment`
+* ``
 
 ## 6. Role Matrix
 

@@ -3,16 +3,32 @@ from unittest.mock import patch, MagicMock
 from django.utils import timezone
 from datetime import timedelta
 import uuid
+from django.contrib.auth import get_user_model
+from apps.requests.models.request import Request
+User = get_user_model()
 
 from apps.bookings.models.booking import Booking
 from apps.bookings.tasks.no_show_tasks import run_no_show_monitor
 from apps.bookings.tasks.reminder_tasks import run_reminder_dispatcher
 
-@pytest.mark.django_db
+@pytest.mark.django_db(transaction=True)
 class TestBookingBackgroundJobs:
 
-    def setUp(self):
-        pass
+
+    def setup_method(self, method=None):
+        self.tech_user = User.objects.create(email=f"tech_{uuid.uuid4()}@test.com")
+        
+    def create_request(self):
+        return Request.objects.create(
+            public_id=f"REQ-{uuid.uuid4()}",
+            customer=self.tech_user,
+            category="installation",
+            priority="normal",
+            status="draft",
+            description="test",
+            assigned_technician=self.tech_user
+        )
+
 
     @patch('apps.bookings.tasks.no_show_tasks.NoShowService.report_no_show')
     def test_no_show_monitor_2_hour_threshold(self, mock_report):
@@ -20,8 +36,8 @@ class TestBookingBackgroundJobs:
         
         # Booking 1: 3 hours ago -> Should be picked up
         b1 = Booking.objects.create(
-            request_id=uuid.uuid4(),
-            technician_id=1, # Mock ID
+            request_id=self.create_request().id,
+            technician_id=self.tech_user.id, # Mock ID
             status=Booking.Status.SCHEDULED,
             start_time=now - timedelta(hours=3),
             end_time=now - timedelta(hours=2)
@@ -29,8 +45,8 @@ class TestBookingBackgroundJobs:
         
         # Booking 2: 1 hour ago -> Should NOT be picked up
         b2 = Booking.objects.create(
-            request_id=uuid.uuid4(),
-            technician_id=1,
+            request_id=self.create_request().id,
+            technician_id=self.tech_user.id,
             status=Booking.Status.SCHEDULED,
             start_time=now - timedelta(hours=1),
             end_time=now + timedelta(hours=1)
@@ -38,8 +54,8 @@ class TestBookingBackgroundJobs:
 
         # Booking 3: Already processed (NO_SHOW) -> Should NOT be picked up
         b3 = Booking.objects.create(
-            request_id=uuid.uuid4(),
-            technician_id=1,
+            request_id=self.create_request().id,
+            technician_id=self.tech_user.id,
             status=Booking.Status.NO_SHOW,
             start_time=now - timedelta(hours=4),
             end_time=now - timedelta(hours=3)
@@ -59,8 +75,8 @@ class TestBookingBackgroundJobs:
 
         # 24h reminder booking (starts 23.5 hours from now)
         b_24 = Booking.objects.create(
-            request_id=uuid.uuid4(),
-            technician_id=1,
+            request_id=self.create_request().id,
+            technician_id=self.tech_user.id,
             status=Booking.Status.SCHEDULED,
             start_time=now + timedelta(hours=23, minutes=30),
             end_time=now + timedelta(hours=24, minutes=30)
@@ -68,8 +84,8 @@ class TestBookingBackgroundJobs:
 
         # 3h reminder booking (starts 2.5 hours from now)
         b_3 = Booking.objects.create(
-            request_id=uuid.uuid4(),
-            technician_id=1,
+            request_id=self.create_request().id,
+            technician_id=self.tech_user.id,
             status=Booking.Status.SCHEDULED,
             start_time=now + timedelta(hours=2, minutes=30),
             end_time=now + timedelta(hours=3, minutes=30)
@@ -109,8 +125,8 @@ class TestBookingBackgroundJobs:
 
         # A booking that had a 24h reminder sent 21 hours ago
         b_3 = Booking.objects.create(
-            request_id=uuid.uuid4(),
-            technician_id=1,
+            request_id=self.create_request().id,
+            technician_id=self.tech_user.id,
             status=Booking.Status.SCHEDULED,
             start_time=now + timedelta(hours=2, minutes=30),
             end_time=now + timedelta(hours=3, minutes=30),
