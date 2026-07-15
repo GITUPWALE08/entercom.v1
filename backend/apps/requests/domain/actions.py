@@ -26,3 +26,4 @@ class RequestAction(str, Enum):
     CANCEL_ACTIVE = "cancel_active"
     ESCALATE = "escalate"
     RESOLVE_ESCALATION = "resolve_escalation"
+    CLOSE_DIRECT = "close_direct"  # Staff closes information/support request directly from staff_review

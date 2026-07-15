@@ -35,6 +35,12 @@ def _category_skips_quote(context: RequestContext) -> bool:
 def _category_skips_quote_and_payment(context: RequestContext) -> bool:
     return not context.category_requires_quote and not context.category_requires_payment
 
+def _category_allows_direct_close(context: RequestContext) -> bool:
+    """information and support requests may be resolved directly by staff without technician assignment.
+    Ref: docs/workflows/request-lifecycle.md §17
+    """
+    return context.category in {"information", "support"}
+
 def _has_valid_quote_version(context: RequestContext) -> bool:
     return context.has_valid_quote_version
 
@@ -97,6 +103,7 @@ TRANSITIONS = [
     Transition(RequestState.STAFF_REVIEW, RequestAction.NEEDS_QUOTE, RequestState.AWAITING_QUOTE, "request.triage", TriggerType.MANUAL, _category_requires_quote),
     Transition(RequestState.STAFF_REVIEW, RequestAction.REQUIRE_PAYMENT, RequestState.AWAITING_PAYMENT, "request.triage", TriggerType.MANUAL, _category_skips_quote),
     Transition(RequestState.STAFF_REVIEW, RequestAction.ASSIGN_DIRECTLY, RequestState.AWAITING_ASSIGNMENT, "request.triage", TriggerType.MANUAL, _category_skips_quote_and_payment),
+    Transition(RequestState.STAFF_REVIEW, RequestAction.CLOSE_DIRECT, RequestState.COMPLETED, "request.triage", TriggerType.MANUAL, _category_allows_direct_close),
     Transition(RequestState.AWAITING_QUOTE, RequestAction.ISSUE_QUOTE, RequestState.AWAITING_CUSTOMER_APPROVAL, "quote.create", TriggerType.MANUAL, _has_valid_quote_version),
     Transition(RequestState.AWAITING_CUSTOMER_APPROVAL, RequestAction.APPROVE_QUOTE_PAYMENT_REQ, RequestState.AWAITING_PAYMENT, "quote.approve", TriggerType.MANUAL, _upfront_payment_required),
     Transition(RequestState.AWAITING_CUSTOMER_APPROVAL, RequestAction.APPROVE_QUOTE_NO_PAYMENT, RequestState.AWAITING_ASSIGNMENT, "quote.approve", TriggerType.MANUAL, _no_upfront_payment_required),

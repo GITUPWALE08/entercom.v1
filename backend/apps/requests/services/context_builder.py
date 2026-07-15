@@ -10,18 +10,36 @@ class ContextProvider(Protocol):
 class CoreContextProvider:
     def build(self, request: Request, context: RequestContext) -> None:
         context.requires_technician = request.requires_technician
+        context.category = request.category
         context.has_valid_schema = True  # Assuming validated at creation
         context.staff_assigned = True # Used as a dummy guard for PICK_UP
 
 class PolicyContextProvider:
+    # Canonical policy matrices — authoritative source: prompt.txt decisions (2026-07-14)
+    # Workflow Catalog is the new source of truth over stale architecture docs.
+    PAYMENT_REQUIRED_CATEGORIES = {
+        'installation',
+        'maintenance',
+        'product_order',
+        'consultation',
+    }
+    VERIFICATION_REQUIRED_CATEGORIES = {
+        'installation',
+        'maintenance',
+        'consultation',
+        'device_outage',
+        'warranty',
+    }
+    QUOTE_REQUIRED_CATEGORIES = {
+        'installation',
+        'maintenance',
+    }
+
     def build(self, request: Request, context: RequestContext) -> None:
         category = request.category
-        # Replace hardcoded rules with category checks. 
-        # In a real implementation, this would query a CategoryPolicy service.
-        context.category_requires_quote = category in ['installation', 'maintenance']
-        context.category_requires_payment = category in ['product_order', 'consultation']
-        # If it doesn't require a technician, it typically doesn't require verification
-        context.category_requires_verification = request.requires_technician
+        context.category_requires_quote = category in self.QUOTE_REQUIRED_CATEGORIES
+        context.category_requires_payment = category in self.PAYMENT_REQUIRED_CATEGORIES
+        context.category_requires_verification = category in self.VERIFICATION_REQUIRED_CATEGORIES
 
 class OrderContextProvider:
     def build(self, request: Request, context: RequestContext) -> None:
@@ -44,8 +62,9 @@ class QuoteContextProvider:
             context.has_valid_quote_version = True
             context.quote_approved = quote.status.lower() == 'approved'
             context.quote_rejected = quote.status.lower() == 'rejected'
-            # Assuming policy: upfront payment required if quote is approved and policy demands it
-            context.upfront_payment_required = context.category_requires_payment
+        # upfront_payment_required is driven by policy, not quote presence.
+        # A fixed-price category (e.g. consultation) requires payment even without a quote.
+        context.upfront_payment_required = context.category_requires_payment
 
 class AssignmentContextProvider:
     def build(self, request: Request, context: RequestContext) -> None:

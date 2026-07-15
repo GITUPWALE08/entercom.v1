@@ -145,3 +145,17 @@ class VerificationReviewSerializer(serializers.Serializer):
 
 class EscalationSerializer(serializers.Serializer):
     reason = serializers.CharField(required=True)
+
+
+class EscalationResolveSerializer(serializers.Serializer):
+    VALID_TARGET_STATES = ['awaiting_assignment', 'in_progress', 'assigned', 'cancelled']
+    target_state = serializers.ChoiceField(
+        choices=VALID_TARGET_STATES,
+        required=True,
+        help_text="State to route the request to after resolving the escalation."
+    )
+    resolution_type = serializers.CharField(
+        required=False,
+        default="MANUAL",
+        help_text="Short description of how the escalation was resolved."
+    )

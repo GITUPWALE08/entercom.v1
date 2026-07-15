@@ -6,6 +6,8 @@ class RequestContext:
     """Strongly typed business facts required for state transition evaluation."""
     # Core Facts
     requires_technician: bool = False
+    category: str = ""  # Raw category string from the request
+
     
     # Validation Facts
     has_valid_schema: bool = False

@@ -10,7 +10,7 @@ from .serializers import (
     CreateRequestSerializer, UpdateRequestSerializer, AssignTechnicianSerializer, 
     DeclineAssignmentSerializer, CancelRequestSerializer, CreateQuoteSerializer, 
     CustomerQuoteActionSerializer, SubmitVerificationSerializer, 
-    VerificationReviewSerializer, EscalationSerializer,
+    VerificationReviewSerializer, EscalationSerializer, EscalationResolveSerializer,
     RequestListSerializer, QuoteListSerializer
 )
 from .permissions import GenericRBACPermission
@@ -51,11 +51,13 @@ class RequestViewSet(viewsets.ViewSet):
         'partial_update': Permission.REQUEST_UPDATE,
         'submit': Permission.REQUEST_SUBMIT,
         'pickup': Permission.REQUEST_TRIAGE,
+        'triage_action': Permission.REQUEST_TRIAGE,
         'assign': Permission.REQUEST_ASSIGN,
         'accept': Permission.ASSIGNMENT_ACCEPT,
         'decline': Permission.ASSIGNMENT_DECLINE,
         'cancel': Permission.REQUEST_CANCEL,
         'escalate': Permission.REQUEST_ESCALATE,
+        'resolve_escalation': Permission.ESCALATION_RESOLVE,
     }
 
     @property
@@ -272,6 +274,69 @@ class RequestViewSet(viewsets.ViewSet):
             import traceback
             traceback.print_exc()
             logger.error(f"Service error: {e}")
+            return error_response("Unexpected error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @extend_schema(summary="Resolve Escalation", request=EscalationResolveSerializer, responses={200: OpenApiResponse(description="Success"), 400: OpenApiResponse(description="Validation Error"), 403: OpenApiResponse(description="Forbidden")})
+    @action(detail=True, methods=['post'], url_path='resolve-escalation')
+    def resolve_escalation(self, request, pk=None):
+        """Manager resolves an escalation and routes the request to the chosen target state."""
+        obj = self.get_object()
+        self.check_object_permissions(request, obj)
+        serializer = EscalationResolveSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response("Validation failed", serializer.errors)
+        try:
+            result = EscalationService.resolve(
+                request_id=pk,
+                actor=request.user,
+                target_state=serializer.validated_data['target_state'],
+                resolution_type=serializer.validated_data.get('resolution_type', 'MANUAL'),
+            )
+            return success_response(
+                "Escalation resolved successfully",
+                {"id": str(result.id), "status": result.status}
+            )
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            logger.error(f"Resolve escalation error: {e}")
+            return error_response("Unexpected error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+    @extend_schema(summary="Triage Action", request=UpdateRequestSerializer, responses={200: OpenApiResponse(description="Success"), 400: OpenApiResponse(description="Validation Error")})
+    @action(detail=True, methods=['post'], url_path='triage')
+    def triage_action(self, request, pk=None):
+        """Staff triage decisions: needs_quote, require_payment, assign_directly, close_direct."""
+        obj = self.get_object()
+        self.check_object_permissions(request, obj)
+        serializer = UpdateRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return error_response("Validation failed", serializer.errors)
+        action_value = serializer.validated_data.get('action')
+        if not action_value:
+            return error_response("'action' field is required", status_code=status.HTTP_400_BAD_REQUEST)
+        TRIAGE_ACTIONS = {'needs_quote', 'require_payment', 'assign_directly', 'close_direct'}
+        if action_value not in TRIAGE_ACTIONS:
+            return error_response(
+                f"Invalid triage action '{action_value}'. Must be one of: {', '.join(TRIAGE_ACTIONS)}",
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            from apps.requests.domain.actions import RequestAction
+            result = RequestService.triage(
+                request_id=pk,
+                actor=request.user,
+                action=RequestAction(action_value)
+            )
+            return success_response("Triage decision applied", {"id": str(result.id), "status": result.status})
+        except DomainException as e:
+            return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            logger.error(f"Triage error: {e}")
             return error_response("Unexpected error", status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 

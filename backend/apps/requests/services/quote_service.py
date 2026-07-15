@@ -176,7 +176,9 @@ class QuoteService:
         correlation_id = str(uuid.uuid4())
 
         if action_type == "approve":
-            upfront_req = request.category in ["installation", "product_order"]
+            # Canonical payment-required categories — must stay in sync with PolicyContextProvider
+            PAYMENT_REQUIRED_CATEGORIES = {"installation", "maintenance", "product_order", "consultation"}
+            upfront_req = request.category in PAYMENT_REQUIRED_CATEGORIES
             action = (
                 RequestAction.APPROVE_QUOTE_PAYMENT_REQ
                 if upfront_req
@@ -293,6 +295,15 @@ class QuoteService:
             correlation_id=correlation_id,
             reason=reason,
         )
+
+        # Drive any subsequent automatic transitions (e.g. quote approved → no payment needed
+        # → orchestrator moves to awaiting_assignment automatically).
+        # Must run after save so context builder sees the updated state.
+        from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
+        try:
+            RequestProcessOrchestrator.sync(request.id)
+        except Exception as exc:
+            logger.error(f"Orchestrator sync failed after quote action on request {request.id}: {exc}")
 
         return request
 

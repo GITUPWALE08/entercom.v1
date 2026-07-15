@@ -24,6 +24,7 @@ ROLE_PERMISSIONS: Dict[Role, Set[Permission]] = {
         Permission.QUOTE_CREATE,
         Permission.VERIFICATION_VERIFY,
         Permission.REQUEST_UPDATE,
+        Permission.REQUEST_ESCALATE,  # Staff may manually escalate per request-permissions.md §5.3
     },
     Role.MANAGER: {
         Permission.REQUEST_ESCALATE,

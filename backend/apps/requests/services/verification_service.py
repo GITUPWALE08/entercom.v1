@@ -245,4 +245,12 @@ class VerificationService:
             reason=notes,
         )
 
+        # Drive any subsequent automatic transitions after verification decision.
+        # For approve/override this moves request to completed; orchestrator confirms all gates are met.
+        from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
+        try:
+            RequestProcessOrchestrator.sync(request.id)
+        except Exception as exc:
+            logger.error(f"Orchestrator sync failed after verification action on request {request.id}: {exc}")
+
         return request
