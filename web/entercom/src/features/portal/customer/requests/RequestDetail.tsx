@@ -7,6 +7,7 @@ import { PageContainer } from '../../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
 import { Card, CardContent, ConfirmationDialog } from '../../../../shared/components/ui';
 import { Skeleton } from '../../../../shared/components/Skeleton';
+import { StatusBadge } from '../../../../shared/components/ui/StatusBadge';
 import { WorkflowBanner, WorkflowTimeline, WorkflowCard, resolveWorkflowState } from '../../../../shared/components/workflow';
 import { useEffect } from 'react';
 
@@ -243,7 +244,7 @@ export default function RequestDetail() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Technician Required</h3>
-                    <p className="text-sm text-gray-900">{request.requires_technician ? 'Yes' : 'No'}</p>
+                    <p className="text-sm text-gray-900">{(request as any).requires_technician ? 'Yes' : 'No'}</p>
                   </div>
                   <div className="sm:col-span-2">
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Description</h3>
@@ -263,7 +264,7 @@ export default function RequestDetail() {
                       <div>
                         <h3 className="text-sm font-medium text-gray-500 mb-1">Order Status</h3>
                         <div className="flex items-center gap-3">
-                          <StatusBadge status={request.order_status || 'unknown'} />
+                          <StatusBadge status={(request as any).order_status || 'unknown'} />
                           <Link 
                             to={`/portal/customer/orders/${request.order_id}`}
                             className="text-sm font-medium text-ess-purple hover:underline"
@@ -277,7 +278,7 @@ export default function RequestDetail() {
                       <div>
                         <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Status</h3>
                         <div className="flex items-center gap-3">
-                          <StatusBadge status={request.payment_status || 'unknown'} />
+                          <StatusBadge status={(request as any).payment_status || 'unknown'} />
                           <Link 
                             to={`/portal/customer/payments/${request.payment_id}`}
                             className="text-sm font-medium text-ess-purple hover:underline"

@@ -110,15 +110,10 @@ TEMPLATES = [
 ]
 
 DATABASES = {
-    
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'entercom',
-        'USER': 'postgres',  # Change from 'entercom' to 'postgres'
-        'PASSWORD': 'wale@0811',
-        'HOST': 'localhost',
-        'PORT': '5432',
-    }
+    "default": env.db(
+        "DATABASE_URL",
+        default="postgresql://postgres:password@localhost:5432/entercom"
+    )
 }
 
 AUTH_PASSWORD_VALIDATORS = [

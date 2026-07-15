@@ -15,7 +15,7 @@ const requestSchema = z.object({
   addressLine1: z.string().min(1, 'Address is required'),
   city: z.string().min(1, 'City is required'),
   postalCode: z.string().min(1, 'Postal code is required'),
-  requiresTechnician: z.boolean().default(false),
+  requiresTechnician: z.boolean(),
 });
 
 type RequestFormValues = z.infer<typeof requestSchema>;

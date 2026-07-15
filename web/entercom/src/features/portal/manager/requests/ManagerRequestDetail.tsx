@@ -19,7 +19,6 @@ export default function ManagerRequestDetail() {
   const [cancelReason, setCancelReason] = useState('');
   const [showResolve, setShowResolve] = useState(false);
   const [resolveTarget, setResolveTarget] = useState<'awaiting_assignment' | 'in_progress' | 'cancelled'>('awaiting_assignment');
-  const [resolveNotes, setResolveNotes] = useState('');
 
   const { data: request, isLoading } = useQuery({
     queryKey: ['requests', id],
@@ -56,7 +55,6 @@ export default function ManagerRequestDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['requests', id] });
       setShowResolve(false);
-      setResolveNotes('');
     },
     onError: (err: any) => alert(err.response?.data?.message || 'Failed to resolve escalation'),
   });
