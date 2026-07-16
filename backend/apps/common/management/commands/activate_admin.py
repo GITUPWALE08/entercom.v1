@@ -9,15 +9,15 @@ class Command(BaseCommand):
         User = get_user_model()
         
         # Pull from environment, fallback to defaults if env fails
-        username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'entercom_admin')
+        # username = os.environ.get('DJANGO_SUPERUSER_USERNAME', 'entercom_admin')
         email = os.environ.get('DJANGO_SUPERUSER_EMAIL', 'entercom@gmail.com')
         password = os.environ.get('DJANGO_SUPERUSER_PASSWORD', 'entercom01')
 
         # 1. Get or Create the user
         admin_user, created = User.objects.get_or_create(
-            username=username, 
-            defaults={'email': email}
+            email= email
         )
+
 
         # 2. Force the password (Bypasses similarity validators)
         admin_user.set_password(password)
