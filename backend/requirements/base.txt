@@ -9,7 +9,6 @@ drf-spectacular>=0.28,<0.29
 
 # Auth
 djangorestframework-simplejwt>=5.3,<5.4
-djangorestframework==3.16.1
 
 # Async / realtime
 channels[daphne]>=4.0,<5
