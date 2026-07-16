@@ -1,95 +1,128 @@
-You are a Senior Django Architect and Full Stack Engineer working on the Entercom platform.
+# Entercom Notification & WebSocket Production Readiness Audit
 
-You are entering a SYSTEM AUDIT phase.
+You are a Senior Django Architect, Distributed Systems Engineer, and Frontend Architect performing a comprehensive implementation audit of the Entercom platform.
 
-DO NOT implement anything yet.
+Your task is NOT to redesign the system.
 
-Your first responsibility is to audit the current notification and realtime architecture before making changes.
-
----
-
-# OBJECTIVE
-
-Perform a COMPLETE audit of the notification system and websocket infrastructure across the entire monorepo.
-
-This is an implementation audit only.
-
-Do NOT redesign architecture.
-
-Do NOT invent features.
-
-Do NOT skip any module.
+Your task is to audit what currently exists, identify implementation gaps, and produce a production readiness report.
 
 ---
 
-# PROJECT STRUCTURE
+## Context
 
-Monorepo
+The project already contains:
 
-backend/
-web/entercom/
+* Django
+* Django Channels
+* Celery
+* Redis
+* Notification models
+* Notification preferences
+* Notification delivery tracking
+* WebSocket consumers
+* Frontend notification UI
+* React Query
+* WebSocket provider
+* Domain events
+
+The system is intended to support:
+
+* Persistent notification inbox
+* Realtime websocket updates
+* Email notifications
+* Push notifications
+* Future SMS notifications
 
 ---
 
-# AUTHORITATIVE ARCHITECTURE
+# Audit Objectives
 
-Treat the existing architecture, workflows and implementation documents as the source of truth.
+Perform a complete audit across BOTH backend and frontend.
 
-Never contradict them.
+Do not assume anything.
 
-If implementation differs from architecture, report it.have forgotten I haven't 
+Inspect the entire repository.
 
 ---
 
-# PHASE 1 — BACKEND AUDIT
+# BACKEND AUDIT
 
 Audit every notification-related component.
 
-Search all apps including but not limited to:
-
-apps/notification
-
-apps/websocket
-
-apps/requests
-
-apps/orders
-
-apps/payments
-
-apps/bookings
-
-apps/audit
-
-apps/users
-
-apps/authentication
-
-core/
-
-config/
-
-Audit for:
+Include:
 
 ## Domain Events
 
-List every event currently published.
+Identify:
 
-For each event identify
+* All publishers
+* All consumers
+* Missing publishers
+* Missing consumers
+* Event vocabulary
+* Event ownership
 
-* producer
-* payload
-* consumers
+List every event.
 
-Report:
+Example:
 
-Missing events
+request.created
 
-Duplicate events
+request.assigned
 
-Unused events
+booking.scheduled
 
-Incorrect events
+payment.completed
+
+quote.created
+
+verification.approved
+
+etc.
+
+---
+
+## Notification Pipeline
+
+Trace the complete lifecycle.
+
+Example:
+
+Business Action
+
+↓
+
+Domain Event
+
+↓
+
+Event Bus
+
+↓
+
+Notification Creation
+
+↓
+
+Delivery Creation
+
+↓
+
+WebSocket
+
+↓
+
+Email
+
+↓
+
+Push
+
+↓
+
+Frontend
+
+Identify exactly where the pipeline breaks.
 
 ---
 
@@ -99,57 +132,25 @@ Audit:
 
 Notification
 
-NotificationPreference
+NotificationDelivery
 
-NotificationChannel
+NotificationPreference
 
 NotificationTemplate
 
-NotificationDelivery
+Delivery Status
 
-NotificationLog
+Retention
 
-Unread counters
+Read Status
 
-Read tracking
+Soft Delete
 
-Soft delete
-
-Indexes
-
-Relationships
-
-Missing fields
+Archiving
 
 ---
 
-## Notification Service
-
-Audit:
-
-NotificationService
-
-NotificationDispatcher
-
-Channel Router
-
-Template Resolver
-
-Preference Resolver
-
-Delivery Tracker
-
-Retry mechanism
-
-Failure handling
-
-Queue integration
-
-Idempotency
-
----
-
-## WebSocket Infrastructure
+## WebSocket Architecture
 
 Audit:
 
@@ -157,35 +158,37 @@ Channels
 
 Consumers
 
-Routing
-
 Authentication
-
-Permission checks
-
-Room naming
-
-Connection lifecycle
-
-Presence
-
-Reconnect support
-
-Heartbeat
-
-Subscription model
-
-Broadcast architecture
-
-Event serialization
 
 Authorization
 
-Redis integration
+Connection Manager
 
-Channel Layers
+Heartbeat
 
-Disconnect handling
+Reconnect
+
+Role isolation
+
+Tenant isolation
+
+Subscription model
+
+Broadcast model
+
+Private channels
+
+Group channels
+
+Request-specific channels
+
+Booking-specific channels
+
+Notification channels
+
+System channels
+
+Identify missing channels.
 
 ---
 
@@ -193,320 +196,215 @@ Disconnect handling
 
 Audit:
 
-Notification tasks
+Queues
+
+Tasks
+
+Retries
+
+Dead Letter handling
+
+Delivery monitoring
+
+Email tasks
+
+Push tasks
+
+Cleanup tasks
 
 Retry tasks
 
-Background delivery
-
-Queue separation
-
-Scheduled notifications
-
-Dead-letter handling
+Unused tasks
 
 ---
 
-## Signals
-
-Audit every signal.
+## Email
 
 Determine:
 
-Which ones publish events
+Current provider
 
-Which ones should publish events
+Mock implementation
 
-Duplicate work
+Real implementation
 
-Missing work
+Template support
 
----
+Background sending
 
-## API
+Retry logic
 
-Audit notification APIs.
+Open tracking (if any)
 
-List:
-
-Unread count endpoint
-
-Notification list endpoint
-
-Mark read
-
-Mark all read
-
-Delete notification
-
-Preferences
-
-WebSocket token endpoint
-
-Subscription endpoint
-
-Missing APIs
+Failure handling
 
 ---
 
-## Security
+## Push Notifications
+
+Determine:
+
+Current implementation
+
+Firebase support
+
+Device registration
+
+Token lifecycle
+
+Missing implementation
+
+---
+
+## SMS
+
+Determine:
+
+Whether SMS exists.
+
+Whether it is required.
+
+If not required,
+
+justify why.
+
+If required,
+
+identify where it should integrate.
+
+---
+
+# FRONTEND AUDIT
 
 Audit:
 
-Permission enforcement
+Notification Bell
 
-Cross-user leakage
+Notification Center
 
-Tenant isolation
+Toast Notifications
 
-WebSocket authorization
+React Query invalidation
 
-Notification ownership
+Realtime refresh
 
----
+Unread counts
 
-# PHASE 2 — FRONTEND AUDIT
+Read status
 
-Audit everything notification-related.
+Infinite scrolling
 
-Search:
+Pagination
 
-hooks/
+Filtering
 
-services/
-
-pages/
-
-components/
-
-contexts/
-
-stores/
-
-providers/
-
-Audit:
-
-Notification Context
-
-Notification Store
+Notification preferences
 
 WebSocket Provider
-
-Realtime Service
 
 Reconnect logic
 
 Heartbeat
 
-Notification Bell
-
-Unread Badge
-
-Notification Drawer
-
-Notification Page
-
-Toast Notifications
-
-Realtime Request Updates
-
-Realtime Order Updates
-
-Realtime Assignment Updates
-
-Realtime Quote Updates
-
-Realtime Verification Updates
-
-Realtime Escalation Updates
-
-Realtime Payment Updates
-
-Realtime Booking Updates
-
-Realtime Audit Updates
-
-Loading states
-
 Offline handling
 
-Error handling
+Background tab handling
 
-Retry
+Duplicate prevention
 
-Optimistic updates
-
-Memory leaks
-
-Subscription cleanup
+Missing realtime events
 
 ---
 
-# PHASE 3 — END-TO-END FLOW AUDIT
+# END TO END FLOWS
 
-Verify every workflow.
+Audit every user flow.
 
 Customer
 
-Request created
-
-Quote received
-
-Quote approved
-
-Payment required
-
-Payment received
-
-Booking scheduled
-
-Technician assigned
-
-Technician arrived
-
-Work started
-
-Verification requested
-
-Completed
-
-Cancelled
-
-Escalated
-
-Refund
-
-Warranty
-
-Information request
-
-Support request
-
-Device outage
-
----
+Technician
 
 Staff
 
-New request
-
-Claim request
-
-Assignment accepted
-
-Assignment declined
-
-Escalation
-
-Verification approval
-
-Verification rejection
-
-Manager intervention
-
-SLA warning
-
-SLA breach
-
-Payment issue
-
-Order fulfilled
-
----
-
-Technician
-
-Assignment
-
-Quote requested
-
-Quote approved
-
-Verification required
-
-Booking reminder
-
-Escalation
-
-Cancellation
-
----
-
 Manager
 
-Escalation
+Admin
 
-Manual approval
+For every flow indicate
 
-SLA breach
+Realtime
 
-High priority request
-
-Audit events
-
----
-
-# PHASE 4 — CHANNEL AUDIT
-
-Determine exactly which events should be delivered through:
-
-WebSocket
-
-In-App Notification
+Inbox
 
 Email
 
+Push
+
 SMS
-
-For every event explain WHY.
-
-Do not assume.
 
 Example:
 
-Quote ready
+Request Created
 
-WebSocket ✓
+Realtime ✅
 
-In-app ✓
+Inbox ❌
 
-Email ✓
+Email ❌
 
-SMS ✗
+Push ❌
 
-Reason:
-Customer may be offline but approval is important.
-
----
-
-# PHASE 5 — GAP ANALYSIS
-
-Produce:
-
-Already implemented
-
-Partially implemented
-
-Incorrect implementation
-
-Missing implementation
-
-Architecture mismatch
-
-Security issues
-
-Performance issues
-
-Scalability issues
-
-Technical debt
+SMS N/A
 
 ---
 
-# PHASE 6 — IMPLEMENTATION ROADMAP
+# SECURITY AUDIT
 
-Produce a prioritized roadmap.
+Review:
+
+JWT authentication
+
+First-frame auth
+
+Permission checks
+
+Resource ownership
+
+Channel authorization
+
+Tenant isolation
+
+Notification privacy
+
+Event leakage
+
+Replay protection
+
+---
+
+# PERFORMANCE AUDIT
+
+Evaluate:
+
+Redis usage
+
+Channel fan-out
+
+Notification queries
+
+N+1 queries
+
+Inbox pagination
+
+Delivery batching
+
+Celery throughput
+
+---
+
+# IMPLEMENTATION GAPS
+
+Produce a prioritized backlog.
 
 Priority 1
 
@@ -518,72 +416,64 @@ Missing realtime
 
 Priority 3
 
-Notification Center
+Email
 
 Priority 4
 
-Email integration
+Push
 
 Priority 5
 
-SMS integration
-
-Priority 6
-
-Push notification support
+SMS (only if justified)
 
 ---
 
-# EMAIL & SMS EVALUATION
+# PRODUCTION READINESS SCORE
 
-Evaluate whether email and SMS are required for MVP.
+Score each subsystem from 1–10:
 
-Provide recommendations.
+Domain Events
 
-Do not automatically recommend SMS.
+Notification Pipeline
 
-Use the business workflows.
+WebSockets
 
-Determine which events genuinely require:
+Frontend
 
 Email
 
+Push
+
 SMS
 
-Only WebSocket
-
-Only In-App
+Overall Production Readiness
 
 ---
 
-# OUTPUT FORMAT
+# DELIVERABLE
 
-Produce a structured report.
+Produce:
 
 1. Executive Summary
 
-2. Backend Audit
+2. Current Architecture
 
-3. Frontend Audit
+3. Backend Audit
 
-4. End-to-End Flow Audit
+4. Frontend Audit
 
 5. Event Catalog
 
-6. Channel Mapping
+6. Notification Flow Diagram
 
-7. Security Audit
+7. Security Findings
 
-8. Missing Features
+8. Performance Findings
 
-9. Recommended Improvements
+9. Missing Features
 
-10. Implementation Roadmap
+10. Prioritized Implementation Roadmap
 
-Do NOT modify code.
+Do not invent functionality.
 
-Do NOT generate code.
-
-Do NOT implement anything until the audit is complete.
-
-The audit must be exhaustive and production-grade.
+Base every conclusion on the repository.
