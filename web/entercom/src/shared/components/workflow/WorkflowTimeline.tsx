@@ -1,6 +1,4 @@
 import React from 'react';
-import { Timeline } from '../ui/Timeline';
-
 interface WorkflowTimelineProps {
   currentStatus: string;
   historyEvents: Array<{
@@ -10,21 +8,6 @@ interface WorkflowTimelineProps {
   }>;
 }
 
-const ALL_STATES = [
-  'draft',
-  'submitted',
-  'staff_review',
-  'awaiting_quote',
-  'awaiting_customer_approval',
-  'awaiting_payment',
-  'awaiting_assignment',
-  'assigned',
-  'in_progress',
-  'pending_verification',
-  'escalated',
-  'completed',
-  'cancelled'
-];
 
 export const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({ currentStatus, historyEvents }) => {
   // We can enrich the history with upcoming states based on a typical linear flow,

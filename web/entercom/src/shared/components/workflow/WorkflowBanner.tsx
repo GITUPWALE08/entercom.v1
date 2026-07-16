@@ -1,5 +1,5 @@
 import React from 'react';
-import { WorkflowResolution } from './WorkflowResolver';
+import type { WorkflowResolution } from './WorkflowResolver';
 
 interface WorkflowBannerProps {
   resolution: WorkflowResolution;
@@ -26,13 +26,6 @@ export const WorkflowBanner: React.FC<WorkflowBannerProps> = ({ resolution, onAc
     default: 'text-gray-800'
   };
 
-  const iconColors = {
-    info: 'text-blue-500',
-    warning: 'text-yellow-500',
-    error: 'text-red-500',
-    success: 'text-green-500',
-    default: 'text-gray-500'
-  };
 
   return (
     <div className={`p-6 rounded-2xl border ${bgColors[severity]} relative overflow-hidden shadow-sm mb-8`}>

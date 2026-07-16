@@ -1,12 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { bookingsApi, BookingItem } from '../../../../api/bookings';
+import { bookingsApi } from '../../../../api/bookings';
+import type { BookingItem } from '../../../../api/bookings';
 import { usersApi } from '../../../../api/users';
 import { PageContainer } from '../../../../shared/components/PageContainer';
 import { Skeleton } from '../../../../shared/components/Skeleton';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
-import { DataTable, StatusBadge, Input, Select } from '../../../../shared/components/ui';
+import { DataTable, StatusBadge, Input } from '../../../../shared/components/ui';
 
 export default function StaffBookings() {
   const queryClient = useQueryClient();

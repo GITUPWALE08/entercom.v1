@@ -1,4 +1,4 @@
-import { RequestItem } from '../../../api/requests';
+import type { RequestItem } from '../../../api/requests';
 
 export interface WorkflowAction {
   id: string;

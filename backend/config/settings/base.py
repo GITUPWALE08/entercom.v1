@@ -1,5 +1,6 @@
 from datetime import timedelta
 from pathlib import Path
+import dj_database_url
 
 import environ, os
 
@@ -15,7 +16,14 @@ environ.Env.read_env(BASE_DIR / ".env", overwrite=False)
 
 SECRET_KEY = env("SECRET_KEY", default="unsafe-dev-secret-change-me")
 DEBUG = env.bool("DEBUG", default=False)
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "flinch-fabulous-freehand.ngrok-free.dev"])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", 
+                         default=[
+                             "localhost", 
+                             "127.0.0.1", 
+                             ".onrender.com",
+                             "https://entercom-v1.onrender.com", 
+                             "entercom-v1.onrender.com"
+                             ])
 
 ENABLE_SPECTACULAR = env.bool("ENABLE_SPECTACULAR", default=True)
 
@@ -86,6 +94,8 @@ CORS_ALLOWED_ORIGINS = [
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "https://*.onrender.com",
+    "https://entercom-v1.onrender.com",
+    FRONTEND_URL,
 ]
 
 
@@ -109,10 +119,22 @@ TEMPLATES = [
     },
 ]
 
+# DATABASES = {
+#     "default": env.db(
+#         "DATABASE_URL",
+#         default="postgresql://postgres:password@localhost:5432/entercom"
+#     )
+# }
+
 DATABASES = {
-    "default": env.db(
-        "DATABASE_URL",
-        default="postgresql://postgres:password@localhost:5432/entercom"
+    'default': dj_database_url.config(
+        default=os.environ.get(
+            'DATABASE_URL',
+            'postgresql://postgres:Supawale%400811@db.bthvlmwzjwryepeugwqw.supabase.co:5432/postgres'
+        ),
+        conn_max_age=0,
+        conn_health_checks=True, # This ensures that Supabase's pooler handles the connections
+        ssl_require= True,
     )
 }
 
@@ -144,10 +166,12 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 AUTH_USER_MODEL = "users.User"
 
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:5173')
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = env.list(
     "CORS_ALLOWED_ORIGINS",
-    default=["http://localhost:5173", "http://127.0.0.1:5173"],
+    default=[FRONTEND_URL, "http://localhost:5173", "http://127.0.0.1:5173"],
 )
 
 REST_FRAMEWORK = {
@@ -187,13 +211,51 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
+# REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+if os.environ.get('RENDER'):
+    REDIS_URL = os.environ.get('REDIS_URL')
+
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+                "capacity": 1500,
+                "expiry": 10,
+            },
+        },
     }
-}
+
+    CACHES = {
+        "default": {
+            "BACKEND": "django_redis.cache.RedisCache",
+            "LOCATION": REDIS_URL,
+            "OPTIONS": {
+                "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            }
+        }
+    }
+
+else:
+    # Local dev fallback
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer"
+        }
+    }
+
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache"
+        }
+    }
+
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer",
+#     }
+# }
 
 
 

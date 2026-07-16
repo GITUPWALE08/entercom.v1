@@ -7,7 +7,7 @@ import { useWebsocket } from '../../../../hooks/useWebsocket';
 import { PageContainer } from '../../../../shared/components/PageContainer';
 import { Skeleton } from '../../../../shared/components/Skeleton';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
-import { Input, TextArea, Select, ConfirmationDialog } from '../../../../shared/components/ui';
+import { Input, TextArea, Select } from '../../../../shared/components/ui';
 import { WorkflowBanner, WorkflowTimeline, WorkflowCard, resolveWorkflowState } from '../../../../shared/components/workflow';
 
 
@@ -76,11 +76,7 @@ export default function StaffRequestDetail() {
     },
   });
 
-  const updateMutation = useMutation({
-    mutationFn: (action: string) => requestsApi.update(id!, { action }),
-    onSuccess: invalidate,
-    onError: (err: any) => alert(err.response?.data?.message || 'Action failed'),
-  });
+
 
   const triageMutation = useMutation({
     mutationFn: (action: 'needs_quote' | 'require_payment' | 'assign_directly' | 'close_direct') =>

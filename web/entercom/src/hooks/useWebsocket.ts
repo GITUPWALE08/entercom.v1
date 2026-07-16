@@ -1,17 +1,15 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../store/authStore';
-
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 const WS_BASE_URL = BASE_URL.replace('/api/v1', '').replace(/^http/, 'ws');
 
 export function useWebsocket(channel: 'system' | 'requests' = 'requests') {
   const queryClient = useQueryClient();
-  const { token } = useAuthStore();
   const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
 
   const connect = useCallback(() => {
+    const token = localStorage.getItem('access_token');
     if (!token) return;
 
     // Build the WebSocket URL with authentication
@@ -80,7 +78,7 @@ export function useWebsocket(channel: 'system' | 'requests' = 'requests') {
       }
 
       // Try reconnecting after a delay
-      reconnectTimeoutRef.current = setTimeout(() => {
+      reconnectTimeoutRef.current = window.setTimeout(() => {
         connect();
       }, 5000);
     };
@@ -88,7 +86,7 @@ export function useWebsocket(channel: 'system' | 'requests' = 'requests') {
     ws.onerror = (error) => {
       console.error(`[WebSocket] Error on ${channel}`, error);
     };
-  }, [channel, token, queryClient]);
+  }, [channel, queryClient]);
 
   useEffect(() => {
     connect();
