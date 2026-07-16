@@ -1,30 +1,589 @@
-got this error on vercel, fix these errors only ONLY FIX THESE ERRORS NOT ANY OTHER THING
+You are a Senior Django Architect and Full Stack Engineer working on the Entercom platform.
 
-  Types of parameters 'options' and 'options' are incompatible.
-    Type 'ResolverOptions<{ category: string; description: string; addressLine1: string; city: string; postalCode: string; requiresTechnician: boolean; }>' is not assignable to type 'ResolverOptions<{ category: string; description: string; addressLine1: string; city: string; postalCode: string; requiresTechnician?: boolean | undefined; }>'.
-      Type 'boolean | undefined' is not assignable to type 'boolean'.
-        Type 'undefined' is not assignable to type 'boolean'.
-src/features/portal/customer/requests/CreateRequest.tsx(75,40): error TS2345: Argument of type '(data: RequestFormValues) => void' is not assignable to parameter of type 'SubmitHandler<TFieldValues>'.
-  Types of parameters 'data' and 'data' are incompatible.
-    Type 'TFieldValues' is not assignable to type '{ category: string; description: string; addressLine1: string; city: string; postalCode: string; requiresTechnician: boolean; }'.
-      Type 'FieldValues' is missing the following properties from type '{ category: string; description: string; addressLine1: string; city: string; postalCode: string; requiresTechnician: boolean; }': category, description, addressLine1, city, and 2 more.
-src/features/portal/customer/requests/RequestDetail.tsx(246,67): error TS2339: Property 'requires_technician' does not exist on type 'RequestItem'.
-src/features/portal/customer/requests/RequestDetail.tsx(266,28): error TS2552: Cannot find name 'StatusBadge'. Did you mean 'statusbar'?
-src/features/portal/customer/requests/RequestDetail.tsx(266,56): error TS2339: Property 'order_status' does not exist on type 'RequestItem'.
-src/features/portal/customer/requests/RequestDetail.tsx(266,28): error TS2552: Cannot find name 'StatusBadge'. Did you mean 'statusbar'?
-src/features/portal/customer/requests/RequestDetail.tsx(266,56): error TS2339: Property 'order_status' does not exist on type 'RequestItem'.
-src/features/portal/customer/requests/RequestDetail.tsx(280,28): error TS2552: Cannot find name 'StatusBadge'. Did you mean 'statusbar'?
-src/features/portal/customer/requests/RequestDetail.tsx(280,56): error TS2339: Property 'payment_status' does not exist on type 'RequestItem'.
-src/features/portal/manager/requests/ManagerRequestDetail.tsx(22,10): error TS6133: 'resolveNotes' is declared but its value is never read.
-src/features/portal/staff/bookings/StaffBookings.tsx(4,23): error TS1484: 'BookingItem' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/features/portal/staff/bookings/StaffBookings.tsx(9,41): error TS6133: 'Select' is declared but its value is never read.
-src/features/portal/staff/requests/StaffRequestDetail.tsx(10,35): error TS6133: 'ConfirmationDialog' is declared but its value is never read.
-src/features/portal/staff/requests/StaffRequestDetail.tsx(79,9): error TS6133: 'updateMutation' is declared but its value is never read.
-src/hooks/useWebsocket.ts(10,11): error TS2339: Property 'token' does not exist on type 'AuthState'.
-src/hooks/useWebsocket.ts(12,38): error TS2503: Cannot find namespace 'NodeJS'.
-src/shared/components/workflow/WorkflowBanner.tsx(2,10): error TS1484: 'WorkflowResolution' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/shared/components/workflow/WorkflowBanner.tsx(29,9): error TS6133: 'iconColors' is declared but its value is never read.
-src/shared/components/workflow/WorkflowResolver.ts(1,10): error TS1484: 'RequestItem' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/shared/components/workflow/WorkflowTimeline.tsx(2,1): error TS6133: 'Timeline' is declared but its value is never read.
-src/shared/components/workflow/WorkflowTimeline.tsx(13,7): error TS6133: 'ALL_STATES' is declared but its value is never read.
-Error: Command "npm run build" exited with 2
+You are entering a SYSTEM AUDIT phase.
+
+DO NOT implement anything yet.
+
+Your first responsibility is to audit the current notification and realtime architecture before making changes.
+
+---
+
+# OBJECTIVE
+
+Perform a COMPLETE audit of the notification system and websocket infrastructure across the entire monorepo.
+
+This is an implementation audit only.
+
+Do NOT redesign architecture.
+
+Do NOT invent features.
+
+Do NOT skip any module.
+
+---
+
+# PROJECT STRUCTURE
+
+Monorepo
+
+backend/
+web/entercom/
+
+---
+
+# AUTHORITATIVE ARCHITECTURE
+
+Treat the existing architecture, workflows and implementation documents as the source of truth.
+
+Never contradict them.
+
+If implementation differs from architecture, report it.have forgotten I haven't 
+
+---
+
+# PHASE 1 — BACKEND AUDIT
+
+Audit every notification-related component.
+
+Search all apps including but not limited to:
+
+apps/notification
+
+apps/websocket
+
+apps/requests
+
+apps/orders
+
+apps/payments
+
+apps/bookings
+
+apps/audit
+
+apps/users
+
+apps/authentication
+
+core/
+
+config/
+
+Audit for:
+
+## Domain Events
+
+List every event currently published.
+
+For each event identify
+
+* producer
+* payload
+* consumers
+
+Report:
+
+Missing events
+
+Duplicate events
+
+Unused events
+
+Incorrect events
+
+---
+
+## Notification Models
+
+Audit:
+
+Notification
+
+NotificationPreference
+
+NotificationChannel
+
+NotificationTemplate
+
+NotificationDelivery
+
+NotificationLog
+
+Unread counters
+
+Read tracking
+
+Soft delete
+
+Indexes
+
+Relationships
+
+Missing fields
+
+---
+
+## Notification Service
+
+Audit:
+
+NotificationService
+
+NotificationDispatcher
+
+Channel Router
+
+Template Resolver
+
+Preference Resolver
+
+Delivery Tracker
+
+Retry mechanism
+
+Failure handling
+
+Queue integration
+
+Idempotency
+
+---
+
+## WebSocket Infrastructure
+
+Audit:
+
+Channels
+
+Consumers
+
+Routing
+
+Authentication
+
+Permission checks
+
+Room naming
+
+Connection lifecycle
+
+Presence
+
+Reconnect support
+
+Heartbeat
+
+Subscription model
+
+Broadcast architecture
+
+Event serialization
+
+Authorization
+
+Redis integration
+
+Channel Layers
+
+Disconnect handling
+
+---
+
+## Celery
+
+Audit:
+
+Notification tasks
+
+Retry tasks
+
+Background delivery
+
+Queue separation
+
+Scheduled notifications
+
+Dead-letter handling
+
+---
+
+## Signals
+
+Audit every signal.
+
+Determine:
+
+Which ones publish events
+
+Which ones should publish events
+
+Duplicate work
+
+Missing work
+
+---
+
+## API
+
+Audit notification APIs.
+
+List:
+
+Unread count endpoint
+
+Notification list endpoint
+
+Mark read
+
+Mark all read
+
+Delete notification
+
+Preferences
+
+WebSocket token endpoint
+
+Subscription endpoint
+
+Missing APIs
+
+---
+
+## Security
+
+Audit:
+
+Permission enforcement
+
+Cross-user leakage
+
+Tenant isolation
+
+WebSocket authorization
+
+Notification ownership
+
+---
+
+# PHASE 2 — FRONTEND AUDIT
+
+Audit everything notification-related.
+
+Search:
+
+hooks/
+
+services/
+
+pages/
+
+components/
+
+contexts/
+
+stores/
+
+providers/
+
+Audit:
+
+Notification Context
+
+Notification Store
+
+WebSocket Provider
+
+Realtime Service
+
+Reconnect logic
+
+Heartbeat
+
+Notification Bell
+
+Unread Badge
+
+Notification Drawer
+
+Notification Page
+
+Toast Notifications
+
+Realtime Request Updates
+
+Realtime Order Updates
+
+Realtime Assignment Updates
+
+Realtime Quote Updates
+
+Realtime Verification Updates
+
+Realtime Escalation Updates
+
+Realtime Payment Updates
+
+Realtime Booking Updates
+
+Realtime Audit Updates
+
+Loading states
+
+Offline handling
+
+Error handling
+
+Retry
+
+Optimistic updates
+
+Memory leaks
+
+Subscription cleanup
+
+---
+
+# PHASE 3 — END-TO-END FLOW AUDIT
+
+Verify every workflow.
+
+Customer
+
+Request created
+
+Quote received
+
+Quote approved
+
+Payment required
+
+Payment received
+
+Booking scheduled
+
+Technician assigned
+
+Technician arrived
+
+Work started
+
+Verification requested
+
+Completed
+
+Cancelled
+
+Escalated
+
+Refund
+
+Warranty
+
+Information request
+
+Support request
+
+Device outage
+
+---
+
+Staff
+
+New request
+
+Claim request
+
+Assignment accepted
+
+Assignment declined
+
+Escalation
+
+Verification approval
+
+Verification rejection
+
+Manager intervention
+
+SLA warning
+
+SLA breach
+
+Payment issue
+
+Order fulfilled
+
+---
+
+Technician
+
+Assignment
+
+Quote requested
+
+Quote approved
+
+Verification required
+
+Booking reminder
+
+Escalation
+
+Cancellation
+
+---
+
+Manager
+
+Escalation
+
+Manual approval
+
+SLA breach
+
+High priority request
+
+Audit events
+
+---
+
+# PHASE 4 — CHANNEL AUDIT
+
+Determine exactly which events should be delivered through:
+
+WebSocket
+
+In-App Notification
+
+Email
+
+SMS
+
+For every event explain WHY.
+
+Do not assume.
+
+Example:
+
+Quote ready
+
+WebSocket ✓
+
+In-app ✓
+
+Email ✓
+
+SMS ✗
+
+Reason:
+Customer may be offline but approval is important.
+
+---
+
+# PHASE 5 — GAP ANALYSIS
+
+Produce:
+
+Already implemented
+
+Partially implemented
+
+Incorrect implementation
+
+Missing implementation
+
+Architecture mismatch
+
+Security issues
+
+Performance issues
+
+Scalability issues
+
+Technical debt
+
+---
+
+# PHASE 6 — IMPLEMENTATION ROADMAP
+
+Produce a prioritized roadmap.
+
+Priority 1
+
+Critical blockers
+
+Priority 2
+
+Missing realtime
+
+Priority 3
+
+Notification Center
+
+Priority 4
+
+Email integration
+
+Priority 5
+
+SMS integration
+
+Priority 6
+
+Push notification support
+
+---
+
+# EMAIL & SMS EVALUATION
+
+Evaluate whether email and SMS are required for MVP.
+
+Provide recommendations.
+
+Do not automatically recommend SMS.
+
+Use the business workflows.
+
+Determine which events genuinely require:
+
+Email
+
+SMS
+
+Only WebSocket
+
+Only In-App
+
+---
+
+# OUTPUT FORMAT
+
+Produce a structured report.
+
+1. Executive Summary
+
+2. Backend Audit
+
+3. Frontend Audit
+
+4. End-to-End Flow Audit
+
+5. Event Catalog
+
+6. Channel Mapping
+
+7. Security Audit
+
+8. Missing Features
+
+9. Recommended Improvements
+
+10. Implementation Roadmap
+
+Do NOT modify code.
+
+Do NOT generate code.
+
+Do NOT implement anything until the audit is complete.
+
+The audit must be exhaustive and production-grade.
