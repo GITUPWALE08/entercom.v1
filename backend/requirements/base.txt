@@ -9,6 +9,7 @@ drf-spectacular>=0.28,<0.29
 
 # Auth
 djangorestframework-simplejwt>=5.3,<5.4
+djangorestframework==3.16.1
 
 # Async / realtime
 channels[daphne]>=4.0,<5
@@ -17,6 +18,7 @@ channels-redis>=4.2,<5
 # Workers & cache
 celery[redis]>=5.4,<5.5
 redis>=5.0,<6
+django-redis
 
 # Database
 psycopg[binary]>=3.2,<3.3
