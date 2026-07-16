@@ -25,3 +25,6 @@ dj-database-url==3.1.0
 
 # ASGI server (production composition via Render; local dev)
 uvicorn[standard]>=0.32,<0.33
+
+# static
+whitenoise
