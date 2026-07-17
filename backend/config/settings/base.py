@@ -64,6 +64,7 @@ THIRD_PARTY_APPS = [
     "channels",
     "drf_spectacular",
     # "django_extensions",
+    "django_celery_beat",
 ]
 
 INSTALLED_APPS = LOCAL_APPS + THIRD_PARTY_APPS
@@ -256,6 +257,7 @@ if REDIS_URL:
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"
     CELERY_TIMEZONE = TIME_ZONE
+    CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
     CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 else:
@@ -301,11 +303,20 @@ AUDIT_ALERT_EMAILS=[
 ...
 ]
 
+# CELERY_BEAT_SCHEDULE = {
+#     "audit-retention-daily": {
+#         "task": "audit_logs.run_retention",
+#         "schedule": timedelta(days=1),
+#         "kwargs": {"dry_run": False},
+#     },
+# }
+
+from celery.schedules import crontab
+
 CELERY_BEAT_SCHEDULE = {
-    "audit-retention-daily": {
-        "task": "audit_logs.run_retention",
-        "schedule": timedelta(days=1),
-        "kwargs": {"dry_run": False},
+    "beat-test": {
+        "task": "apps.audit_logs.tasks.trace_probe",
+        "schedule": timedelta(minutes=1),
     },
 }
 

@@ -18,6 +18,7 @@ channels-redis>=4.2,<5
 celery[redis]>=5.4,<5.5
 redis>=5.0,<6
 django-redis
+django-celery-beat
 
 # Database
 psycopg[binary]>=3.2,<3.3
