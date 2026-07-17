@@ -220,7 +220,7 @@ REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 if REDIS_URL:
     CHANNEL_LAYERS = {
         "default": {
-            "BACKEND": "channels_redis.core.RedisChannelLayer"
+            "BACKEND": "channels_redis.core.RedisChannelLayer",
             "CONFIG": {
                 "hosts": [REDIS_URL],
                 "capacity": 1500,
