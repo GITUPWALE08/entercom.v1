@@ -1,5 +1,6 @@
 from datetime import timedelta
 from pathlib import Path
+import ssl
 import dj_database_url
 
 import environ, os
@@ -242,12 +243,20 @@ if REDIS_URL:
     # 3. Set the broker/backend to memory (to satisfy Celery's internal checks)
     CELERY_BROKER_URL = REDIS_URL
     CELERY_RESULT_BACKEND = REDIS_URL
+    CELERY_BROKER_USE_SSL = {
+        "ssl_cert_reqs": ssl.CERT_NONE,
+    }
+
+    CELERY_REDIS_BACKEND_USE_SSL = {
+        "ssl_cert_reqs": ssl.CERT_NONE,
+    }
     CELERY_TASK_ALWAYS_EAGER = DEBUG
     CELERY_TASK_EAGER_PROPAGATES = DEBUG
     CELERY_ACCEPT_CONTENT = ["json"]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"
     CELERY_TIMEZONE = TIME_ZONE
+    CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 
 else:
     # Local dev fallback
