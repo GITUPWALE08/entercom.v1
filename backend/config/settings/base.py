@@ -303,22 +303,14 @@ AUDIT_ALERT_EMAILS=[
 ...
 ]
 
-# CELERY_BEAT_SCHEDULE = {
-#     "audit-retention-daily": {
-#         "task": "audit_logs.run_retention",
-#         "schedule": timedelta(days=1),
-#         "kwargs": {"dry_run": False},
-#     },
-# }
-
-from celery.schedules import crontab
-
 CELERY_BEAT_SCHEDULE = {
-    "beat-test": {
-        "task": "apps.audit_logs.tasks.trace_probe",
-        "schedule": timedelta(minutes=1),
+    "audit-retention-daily": {
+        "task": "audit_logs.run_retention",
+        "schedule": timedelta(days=1),
+        "kwargs": {"dry_run": False},
     },
 }
+
 
 SUPABASE_URL = env("SUPABASE_URL", default="")
 SUPABASE_SERVICE_ROLE_KEY = env("SUPABASE_SERVICE_ROLE_KEY", default="")
