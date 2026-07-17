@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notificationsApi } from '../api/notifications';
 import type { Notification, NotificationPreference } from '../api/notifications';
 
@@ -8,18 +8,34 @@ export const NOTIFICATIONS_PREFERENCES_KEY = ['notifications', 'preferences'];
 export function useNotifications() {
   const queryClient = useQueryClient();
 
-  const query = useQuery({
+  const query = useInfiniteQuery({
     queryKey: NOTIFICATIONS_KEY,
-    queryFn: notificationsApi.getNotifications,
-    refetchInterval: 30000, // Poll every 30 seconds for now until WebSockets are integrated
+    queryFn: ({ pageParam = 0 }) => notificationsApi.getNotifications(pageParam, 20),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      if (lastPage.next) {
+        return allPages.length * 20;
+      }
+      return undefined;
+    },
   });
+
+  const notifications = query.data?.pages.flatMap(p => p.results) || [];
 
   const markAsRead = useMutation({
     mutationFn: notificationsApi.markAsRead,
     onSuccess: (updatedNotification) => {
-      queryClient.setQueryData<Notification[]>(NOTIFICATIONS_KEY, (old) => {
-        if (!old) return [];
-        return old.map(n => n.id === updatedNotification.id ? updatedNotification : n);
+      queryClient.setQueryData(NOTIFICATIONS_KEY, (data: any) => {
+        if (!data) return data;
+        return {
+          ...data,
+          pages: data.pages.map((page: any) => ({
+            ...page,
+            results: page.results.map((n: Notification) => 
+              n.id === updatedNotification.id ? updatedNotification : n
+            )
+          }))
+        };
       });
     },
   });
@@ -27,21 +43,48 @@ export function useNotifications() {
   const archive = useMutation({
     mutationFn: notificationsApi.archive,
     onSuccess: (updatedNotification) => {
-      queryClient.setQueryData<Notification[]>(NOTIFICATIONS_KEY, (old) => {
-        if (!old) return [];
-        return old.map(n => n.id === updatedNotification.id ? updatedNotification : n);
+      queryClient.setQueryData(NOTIFICATIONS_KEY, (data: any) => {
+        if (!data) return data;
+        return {
+          ...data,
+          pages: data.pages.map((page: any) => ({
+            ...page,
+            results: page.results.map((n: Notification) => 
+              n.id === updatedNotification.id ? updatedNotification : n
+            )
+          }))
+        };
       });
     },
   });
 
+  const markAllRead = useMutation({
+    mutationFn: notificationsApi.markAllRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
+    },
+  });
+
+  const archiveAll = useMutation({
+    mutationFn: notificationsApi.archiveAll,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
+    },
+  });
+
   return {
-    notifications: query.data || [],
+    notifications,
     isLoading: query.isLoading,
     isError: query.isError,
     error: query.error,
+    fetchNextPage: query.fetchNextPage,
+    hasNextPage: query.hasNextPage,
+    isFetchingNextPage: query.isFetchingNextPage,
     markAsRead,
     archive,
-    unreadCount: (query.data || []).filter(n => !n.read_at).length
+    markAllRead,
+    archiveAll,
+    unreadCount: query.data?.pages[0]?.count || notifications.filter(n => !n.read_at).length
   };
 }
 

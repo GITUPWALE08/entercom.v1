@@ -32,6 +32,15 @@ def _extract_token(scope: dict) -> Optional[str]:
     auth_header = _header(scope, "authorization")
     if auth_header.lower().startswith("bearer "):
         return auth_header[7:].strip()
+        
+    protocol_header = _header(scope, "sec-websocket-protocol")
+    if protocol_header:
+        parts = [p.strip() for p in protocol_header.split(',')]
+        if len(parts) == 2 and parts[0] == "access_token":
+            return parts[1]
+        elif len(parts) == 1 and len(parts[0]) > 20:
+            return parts[0]
+            
     return None
 
 

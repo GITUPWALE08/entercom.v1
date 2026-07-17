@@ -1,126 +1,179 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
+import { useToastStore } from '../shared/components/ui/toastStore';
+
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
 const WS_BASE_URL = BASE_URL.replace('/api/v1', '').replace(/^http/, 'ws');
 
-export function useWebsocket(channel: 'system' | 'requests' = 'requests') {
-  const queryClient = useQueryClient();
-  const wsRef = useRef<WebSocket | null>(null);
-  const reconnectTimeoutRef = useRef<number | null>(null);
+// SINGLETON STATE
+let globalWs: WebSocket | null = null;
+let subscribers = 0;
+let reconnectAttempt = 0;
+let reconnectTimeout: number | null = null;
+let pingInterval: number | null = null;
+let isIntentionalClose = false;
 
-  const connect = useCallback(() => {
+// Let the singleton invalidate queries and show toasts
+let globalQueryClient: any = null;
+let globalAddToast: any = null;
+
+function handleEvent(data: any) {
+    if (!globalQueryClient) return;
+    const eventType = data.event || '';
+    
+    // Invalidate queries
+    if (eventType.startsWith('request.')) {
+        globalQueryClient.invalidateQueries({ queryKey: ['requests'] });
+        if (data.request_id) {
+            globalQueryClient.invalidateQueries({ queryKey: ['requests', String(data.request_id)] });
+        }
+    } else if (eventType.startsWith('quote.')) {
+        globalQueryClient.invalidateQueries({ queryKey: ['quotes'] });
+    } else if (eventType.startsWith('order.')) {
+        globalQueryClient.invalidateQueries({ queryKey: ['orders'] });
+    } else if (eventType.startsWith('booking.')) {
+        globalQueryClient.invalidateQueries({ queryKey: ['bookings'] });
+    } else if (eventType.startsWith('notification.')) {
+        globalQueryClient.invalidateQueries({ queryKey: ['notifications'] });
+        // Realtime Toast Alert
+        if (data.payload && data.payload.title) {
+            globalAddToast?.(data.payload.message || data.payload.title, 'info', 5000);
+        }
+    } else if (eventType.startsWith('verification.')) {
+        globalQueryClient.invalidateQueries({ queryKey: ['verifications'] });
+    } else if (eventType.startsWith('inventory.')) {
+        globalQueryClient.invalidateQueries({ queryKey: ['products'] });
+    }
+}
+
+function connectWs() {
+    if (globalWs && (globalWs.readyState === WebSocket.CONNECTING || globalWs.readyState === WebSocket.OPEN)) {
+        return; // Already connected
+    }
+
     const token = localStorage.getItem('access_token');
     if (!token) return;
 
-    // Build the WebSocket URL with authentication
-    const wsUrl = `${WS_BASE_URL}/ws/${channel}/?token=${token}`;
+    // Remove token from URL query, use protocol header
+    const wsUrl = `${WS_BASE_URL}/ws/requests/`;
+    isIntentionalClose = false;
     
-    // Close existing connection if any
-    if (wsRef.current) {
-      wsRef.current.close();
+    try {
+        globalWs = new WebSocket(wsUrl, ["access_token", token]);
+    } catch (e) {
+        console.error("WS error", e);
+        return;
     }
 
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      console.log(`[WebSocket] Connected to ${channel}`);
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-        reconnectTimeoutRef.current = null;
-      }
+    globalWs.onopen = () => {
+        console.log(`[WebSocket] Connected`);
+        reconnectAttempt = 0;
+        
+        // Start Heartbeat
+        if (pingInterval) clearInterval(pingInterval);
+        pingInterval = window.setInterval(() => {
+            if (globalWs?.readyState === WebSocket.OPEN) {
+                globalWs.send(JSON.stringify({ action: "ping" }));
+            }
+        }, 30000); // 30 seconds
     };
 
-    ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        
-        // Handle explicit reconnect commands or auth errors
-        if (data.event === 'websocket.auth_failed' || data.event === 'websocket.token_expired') {
-            console.warn('[WebSocket] Auth failed, closing connection');
-            ws.close();
+    globalWs.onmessage = (event) => {
+        try {
+            const data = JSON.parse(event.data);
+            if (data.event === 'websocket.auth_failed' || data.event === 'websocket.token_expired') {
+                console.warn('[WebSocket] Auth failed, closing connection');
+                isIntentionalClose = true;
+                globalWs?.close();
+                return;
+            }
+            handleEvent(data);
+        } catch (err) {
+            console.error('[WebSocket] Failed to parse message', err);
+        }
+    };
+
+    globalWs.onclose = (event) => {
+        console.log(`[WebSocket] Disconnected`, event.code);
+        if (pingInterval) {
+            clearInterval(pingInterval);
+            pingInterval = null;
+        }
+        globalWs = null;
+
+        if (isIntentionalClose || (event.code >= 4001 && event.code <= 4004)) {
             return;
         }
-
-        // Global invalidation mapping based on event namespaces
-        // e.g. "request.updated", "notification.created", "order.fulfilled"
-        const eventType = data.event || '';
         
-        if (eventType.startsWith('request.')) {
-            queryClient.invalidateQueries({ queryKey: ['requests'] });
-            if (data.request_id) {
-                queryClient.invalidateQueries({ queryKey: ['requests', String(data.request_id)] });
-            }
-        } else if (eventType.startsWith('quote.')) {
-            queryClient.invalidateQueries({ queryKey: ['quotes'] });
-        } else if (eventType.startsWith('order.')) {
-            queryClient.invalidateQueries({ queryKey: ['orders'] });
-        } else if (eventType.startsWith('booking.')) {
-            queryClient.invalidateQueries({ queryKey: ['bookings'] });
-        } else if (eventType.startsWith('notification.')) {
-            queryClient.invalidateQueries({ queryKey: ['notifications'] });
-        } else if (eventType.startsWith('verification.')) {
-            queryClient.invalidateQueries({ queryKey: ['verifications'] });
-        } else if (eventType.startsWith('inventory.')) {
-            queryClient.invalidateQueries({ queryKey: ['products'] });
+        // Exponential backoff reconnect
+        if (subscribers > 0) {
+            const delay = Math.min(1000 * Math.pow(2, reconnectAttempt), 30000);
+            reconnectAttempt++;
+            reconnectTimeout = window.setTimeout(connectWs, delay);
         }
-      } catch (err) {
-        console.error('[WebSocket] Failed to parse message', err);
-      }
     };
 
-    ws.onclose = (event) => {
-      console.log(`[WebSocket] Disconnected from ${channel}`, event.code);
-      
-      // Do not reconnect if auth failed (4001, 4002, 4003, 4004)
-      if (event.code >= 4001 && event.code <= 4004) {
-          return;
-      }
-
-      // Try reconnecting after a delay
-      reconnectTimeoutRef.current = window.setTimeout(() => {
-        connect();
-      }, 5000);
+    globalWs.onerror = (error) => {
+        console.error(`[WebSocket] Error`, error);
     };
+}
 
-    ws.onerror = (error) => {
-      console.error(`[WebSocket] Error on ${channel}`, error);
-    };
-  }, [channel, queryClient]);
-
-  useEffect(() => {
-    connect();
-
-    return () => {
-      if (wsRef.current) {
-        wsRef.current.close();
-      }
-      if (reconnectTimeoutRef.current) {
-        clearTimeout(reconnectTimeoutRef.current);
-      }
-    };
-  }, [connect]);
-
-  // Expose a method to subscribe to a specific request if on the requests channel
-  const subscribeToRequest = useCallback((requestId: string | number) => {
-    if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN && channel === 'requests') {
-        wsRef.current.send(JSON.stringify({
-            action: 'subscribe',
-            request_id: requestId
-        }));
-    } else if (wsRef.current && wsRef.current.readyState === WebSocket.CONNECTING) {
-        // Queue it for when it opens (basic implementation)
-        const checkOpen = setInterval(() => {
-            if (wsRef.current?.readyState === WebSocket.OPEN) {
-                wsRef.current.send(JSON.stringify({
-                    action: 'subscribe',
-                    request_id: requestId
-                }));
-                clearInterval(checkOpen);
-            }
-        }, 100);
+function disconnectWs() {
+    isIntentionalClose = true;
+    if (globalWs) {
+        globalWs.close();
+        globalWs = null;
     }
-  }, [channel]);
+    if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout);
+        reconnectTimeout = null;
+    }
+    if (pingInterval) {
+        clearInterval(pingInterval);
+        pingInterval = null;
+    }
+}
 
-  return { subscribeToRequest };
+export function useWebsocket(channel: 'system' | 'requests' = 'requests') {
+    const queryClient = useQueryClient();
+    const addToast = useToastStore(state => state.addToast);
+    
+    useEffect(() => {
+        globalQueryClient = queryClient;
+        globalAddToast = addToast;
+        subscribers++;
+        
+        if (subscribers === 1) {
+            connectWs();
+        }
+        
+        return () => {
+            subscribers--;
+            if (subscribers === 0) {
+                disconnectWs();
+            }
+        };
+    }, [queryClient, addToast]);
+    
+    const subscribeToRequest = useCallback((requestId: string | number) => {
+        if (globalWs && globalWs.readyState === WebSocket.OPEN) {
+            globalWs.send(JSON.stringify({
+                action: 'subscribe',
+                request_id: requestId
+            }));
+        } else if (globalWs && globalWs.readyState === WebSocket.CONNECTING) {
+            const checkOpen = setInterval(() => {
+                if (globalWs?.readyState === WebSocket.OPEN) {
+                    globalWs.send(JSON.stringify({
+                        action: 'subscribe',
+                        request_id: requestId
+                    }));
+                    clearInterval(checkOpen);
+                }
+            }, 100);
+            setTimeout(() => clearInterval(checkOpen), 10000);
+        }
+    }, []);
+
+    return { subscribeToRequest };
 }

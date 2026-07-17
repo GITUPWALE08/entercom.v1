@@ -1,479 +1,401 @@
-# Entercom Notification & WebSocket Production Readiness Audit
+You are the Senior Software Architect and Lead Full Stack Engineer for the Entercom platform.
 
-You are a Senior Django Architect, Distributed Systems Engineer, and Frontend Architect performing a comprehensive implementation audit of the Entercom platform.
+You are entering IMPLEMENTATION MODE.
 
-Your task is NOT to redesign the system.
+The Notification & WebSocket Production Readiness Audit is the authoritative implementation guide.
 
-Your task is to audit what currently exists, identify implementation gaps, and produce a production readiness report.
+Treat it as fact.
 
----
+------------------------------------------------------------
+ABSOLUTE RULES
+------------------------------------------------------------
 
-## Context
+DO NOT redesign architecture.
 
-The project already contains:
+DO NOT introduce new business rules.
 
-* Django
-* Django Channels
-* Celery
-* Redis
-* Notification models
-* Notification preferences
-* Notification delivery tracking
-* WebSocket consumers
-* Frontend notification UI
-* React Query
-* WebSocket provider
-* Domain events
+DO NOT replace existing services.
 
-The system is intended to support:
+DO NOT create duplicate services.
 
-* Persistent notification inbox
-* Realtime websocket updates
-* Email notifications
-* Push notifications
-* Future SMS notifications
+DO NOT invent new notification flows.
 
----
+DO NOT invent new websocket flows.
 
-# Audit Objectives
+DO NOT modify approved request workflows.
 
-Perform a complete audit across BOTH backend and frontend.
+DO NOT modify approved domain events.
 
-Do not assume anything.
+DO NOT introduce new technologies.
 
-Inspect the entire repository.
+DO NOT change existing APIs unless absolutely required.
 
----
+DO NOT remove existing functionality.
 
-# BACKEND AUDIT
+Everything must extend the existing architecture.
 
-Audit every notification-related component.
+------------------------------------------------------------
+GOAL
+------------------------------------------------------------
 
-Include:
+Produce a COMPLETE production-ready notification system with ZERO implementation gaps.
 
-## Domain Events
+Backend and Frontend must be completed together.
 
-Identify:
+The final system must support:
 
-* All publishers
-* All consumers
-* Missing publishers
-* Missing consumers
-* Event vocabulary
-* Event ownership
+• Realtime WebSocket updates
+• Persistent Notification Inbox
+• Email delivery
+• Notification Preferences
+• Notification Delivery tracking
+• Read/Unread state
+• Notification History
+• Delivery Retry
+• Event-driven architecture
 
-List every event.
+------------------------------------------------------------
+CURRENT ARCHITECTURE
+------------------------------------------------------------
 
-Example:
+Already implemented:
 
-request.created
+✓ Django Channels
 
-request.assigned
+✓ Redis
 
-booking.scheduled
+✓ Celery
 
-payment.completed
+✓ DispatchOrchestrator
 
-quote.created
+✓ Notification models
 
-verification.approved
+✓ Notification Preferences
 
-etc.
+✓ Notification Delivery
 
----
+✓ WebSocket Consumers
 
-## Notification Pipeline
+✓ Event Publishers
 
-Trace the complete lifecycle.
+✓ React Notification Center
 
-Example:
+✓ React Notification Preferences
 
-Business Action
+✓ useWebsocket hook
 
-↓
+✓ useNotifications hook
 
-Domain Event
+✓ React Query
 
-↓
+Do NOT recreate them.
 
-Event Bus
+Integrate them.
 
-↓
+------------------------------------------------------------
+IMPLEMENT THE FOLLOWING
+------------------------------------------------------------
 
-Notification Creation
+========================
+BACKEND
+========================
 
-↓
+1.
 
-Delivery Creation
+Connect ALL domain event publishers to DispatchOrchestrator.
 
-↓
+NO publisher should bypass it.
+
+DispatchOrchestrator becomes the ONLY entry point for notification generation.
+
+------------------------------------------------------------
+
+2.
+
+Implement missing event publishers for:
+
+• Quotes
+
+• Orders
+
+• Payments
+
+• Verification
+
+• Escalations
+
+• SLA
+
+------------------------------------------------------------
+
+3.
+
+Ensure every business event produces:
+
+• Notification record
+
+• Delivery records
+
+• WebSocket event
+
+• Email job (when applicable)
+
+------------------------------------------------------------
+
+4.
+
+Implement Notification Templates.
+
+Templates must support:
+
+• subject
+
+• html body
+
+• plain text body
+
+• placeholders
+
+No hardcoded email bodies.
+
+------------------------------------------------------------
+
+5.
+
+Replace mocked email sender with production implementation.
+
+Support provider abstraction.
+
+Do NOT hardcode provider logic.
+
+------------------------------------------------------------
+
+6.
+
+Complete Delivery Monitoring.
+
+Implement:
+
+• retries
+
+• permanent failures
+
+• transient failures
+
+• retry scheduling
+
+• status tracking
+
+------------------------------------------------------------
+
+7.
+
+Implement batch endpoints:
+
+• mark all read
+
+• archive notifications
+
+• unread count
+
+------------------------------------------------------------
+
+8.
+
+Implement pagination.
+
+Cursor or offset.
+
+No loading entire notification history.
+
+------------------------------------------------------------
+
+9.
+
+Add missing tests.
+
+Unit
+
+Integration
+
+Event pipeline
 
 WebSocket
 
-↓
+Notification generation
 
-Email
+Email queue
 
-↓
+------------------------------------------------------------
 
-Push
+========================
+FRONTEND
+========================
 
-↓
+1.
 
-Frontend
+Convert WebSocket implementation into SINGLETON.
 
-Identify exactly where the pipeline breaks.
+Only one socket per browser session.
 
----
+------------------------------------------------------------
 
-## Notification Models
+2.
 
-Audit:
+Implement realtime toast notifications.
 
-Notification
+Incoming websocket events should immediately display user feedback.
 
-NotificationDelivery
+------------------------------------------------------------
 
-NotificationPreference
+3.
 
-NotificationTemplate
+Update Notification Center.
 
-Delivery Status
+Support:
 
-Retention
+• pagination
 
-Read Status
+• infinite scrolling
 
-Soft Delete
+• unread badge
 
-Archiving
+• archive
 
----
+• mark all read
 
-## WebSocket Architecture
+------------------------------------------------------------
 
-Audit:
+4.
 
-Channels
+Remove polling where websocket already provides realtime updates.
 
-Consumers
+Avoid duplicate requests.
 
-Authentication
+------------------------------------------------------------
 
-Authorization
+5.
 
-Connection Manager
+Implement exponential reconnect.
 
-Heartbeat
+------------------------------------------------------------
 
-Reconnect
+6.
 
-Role isolation
+Implement heartbeat.
 
-Tenant isolation
+------------------------------------------------------------
 
-Subscription model
+7.
 
-Broadcast model
+Remove JWT from websocket URL.
 
-Private channels
+Authenticate securely using the existing backend mechanism.
 
-Group channels
+------------------------------------------------------------
 
-Request-specific channels
+8.
 
-Booking-specific channels
+Ensure Orders
 
-Notification channels
+Payments
 
-System channels
+Quotes
 
-Identify missing channels.
+Verification
 
----
+Escalations
 
-## Celery
+all update UI realtime.
 
-Audit:
+------------------------------------------------------------
 
-Queues
+========================
+EMAIL
+========================
 
-Tasks
+Implement production-ready email support.
 
-Retries
+Support:
 
-Dead Letter handling
+• Request Created
 
-Delivery monitoring
+• Quote Ready
 
-Email tasks
+• Quote Revised
 
-Push tasks
+• Quote Expired
 
-Cleanup tasks
+• Payment Required
 
-Retry tasks
+• Payment Successful
 
-Unused tasks
+• Booking Scheduled
 
----
+• Booking Rescheduled
 
-## Email
+• Verification Approved
 
-Determine:
+• Escalation
 
-Current provider
+Respect Notification Preferences.
 
-Mock implementation
+------------------------------------------------------------
 
-Real implementation
-
-Template support
-
-Background sending
-
-Retry logic
-
-Open tracking (if any)
-
-Failure handling
-
----
-
-## Push Notifications
-
-Determine:
-
-Current implementation
-
-Firebase support
-
-Device registration
-
-Token lifecycle
-
-Missing implementation
-
----
-
-## SMS
-
-Determine:
-
-Whether SMS exists.
-
-Whether it is required.
-
-If not required,
-
-justify why.
-
-If required,
-
-identify where it should integrate.
-
----
-
-# FRONTEND AUDIT
-
-Audit:
-
-Notification Bell
-
-Notification Center
-
-Toast Notifications
-
-React Query invalidation
-
-Realtime refresh
-
-Unread counts
-
-Read status
-
-Infinite scrolling
-
-Pagination
-
-Filtering
-
-Notification preferences
-
-WebSocket Provider
-
-Reconnect logic
-
-Heartbeat
-
-Offline handling
-
-Background tab handling
-
-Duplicate prevention
-
-Missing realtime events
-
----
-
-# END TO END FLOWS
-
-Audit every user flow.
-
-Customer
-
-Technician
-
-Staff
-
-Manager
-
-Admin
-
-For every flow indicate
-
-Realtime
-
-Inbox
-
-Email
-
-Push
+========================
+DO NOT IMPLEMENT
+========================
 
 SMS
 
-Example:
+Push Notifications
 
-Request Created
+Mobile Notifications
 
-Realtime ✅
+FCM
 
-Inbox ❌
+APNS
 
-Email ❌
+These are deferred.
 
-Push ❌
+------------------------------------------------------------
 
-SMS N/A
+========================
+OUTPUT FORMAT
+========================
 
----
+For every implementation:
 
-# SECURITY AUDIT
+1.
 
-Review:
+Purpose
 
-JWT authentication
+2.
 
-First-frame auth
+Files modified
 
-Permission checks
+3.
 
-Resource ownership
+Reason
 
-Channel authorization
+4.
 
-Tenant isolation
+Implementation
 
-Notification privacy
+5.
 
-Event leakage
+Tests
 
-Replay protection
+6.
 
----
+Migration impact
 
-# PERFORMANCE AUDIT
+Never leave TODOs.
 
-Evaluate:
+Never leave placeholders.
 
-Redis usage
+Never leave mocked implementations.
 
-Channel fan-out
+Everything must be production-ready.
 
-Notification queries
-
-N+1 queries
-
-Inbox pagination
-
-Delivery batching
-
-Celery throughput
-
----
-
-# IMPLEMENTATION GAPS
-
-Produce a prioritized backlog.
-
-Priority 1
-
-Critical blockers
-
-Priority 2
-
-Missing realtime
-
-Priority 3
-
-Email
-
-Priority 4
-
-Push
-
-Priority 5
-
-SMS (only if justified)
-
----
-
-# PRODUCTION READINESS SCORE
-
-Score each subsystem from 1–10:
-
-Domain Events
-
-Notification Pipeline
-
-WebSockets
-
-Frontend
-
-Email
-
-Push
-
-SMS
-
-Overall Production Readiness
-
----
-
-# DELIVERABLE
-
-Produce:
-
-1. Executive Summary
-
-2. Current Architecture
-
-3. Backend Audit
-
-4. Frontend Audit
-
-5. Event Catalog
-
-6. Notification Flow Diagram
-
-7. Security Findings
-
-8. Performance Findings
-
-9. Missing Features
-
-10. Prioritized Implementation Roadmap
-
-Do not invent functionality.
-
-Base every conclusion on the repository.
+No gaps.

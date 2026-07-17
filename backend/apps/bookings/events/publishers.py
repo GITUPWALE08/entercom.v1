@@ -40,6 +40,9 @@ class BookingEventPublisher:
         # 2. Log / Transport
         logger.info(f"Published Booking Domain Event: {event.event_name}", extra=event.to_dict())
 
+        from apps.notification.mapper import EventToNotificationMapper
+        EventToNotificationMapper.map_and_dispatch(event)
+
         # Bridge to WebSockets
         try:
             from apps.bookings.websockets.event_dispatcher import BookingWebSocketDispatcher

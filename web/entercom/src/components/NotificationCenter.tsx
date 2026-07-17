@@ -1,13 +1,25 @@
-import { useState, useRef, useEffect } from 'react';
-import { Bell, Check, Trash2, AlertCircle, Info, FileText } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { Bell, Check, Trash2, AlertCircle, Info, FileText, Loader2 } from 'lucide-react';
 import { useNotifications } from '../hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 
 export function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);
-  const { notifications, unreadCount, markAsRead, archive } = useNotifications();
+  const { 
+    notifications, 
+    isLoading,
+    unreadCount, 
+    markAsRead, 
+    archive, 
+    markAllRead,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage
+  } = useNotifications();
+  
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const observerRef = useRef<IntersectionObserver | null>(null);
   const navigate = useNavigate();
 
   // Handle outside click to close
@@ -25,17 +37,35 @@ export function NotificationCenter() {
     };
   }, [isOpen]);
 
+  const lastNotificationRef = useCallback((node: HTMLLIElement | null) => {
+    if (isFetchingNextPage) return;
+    if (observerRef.current) observerRef.current.disconnect();
+    observerRef.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasNextPage) {
+        fetchNextPage();
+      }
+    });
+    if (node) observerRef.current.observe(node);
+  }, [isFetchingNextPage, fetchNextPage, hasNextPage]);
+
   const handleNotificationClick = (notification: any) => {
     if (!notification.read_at) {
       markAsRead.mutate(notification.id);
     }
     setIsOpen(false);
     
-    // Navigate based on resource_type if applicable
+    // Navigate using absolute paths dynamically
+    const roleMatch = window.location.pathname.match(/^\/portal\/(customer|staff|manager|admin)/);
+    const rolePath = roleMatch ? roleMatch[0] : '/portal/customer';
+    
     if (notification.resource_type === 'request') {
-       navigate(`requests/${notification.resource_id}`);
+       navigate(`${rolePath}/requests/${notification.resource_id}`);
     } else if (notification.resource_type === 'order') {
-       navigate(`orders/${notification.resource_id}`);
+       navigate(`${rolePath}/orders/${notification.resource_id}`);
+    } else if (notification.resource_type === 'booking') {
+       navigate(`${rolePath}/bookings/${notification.resource_id}`);
+    } else if (notification.resource_type === 'payment') {
+       navigate(`${rolePath}/payments/${notification.resource_id}`);
     }
   };
 
@@ -48,8 +78,7 @@ export function NotificationCenter() {
     }
   };
 
-  // Only show active non-archived ones 
-  const activeNotifications = notifications.filter(n => n.status !== 'archived').slice(0, 10);
+  const activeNotifications = notifications.filter(n => n.status !== 'ARCHIVED');
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -71,28 +100,41 @@ export function NotificationCenter() {
             <h3 className="font-semibold text-gray-900">Notifications</h3>
             <div className="flex gap-2">
               <button 
-                onClick={() => {
-                   activeNotifications.filter(n => !n.read_at).forEach(n => markAsRead.mutate(n.id));
-                }}
+                onClick={() => markAllRead.mutate()}
                 className="text-xs font-medium text-ess-purple hover:text-purple-800 transition-colors flex items-center gap-1"
-                disabled={unreadCount === 0 || markAsRead.isPending}
+                disabled={unreadCount === 0 || markAllRead.isPending}
               >
-                <Check size={14} />
+                {markAllRead.isPending ? <Loader2 className="animate-spin w-3 h-3" /> : <Check size={14} />}
                 Mark all read
               </button>
             </div>
           </div>
           
-          <div className="max-h-96 overflow-y-auto">
-            {activeNotifications.length === 0 ? (
+          <div className="max-h-[400px] overflow-y-auto">
+            {isLoading ? (
+              <div className="flex flex-col p-4 space-y-4">
+                {[1,2,3].map(i => (
+                  <div key={i} className="flex gap-3 animate-pulse">
+                    <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded w-3/4" />
+                      <div className="h-3 bg-gray-200 rounded w-full" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : activeNotifications.length === 0 ? (
               <div className="px-4 py-8 text-center text-gray-500 flex flex-col items-center">
                 <Bell className="w-8 h-8 text-gray-300 mb-2" />
                 <p className="text-sm">You have no new notifications.</p>
               </div>
             ) : (
               <ul className="divide-y divide-gray-50">
-                {activeNotifications.map((notification) => (
+                {activeNotifications.map((notification, index) => {
+                  const isLast = index === activeNotifications.length - 1;
+                  return (
                   <li 
+                    ref={isLast ? lastNotificationRef : null}
                     key={notification.id} 
                     className={`relative p-4 hover:bg-gray-50 transition-colors cursor-pointer group ${!notification.read_at ? 'bg-purple-50/30' : ''}`}
                     onClick={() => handleNotificationClick(notification)}
@@ -130,14 +172,24 @@ export function NotificationCenter() {
                        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-ess-purple rounded-r-full" />
                     )}
                   </li>
-                ))}
+                )})}
+                {isFetchingNextPage && (
+                  <li className="p-4 flex justify-center">
+                    <Loader2 className="w-5 h-5 animate-spin text-ess-purple" />
+                  </li>
+                )}
               </ul>
             )}
           </div>
           
           <div className="p-2 border-t border-gray-100 bg-gray-50">
              <button 
-               onClick={() => { setIsOpen(false); navigate('profile'); }}
+               onClick={() => {
+                 setIsOpen(false);
+                 const roleMatch = window.location.pathname.match(/^\/portal\/(customer|staff|manager|admin)/);
+                 const rolePath = roleMatch ? roleMatch[0] : '/portal/customer';
+                 navigate(`${rolePath}/profile`); 
+               }}
                className="w-full py-2 text-sm text-center text-gray-600 hover:text-gray-900 font-medium transition-colors"
              >
                View preferences

@@ -20,6 +20,7 @@ class Notification(models.Model):
     status = models.CharField(max_length=50, choices=Status.choices, default=Status.UNREAD)
     created_at = models.DateTimeField(auto_now_add=True)
     read_at = models.DateTimeField(null=True, blank=True)
+    archived_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         indexes = [
@@ -85,3 +86,17 @@ class NotificationPreference(models.Model):
 
     def __str__(self):
         return f"Preference {self.category}/{self.channel} for {self.user_id}"
+
+
+class NotificationTemplate(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    event_type = models.CharField(max_length=255, unique=True)
+    subject = models.CharField(max_length=255)
+    html_body = models.TextField()
+    plain_text_body = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Template for {self.event_type}"
+

@@ -73,7 +73,12 @@ class SystemConsumer(AsyncWebsocketConsumer):
             return
 
         try:
-            await self.accept()
+            protocol = dict(self.scope.get('headers', [])).get(b'sec-websocket-protocol', b'').decode('utf-8')
+            if protocol:
+                subprotocol = protocol.split(',')[0].strip()
+                await self.accept(subprotocol=subprotocol)
+            else:
+                await self.accept()
         except Exception:
             await alog_websocket_event(
                 "websocket.connect_failed",
@@ -142,7 +147,16 @@ class RequestConsumer(AsyncWebsocketConsumer):
             await self.channel_layer.group_add("manager", self.channel_name)
             self.subscribed_groups.add("manager")
 
-        await self.accept()
+        # Subscribe to personal notifications
+        notif_group = f"user.{self.user.id}.notifications"
+        await self.channel_layer.group_add(notif_group, self.channel_name)
+        self.subscribed_groups.add(notif_group)
+
+        protocol = dict(self.scope.get('headers', [])).get(b'sec-websocket-protocol', b'').decode('utf-8')
+        if protocol:
+            await self.accept(subprotocol=protocol.split(',')[0].strip())
+        else:
+            await self.accept()
 
     async def disconnect(self, close_code):
         for group_name in self.subscribed_groups:
@@ -213,6 +227,17 @@ class RequestConsumer(AsyncWebsocketConsumer):
             "version": event.get("version", 1),
             "timestamp": event.get("timestamp"),
             "request_id": request_id,
+            "payload": event.get("payload", {})
+        }
+        await self.send(text_data=json.dumps(payload, cls=DjangoJSONEncoder))
+
+    async def broadcast_message(self, event):
+        """
+        Fired by EventPublisher for generic broadcast.message events (like notifications)
+        """
+        payload = {
+            "event": "notification.created",
+            "version": 1,
             "payload": event.get("payload", {})
         }
         await self.send(text_data=json.dumps(payload, cls=DjangoJSONEncoder))

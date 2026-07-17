@@ -1,5 +1,12 @@
 import { apiClient } from './axios';
 
+export interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
 export interface Notification {
   id: string;
   category: string;
@@ -22,9 +29,17 @@ export interface NotificationPreference {
 }
 
 export const notificationsApi = {
-  getNotifications: async (): Promise<Notification[]> => {
-    const { data } = await apiClient.get<Notification[]>('/notifications/');
+  getNotifications: async (offset = 0, limit = 20): Promise<PaginatedResponse<Notification>> => {
+    const { data } = await apiClient.get<PaginatedResponse<Notification>>(`/notifications/?offset=${offset}&limit=${limit}`);
     return data;
+  },
+  
+  markAllRead: async (): Promise<void> => {
+    await apiClient.post('/notifications/mark-all-read/');
+  },
+
+  archiveAll: async (): Promise<void> => {
+    await apiClient.post('/notifications/archive-all/');
   },
   
   markAsRead: async (id: string): Promise<Notification> => {

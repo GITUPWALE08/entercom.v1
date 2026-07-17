@@ -58,7 +58,14 @@ class DispatchOrchestrator:
             )
             deliveries.append(delivery)
             
-        # Note: Celery enqueueing is explicitly out of scope for Stage 2.
+        # Enqueue delivery tasks
+        from apps.notification.tasks import task_dispatch_email, task_dispatch_push
+        for delivery in deliveries:
+            if delivery.channel == NotificationDelivery.Channel.EMAIL:
+                transaction.on_commit(lambda d=delivery: task_dispatch_email.delay(d.id))
+            elif delivery.channel == NotificationDelivery.Channel.PUSH:
+                transaction.on_commit(lambda d=delivery: task_dispatch_push.delay(d.id))
+                
         return notification, deliveries
 
 
@@ -77,7 +84,8 @@ class NotificationService:
         notification = Notification.objects.get(id=notification_id, recipient_id=user_id)
         if notification.status != Notification.Status.ARCHIVED:
             notification.status = Notification.Status.ARCHIVED
-            notification.save(update_fields=['status'])
+            notification.archived_at = timezone.now()
+            notification.save(update_fields=['status', 'archived_at'])
         return notification
 
 

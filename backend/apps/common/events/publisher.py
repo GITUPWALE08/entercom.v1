@@ -11,4 +11,12 @@ class EventPublisher:
         """
         payload = event.to_dict()
         logger.info(f"Event Published: {payload['event_name']} | Correlation: {payload['correlation_id']}")
-        # In a real app, send `payload` to message broker here
+        
+        from apps.notification.mapper import EventToNotificationMapper
+        EventToNotificationMapper.map_and_dispatch(event)
+        
+        try:
+            from apps.websocket.services.event_bridge import WebSocketEventPublisher
+            WebSocketEventPublisher.dispatch_domain_event(event)
+        except Exception as e:
+            logger.error(f"Failed to bridge event to WebSockets: {e}")

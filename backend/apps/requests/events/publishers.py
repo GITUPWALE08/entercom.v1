@@ -47,6 +47,9 @@ class DomainEventPublisher:
         # Strictly publishes events. No business logic.
         logger.info(f"Published Domain Event: {event.event_name}", extra=event.to_dict())
 
+        from apps.notification.mapper import EventToNotificationMapper
+        EventToNotificationMapper.map_and_dispatch(event)
+
         # Bridge to WebSockets for real-time domain notifications
         try:
             from apps.websocket.services.event_bridge import WebSocketEventPublisher

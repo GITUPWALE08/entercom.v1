@@ -57,7 +57,7 @@ def task_dispatch_email(self, delivery_id):
     delivery.save(update_fields=['status'])
     
     try:
-        _send_email_mock(delivery)
+        dispatch_email(delivery)
         delivery.status = NotificationDelivery.Status.SENT
         delivery.provider_response = {"status": "success"}
         delivery.save(update_fields=['status', 'provider_response', 'updated_at'])
@@ -90,9 +90,36 @@ def task_dispatch_email(self, delivery_id):
             raise self.retry(exc=e, countdown=countdown)
 
 @circuit_breaker("email_provider", failure_threshold=5, recovery_timeout=60)
-def _send_email_mock(delivery):
-    # Mock external call
-    pass
+def dispatch_email(delivery):
+    from django.core.mail import EmailMultiAlternatives
+    from django.template import Template, Context
+    from .models import NotificationTemplate
+
+    notification = delivery.notification
+    recipient = notification.recipient
+    if not recipient.email:
+        # Cannot send if no email
+        raise ValueError("Recipient has no email address configured")
+        
+    try:
+        template = NotificationTemplate.objects.get(event_type=notification.event_type)
+        ctx = Context(notification.context)
+        subject = Template(template.subject).render(ctx)
+        html_body = Template(template.html_body).render(ctx)
+        text_body = Template(template.plain_text_body).render(ctx)
+    except NotificationTemplate.DoesNotExist:
+        subject = notification.title
+        text_body = notification.message
+        html_body = None
+
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        to=[recipient.email]
+    )
+    if html_body:
+        msg.attach_alternative(html_body, "text/html")
+    msg.send()
 
 
 @shared_task(bind=True, max_retries=10, acks_late=True, default_retry_delay=15)
