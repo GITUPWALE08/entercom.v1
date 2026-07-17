@@ -220,7 +220,7 @@ REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 if REDIS_URL:
     CHANNEL_LAYERS = {
         "default": {
-            "BACKEND": "channels.layers.InMemoryChannelLayer",
+            "BACKEND": "channels_redis.core.RedisChannelLayer"
             "CONFIG": {
                 "hosts": [REDIS_URL],
                 "capacity": 1500,
@@ -242,8 +242,8 @@ if REDIS_URL:
     # 3. Set the broker/backend to memory (to satisfy Celery's internal checks)
     CELERY_BROKER_URL = REDIS_URL
     CELERY_RESULT_BACKEND = REDIS_URL
-    CELERY_TASK_ALWAYS_EAGER = True
-    CELERY_TASK_EAGER_PROPAGATES = True
+    CELERY_TASK_ALWAYS_EAGER = DEBUG
+    CELERY_TASK_EAGER_PROPAGATES = DEBUG
     CELERY_ACCEPT_CONTENT = ["json"]
     CELERY_TASK_SERIALIZER = "json"
     CELERY_RESULT_SERIALIZER = "json"
