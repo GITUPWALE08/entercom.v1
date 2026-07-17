@@ -215,11 +215,9 @@ SPECTACULAR_SETTINGS = {
     "SERVE_INCLUDE_SCHEMA": False,
 }
 
-# REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
+REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 
-if os.environ.get('RENDER'):
-    REDIS_URL = os.environ.get('REDIS_URL')
-
+if REDIS_URL:
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels.layers.InMemoryChannelLayer",
