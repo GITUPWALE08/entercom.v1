@@ -17,7 +17,6 @@ class NotificationViewSet(mixins.ListModelMixin, mixins.RetrieveModelMixin, view
     """
     API endpoint that allows users to view and manage their notifications.
     """
-    """
     serializer_class = NotificationSerializer
     permission_classes = [IsAuthenticated]
     pagination_class = NotificationPagination
