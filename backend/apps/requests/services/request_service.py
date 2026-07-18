@@ -389,19 +389,6 @@ class RequestService:
             reason_code=reason_code,
         ))
 
-        # [DEFERRED] Non-MVP event
-        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
-        #     event_type="request_cancelled",
-        #     recipient_id=request.customer.id,
-        #     resource_type="request",
-        #     resource_id=str(request.id),
-        #     category="alerts",
-        #     title="Request Cancelled",
-        #     message=f"Request {request.public_id} has been cancelled.",
-        #     context={"reason_code": reason_code},
-        #     is_system_critical=True,
-        # ))
-
         return request
 
     @staticmethod

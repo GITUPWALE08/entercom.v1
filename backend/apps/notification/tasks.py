@@ -53,15 +53,29 @@ def task_dispatch_email(self, delivery_id):
         # Idempotency check: if it's not pending, don't process.
         return
         
-    delivery.status = NotificationDelivery.Status.PROCESSING
-    delivery.save(update_fields=['status'])
+    delivery.request_timestamp = timezone.now()
+    delivery.save(update_fields=['status', 'request_timestamp'])
     
     try:
         response_data = NotificationService.dispatch_email_delivery(delivery)
+        delivery.response_timestamp = timezone.now()
         delivery.status = NotificationDelivery.Status.SENT
         delivery.provider_response = response_data
-        delivery.save(update_fields=['status', 'provider_response', 'updated_at'])
+        
+        # Determine provider name and message ID based on provider response format
+        if response_data and isinstance(response_data, dict):
+            delivery.provider_message_id = response_data.get('id', '')
+            
+        delivery.save(update_fields=['status', 'provider_response', 'provider_message_id', 'response_timestamp', 'updated_at'])
+        
+        from apps.audit_logs.services.audit_service import log_action
+        log_action(
+            action="notification.provider_success",
+            resource_type="delivery",
+            resource_id=str(delivery.id),
+        )
     except CircuitBreakerOpenException as e:
+        delivery.response_timestamp = timezone.now()
         logger.warning(f"Circuit breaker open for email dispatch delivery {delivery_id}: {e}")
         FailureRecoveryService.classify_and_handle_failure(delivery_id, str(e), is_transient=True)
         raise self.retry(exc=e, countdown=self.default_retry_delay * (2 ** self.request.retries))
@@ -89,7 +103,10 @@ def task_dispatch_email(self, delivery_id):
             'error_type': e.__class__.__name__
         })
         
-        FailureRecoveryService.classify_and_handle_failure(delivery_id, str(e), is_transient)
+        delivery.response_timestamp = timezone.now()
+        delivery.save(update_fields=['response_timestamp'])
+        
+        FailureRecoveryService.classify_and_handle_failure(delivery_id, str(e), is_transient, error_code=e.__class__.__name__)
         if is_transient:
             countdown = self.default_retry_delay * (2 ** self.request.retries)
             countdown = min(3600, countdown)

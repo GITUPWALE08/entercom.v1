@@ -235,18 +235,17 @@ class BookingService:
             actor_id=str(getattr(actor, 'id', 'SYSTEM'))
         ))
 
-        # [DEFERRED] Non-MVP event
-        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
-        #     event_type="job_completed",
-        #     recipient_id=booking.technician_id,
-        #     resource_type="booking",
-        #     resource_id=str(booking.id),
-        #     category="updates",
-        #     title="Job Completed",
-        #     message="Your job has been marked as completed.",
-        #     context={},
-        #     is_system_critical=False,
-        # ))
+        transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            event_type="booking_confirmed",
+            recipient_id=customer_id,
+            context={"start_time": booking.start_time.isoformat()},
+            resource_type="booking",
+            resource_id=str(booking.id),
+            category="alerts",
+            title="Booking Confirmed",
+            message=f"Your booking is confirmed for {booking.start_time.isoformat()}.",
+            is_system_critical=True,
+        ))
 
         logger.info(f"Booking {booking_id} synced to COMPLETED")
         return booking

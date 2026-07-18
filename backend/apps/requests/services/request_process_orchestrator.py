@@ -101,13 +101,13 @@ class RequestProcessOrchestrator:
                     transaction.on_commit(lambda r_id=request.id, cid=request.customer_id: DispatchOrchestrator.dispatch_event(
                         event_type="request_completed",
                         recipient_id=cid,
+                        context={},
                         resource_type="request",
                         resource_id=str(r_id),
-                        category="updates",
+                        category="alerts",
                         title="Request Completed",
-                        message="Your request has been fully completed.",
-                        context={},
-                        is_system_critical=False,
+                        message=f"Your request has been successfully completed.",
+                        is_system_critical=True,
                     ))
                 
             except Exception as e:

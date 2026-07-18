@@ -124,12 +124,12 @@ class WebhookService:
             transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
                 event_type="payment_receipt",
                 recipient_id=payment.customer_id,
+                context={"amount": str(payment.amount)},
                 resource_type="payment",
                 resource_id=str(payment.id),
                 category="updates",
                 title="Payment Receipt",
-                message="We have successfully received your payment.",
-                context={"amount": float(payment.amount)},
+                message=f"We have received your payment of {payment.amount}.",
                 is_system_critical=True,
             ))
             

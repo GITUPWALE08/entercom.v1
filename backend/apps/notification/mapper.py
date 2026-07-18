@@ -17,6 +17,18 @@ class EventToNotificationMapper:
                 data = data.to_dict()
             elif hasattr(data, '__dict__'):
                 data = vars(data)
+                
+            import uuid
+            def sanitize_for_json(obj):
+                if isinstance(obj, dict):
+                    return {k: sanitize_for_json(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [sanitize_for_json(v) for v in obj]
+                elif isinstance(obj, uuid.UUID):
+                    return str(obj)
+                return obj
+                
+            data = sanitize_for_json(data)
 
             # Determine resource_type and resource_id
             resource_id = getattr(event, 'request_id', data.get('request_id'))
@@ -119,6 +131,7 @@ class EventToNotificationMapper:
                 message = "This is a reminder for your upcoming booking."
                 is_critical = True
                 category = "alerts"
+                event_name = "booking_reminder"
             elif event_name == "quote.approved":
                 try:
                     req = Request.objects.get(pk=resource_id)

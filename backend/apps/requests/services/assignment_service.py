@@ -99,18 +99,17 @@ class AssignmentService:
             technician_id=technician.id,
         ))
 
-        # [DEFERRED] Non-MVP event
-        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
-        #     event_type="assignment_received",
-        #     recipient_id=technician.id,
-        #     resource_type="assignment",
-        #     resource_id=str(request.id),
-        #     category="updates",
-        #     title="New Assignment",
-        #     message=f"You have been assigned to request {request.public_id}.",
-        #     context={},
-        #     is_system_critical=False,
-        # ))
+        transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            event_type="technician_assigned",
+            recipient_id=technician_id,
+            context={"first_name": technician.first_name if technician else "Technician"},
+            resource_type="request",
+            resource_id=str(request.id),
+            category="alerts",
+            title="New Assignment",
+            message=f"You have been assigned to a new request.",
+            is_system_critical=True,
+        ))
 
         transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
             event_type="technician_assigned",

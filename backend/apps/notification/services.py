@@ -139,13 +139,37 @@ class DeliveryMonitor:
 
 class FailureRecoveryService:
     @staticmethod
-    def classify_and_handle_failure(delivery_id, exception_msg, is_transient):
+    def classify_and_handle_failure(delivery_id, exception_msg, is_transient, provider_name=None, error_code=None):
+        from .models import DeliveryRetry
         delivery = NotificationDelivery.objects.get(id=delivery_id)
         delivery.provider_response = {'error': exception_msg}
+        delivery.provider_error_message = exception_msg
+        
+        if provider_name:
+            delivery.provider_name = provider_name
+        if error_code:
+            delivery.provider_error_code = error_code
+            
         if is_transient:
             delivery.status = NotificationDelivery.Status.FAILED
+            DeliveryRetry.objects.create(
+                delivery=delivery,
+                attempt_number=delivery.retry_count + 1,
+                reason=exception_msg,
+                backoff_delay=0, # Computed by Celery
+                outcome='FAILED'
+            )
         else:
             delivery.status = NotificationDelivery.Status.DEAD_LETTERED
             
-        delivery.save(update_fields=['status', 'provider_response', 'updated_at'])
+        delivery.save(update_fields=['status', 'provider_response', 'provider_name', 'provider_error_message', 'provider_error_code', 'updated_at'])
+        
+        from apps.audit_logs.services.audit_service import log_action
+        log_action(
+            action="notification.provider_failure",
+            resource_type="delivery",
+            resource_id=str(delivery.id),
+            reason=exception_msg,
+            metadata={"transient": is_transient}
+        )
         return delivery

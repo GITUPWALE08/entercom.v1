@@ -41,20 +41,35 @@ class NotificationDelivery(models.Model):
 
     class Status(models.TextChoices):
         PENDING = 'PENDING', 'Pending'
+        QUEUED = 'QUEUED', 'Queued'
         PROCESSING = 'PROCESSING', 'Processing'
         SENT = 'SENT', 'Sent'
+        DELIVERED = 'DELIVERED', 'Delivered'
         FAILED = 'FAILED', 'Failed'
         DEAD_LETTERED = 'DEAD_LETTERED', 'Dead Lettered'
+        BOUNCED = 'BOUNCED', 'Bounced'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     notification = models.ForeignKey(Notification, on_delete=models.CASCADE, related_name='deliveries')
     channel = models.CharField(max_length=50, choices=Channel.choices)
     status = models.CharField(max_length=50, choices=Status.choices, default=Status.PENDING)
     retry_count = models.IntegerField(default=0)
+    
+    # Provider Tracking
+    provider_name = models.CharField(max_length=100, blank=True, null=True)
+    provider_message_id = models.CharField(max_length=255, blank=True, null=True)
     provider_response = models.JSONField(null=True, blank=True)
+    provider_status = models.CharField(max_length=100, blank=True, null=True)
+    provider_error_code = models.CharField(max_length=100, blank=True, null=True)
+    provider_error_message = models.TextField(blank=True, null=True)
+    
+    request_timestamp = models.DateTimeField(null=True, blank=True)
+    response_timestamp = models.DateTimeField(null=True, blank=True)
+    
     idempotency_key = models.CharField(max_length=255, unique=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    created_at = models.DateTimeField(auto_now_add=True)
+    
     class Meta:
         indexes = [
             models.Index(fields=['status']),
@@ -62,6 +77,18 @@ class NotificationDelivery(models.Model):
 
     def __str__(self):
         return f"{self.channel} Delivery for {self.notification_id}"
+
+class DeliveryRetry(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    delivery = models.ForeignKey(NotificationDelivery, on_delete=models.CASCADE, related_name='retries')
+    attempt_number = models.IntegerField()
+    reason = models.TextField()
+    backoff_delay = models.IntegerField(help_text="Delay in seconds before this retry was attempted")
+    outcome = models.CharField(max_length=50) # 'SUCCESS', 'FAILED'
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['created_at']
 
 
 class NotificationPreference(models.Model):
