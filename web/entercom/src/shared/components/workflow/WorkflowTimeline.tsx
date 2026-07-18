@@ -15,7 +15,7 @@ export const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({ currentStatu
   
   const mappedEvents = historyEvents.map((evt, i) => ({
     id: `history-${i}`,
-    title: evt.to_state.replace(/_/g, ' '),
+    title: evt.to_state ? evt.to_state.replace(/_/g, ' ') : 'Unknown State',
     date: evt.created_at,
     description: evt.reason,
     status: evt.to_state === currentStatus ? 'current' : 'completed'
@@ -26,7 +26,7 @@ export const WorkflowTimeline: React.FC<WorkflowTimelineProps> = ({ currentStatu
   if (!isCurrentInHistory && currentStatus) {
     mappedEvents.push({
       id: 'current',
-      title: currentStatus.replace(/_/g, ' '),
+      title: currentStatus ? currentStatus.replace(/_/g, ' ') : 'Unknown State',
       date: new Date().toISOString(),
       description: 'Current stage',
       status: 'current'
