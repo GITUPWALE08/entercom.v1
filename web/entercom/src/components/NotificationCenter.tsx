@@ -53,19 +53,32 @@ export function NotificationCenter() {
     if (!notification.read_at) {
       markAsRead.mutate(notification.id);
     }
+    // Don't close immediately if we just want them to read the expanded message, but since it's a dropdown, it's fine to keep it open or close.
+    // Actually, let's keep the existing behavior of closing the dropdown.
     setIsOpen(false);
     
     // Navigate using absolute paths dynamically
     const roleMatch = window.location.pathname.match(/^\/portal\/(customer|staff|manager|admin)/);
     const rolePath = roleMatch ? roleMatch[0] : '/portal/customer';
+    const role = roleMatch ? roleMatch[1] : 'customer';
     
     if (notification.resource_type === 'request') {
+       if (role === 'admin') return; // Admin has no request view
        navigate(`${rolePath}/requests/${notification.resource_id}`);
     } else if (notification.resource_type === 'order') {
+       if (role === 'manager' || role === 'admin') return;
        navigate(`${rolePath}/orders/${notification.resource_id}`);
     } else if (notification.resource_type === 'booking') {
-       navigate(`${rolePath}/bookings/${notification.resource_id}`);
+       if (role === 'customer') {
+          // Customers don't have a dedicated bookings view, it's usually inside requests
+          return;
+       } else if (role === 'staff') {
+          navigate(`${rolePath}/bookings`); // No detail page for staff bookings
+       } else {
+          return;
+       }
     } else if (notification.resource_type === 'payment') {
+       if (role === 'admin') return;
        navigate(`${rolePath}/payments/${notification.resource_id}`);
     }
   };
@@ -153,7 +166,7 @@ export function NotificationCenter() {
                             {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                        <p className="text-xs text-gray-600 mt-1 break-words">
                           {notification.message}
                         </p>
                       </div>

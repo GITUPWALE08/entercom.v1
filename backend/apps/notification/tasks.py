@@ -53,8 +53,10 @@ def task_dispatch_email(self, delivery_id):
         # Idempotency check: if it's not pending, don't process.
         return
         
+    delivery.processing_started_at = timezone.now()
     delivery.request_timestamp = timezone.now()
-    delivery.save(update_fields=['status', 'request_timestamp'])
+    delivery.status = NotificationDelivery.Status.PROCESSING
+    delivery.save(update_fields=['status', 'request_timestamp', 'processing_started_at'])
     
     try:
         response_data = NotificationService.dispatch_email_delivery(delivery)
@@ -122,8 +124,9 @@ def task_dispatch_push(self, delivery_id):
     except NotificationDelivery.DoesNotExist:
         return
         
+    delivery.processing_started_at = timezone.now()
     delivery.status = NotificationDelivery.Status.PROCESSING
-    delivery.save(update_fields=['status'])
+    delivery.save(update_fields=['status', 'processing_started_at'])
     
     try:
         _send_push_mock(delivery)

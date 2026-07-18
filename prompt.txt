@@ -1,44 +1,360 @@
-I'm getting this error on frontend after submiting a request
-Something went wrong
-Cannot read properties of undefined (reading 'replace')
+# Entercom Notification System — Phase 1 Completion & Phase 2 Observability
 
-the render log:
-[18/Jul/2026:13:36:42] "GET /api/v1/payments/" 200 2
-127.0.0.1:38052 - - [18/Jul/2026:13:36:43] "GET /api/v1/notifications/?offset=0&limit=20" 200 52
-127.0.0.1:38052 - - [18/Jul/2026:13:36:43] "GET /api/v1/products/" 200 2
-127.0.0.1:55964 - - [18/Jul/2026:13:36:45] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:55964 - - [18/Jul/2026:13:36:45] "WSREJECT /ws/requests/" - -
-127.0.0.1:55964 - - [18/Jul/2026:13:36:45] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:38052 - - [18/Jul/2026:13:36:45] "GET /api/v1/notifications/?offset=0&limit=20" 200 52
-127.0.0.1:55966 - - [18/Jul/2026:13:36:47] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:55966 - - [18/Jul/2026:13:36:47] "WSREJECT /ws/requests/" - -
-127.0.0.1:55966 - - [18/Jul/2026:13:36:47] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:41126 - - [18/Jul/2026:13:36:51] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:41126 - - [18/Jul/2026:13:36:51] "WSREJECT /ws/requests/" - -
-127.0.0.1:41126 - - [18/Jul/2026:13:36:51] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:41136 - - [18/Jul/2026:13:36:56] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:41136 - - [18/Jul/2026:13:36:56] "WSREJECT /ws/requests/" - -
-127.0.0.1:41136 - - [18/Jul/2026:13:36:56] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:40850 - - [18/Jul/2026:13:37:06] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:40850 - - [18/Jul/2026:13:37:06] "WSREJECT /ws/requests/" - -
-127.0.0.1:40850 - - [18/Jul/2026:13:37:06] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:38052 - - [18/Jul/2026:13:37:15] "POST /api/v1/requests/" 201 151
-127.0.0.1:38052 - - [18/Jul/2026:13:37:16] "OPTIONS /api/v1/requests/f6366cea-a603-40aa-935b-df93c1f45922/" 200 -
-127.0.0.1:38052 - - [18/Jul/2026:13:37:16] "OPTIONS /api/v1/requests/f6366cea-a603-40aa-935b-df93c1f45922/quotes/" 200 -
-127.0.0.1:38052 - - [18/Jul/2026:13:37:16] "OPTIONS /api/v1/requests/f6366cea-a603-40aa-935b-df93c1f45922/timeline/" 200 -
-127.0.0.1:41300 - - [18/Jul/2026:13:37:16] "WSCONNECTING /ws/requests/" - -
-2026-07-18 13:38:18,548 [INFO] forensic.audit 2e1dbcf1-9688-4998-969b-72af181d2732 AUDIT_EVENT:auth.login_failed
-2026-07-18 13:38:18,598 [WARNING] django.request - Unauthorized: /api/v1/auth/login/
-2026-07-18 13:38:39,682 [INFO] forensic.audit 3f475330-523e-4294-9066-cbbfecc86d07 AUDIT_EVENT:auth.login_success
-2026-07-18 13:38:41,027 [INFO] forensic.audit 624216bb-b60f-429d-8f8a-adb9dd9e07f3 AUDIT_EVENT:request.created
-2026-07-18 13:38:41,095 [INFO] apps.requests.events.publishers 624216bb-b60f-429d-8f8a-adb9dd9e07f3 Published Domain Event: EventName.REQUEST_CREATED
-2026-07-18 13:38:41,490 [WARNING] celery.backends.redis 624216bb-b60f-429d-8f8a-adb9dd9e07f3 
-Setting ssl_cert_reqs=CERT_NONE when connecting to redis means that celery will not validate the identity of the redis broker when connecting. This leaves you vulnerable to man in the middle attacks.
-2026-07-18 13:38:42,258 [INFO] forensic.audit 624216bb-b60f-429d-8f8a-adb9dd9e07f3 AUDIT_EVENT:request.submitted
-2026-07-18 13:38:42,326 [INFO] apps.requests.events.publishers 624216bb-b60f-429d-8f8a-adb9dd9e07f3 Published Domain Event: EventName.REQUEST_SUBMITTED
-2026-07-18 13:38:59,370 [INFO] forensic.audit 8e7dc799-5562-48e2-a07e-9802ef8862dc AUDIT_EVENT:request.created
-2026-07-18 13:38:59,438 [INFO] apps.requests.events.publishers 8e7dc799-5562-48e2-a07e-9802ef8862dc Published Domain Event: EventName.REQUEST_CREATED
-2026-07-18 13:38:59,680 [WARNING] celery.backends.redis 8e7dc799-5562-48e2-a07e-9802ef8862dc 
-Setting ssl_cert_reqs=CERT_NONE when connecting to redis means that celery will not validate the identity of the redis broker when connecting. This leaves you vulnerable to man in the middle attacks.
-2026-07-18 13:39:00,052 [INFO] forensic.audit 8e7dc799-5562-48e2-a07e-9802ef8862dc AUDIT_EVENT:request.submitted
-2026-07-18 13:39:00,118 [INFO] apps.requests.events.publishers 8e7dc799-5562-48e2-a07e-9802ef8862dc Published Domain Event: EventName.REQUEST_SUBMITTED
+You are a Senior Django Backend Architect working on the Entercom platform.
+
+The Notification subsystem already exists.
+
+Do NOT redesign it.
+
+Do NOT introduce new business rules.
+
+Do NOT add marketing emails, SMS, push notifications, digests, or WebSockets.
+
+Your task is to complete the MVP notification system, verify every implemented workflow, and add production-grade observability.
+
+---
+
+# CURRENT ARCHITECTURE
+
+The following components already exist:
+
+* DispatchOrchestrator
+* NotificationService
+* ProviderFactory
+* EmailProvider abstraction
+* ResendProvider
+* DummyProvider
+* Celery Worker
+* Celery Beat
+* Notification models
+* Notification templates
+* Retry handling
+* Provider logger
+
+Treat these as authoritative.
+
+---
+
+# PHASE 1 — COMPLETE THE MVP
+
+Verify and complete the following transactional emails only.
+
+## Authentication
+
+* welcome
+* verify_email
+* password_reset_requested
+* password_reset_completed
+* account_locked
+
+---
+
+## Requests
+
+* request_submitted
+* technician_assigned
+* quote_ready
+* request_completed
+
+---
+
+## Bookings
+
+* booking_confirmed
+* booking_reminder
+
+---
+
+## Payments
+
+* payment_receipt
+
+---
+
+For each notification verify:
+
+* event exists
+* DispatchOrchestrator mapping exists
+* NotificationService renders template
+* Celery task is queued
+* Celery task executes
+* correct provider selected
+* provider sends email
+* correct template rendered
+* correct context passed
+* failures handled correctly
+
+Do not assume.
+
+Trace the complete execution path.
+
+Generate fixes where necessary.
+
+---
+
+# PHASE 2 — END-TO-END VERIFICATION
+
+For every MVP notification create an execution verification.
+
+Document:
+
+Business Service
+
+↓
+
+DispatchOrchestrator
+
+↓
+
+NotificationService
+
+↓
+
+Celery Queue
+
+↓
+
+Worker
+
+↓
+
+ProviderFactory
+
+↓
+
+ResendProvider
+
+↓
+
+Resend API
+
+↓
+
+Recipient Inbox
+
+For every stage verify:
+
+* expected inputs
+* outputs
+* failure modes
+* retry behaviour
+* audit logging
+* correlation IDs
+* provider logging
+
+Produce an execution matrix.
+
+---
+
+# PHASE 3 — OBSERVABILITY
+
+Implement production observability.
+
+Do NOT implement new notification types.
+
+Implement only infrastructure.
+
+---
+
+## 1. Delivery Status Tracking
+
+Every notification must expose lifecycle states.
+
+Example:
+
+PENDING
+
+QUEUED
+
+PROCESSING
+
+SENT
+
+DELIVERED
+
+FAILED
+
+DEAD_LETTERED
+
+BOUNCED (if webhook later exists)
+
+Do not invent unsupported transitions.
+
+---
+
+## 2. Retry History
+
+Persist:
+
+* retry count
+* retry timestamps
+* retry reason
+* retry backoff delay
+* final retry outcome
+
+---
+
+## 3. Provider Response Tracking
+
+Persist:
+
+* provider message ID
+* provider name
+* request timestamp
+* response timestamp
+* provider status
+* provider error code
+* provider error message
+
+Never store API keys.
+
+---
+
+## 4. Failure Dashboard
+
+Implement backend support for:
+
+Failed notifications
+
+Grouped by:
+
+* event type
+* provider
+* error type
+* date
+* retry status
+
+No frontend required.
+
+Expose reusable service methods.
+
+---
+
+## 5. Manual Resend
+
+Implement backend capability for administrators to resend a failed notification.
+
+Requirements:
+
+* reuse original payload
+* preserve audit trail
+* create new delivery attempt
+* never mutate original delivery record
+
+---
+
+## 6. Search & Filtering
+
+Support filtering notifications by:
+
+* recipient
+* event type
+* status
+* provider
+* created date
+* delivered date
+* failed date
+* correlation ID
+* request ID
+
+---
+
+## 7. Metrics
+
+Implement service methods producing metrics.
+
+Examples:
+
+* total sent
+* total failed
+* delivery success rate
+* average provider latency
+* average retry count
+* dead-letter count
+* queue latency
+* processing latency
+
+Do not implement Grafana.
+
+Do not implement Prometheus exporters.
+
+Only backend metrics.
+
+---
+
+## 8. Audit
+
+Every resend
+
+Every retry
+
+Every provider failure
+
+Every provider success
+
+Every dead-letter
+
+must generate immutable audit records.
+
+---
+
+# PHASE 4 — TESTING
+
+Create comprehensive tests.
+
+Verify:
+
+Authentication notifications
+
+Request notifications
+
+Booking notifications
+
+Payment notifications
+
+Retry behaviour
+
+Provider failures
+
+Dummy provider
+
+Resend provider
+
+ProviderFactory
+
+Celery execution
+
+NotificationService
+
+DispatchOrchestrator
+
+Audit generation
+
+Resend functionality
+
+Metrics generation
+
+Search filtering
+
+---
+
+# DELIVERABLES
+
+Produce:
+
+1. MVP Completion Report
+2. End-to-End Execution Matrix
+3. Observability Architecture
+4. Delivery Lifecycle Documentation
+5. Retry Documentation
+6. Provider Tracking Documentation
+7. Metrics Documentation
+8. Resend Workflow Documentation
+9. Test Coverage Report
+10. Remaining Gaps (if any)
+
+Do not introduce new business workflows.
+
+Do not add non-MVP notification types.
+
+Focus entirely on making the existing notification system production-ready, observable, auditable, and verifiable.

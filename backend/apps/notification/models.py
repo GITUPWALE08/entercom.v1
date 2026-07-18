@@ -63,6 +63,9 @@ class NotificationDelivery(models.Model):
     provider_error_code = models.CharField(max_length=100, blank=True, null=True)
     provider_error_message = models.TextField(blank=True, null=True)
     
+    correlation_id = models.CharField(max_length=255, blank=True, null=True)
+    processing_started_at = models.DateTimeField(null=True, blank=True)
+    
     request_timestamp = models.DateTimeField(null=True, blank=True)
     response_timestamp = models.DateTimeField(null=True, blank=True)
     

@@ -47,7 +47,7 @@ class ResendService:
 class NotificationSearchService:
     @staticmethod
     def search(recipient_id=None, event_type=None, status=None, provider_name=None, 
-               created_after=None, created_before=None):
+               created_after=None, created_before=None, correlation_id=None, request_id=None):
         qs = NotificationDelivery.objects.select_related('notification').all()
         
         if recipient_id:
@@ -62,12 +62,18 @@ class NotificationSearchService:
             qs = qs.filter(created_at__gte=created_after)
         if created_before:
             qs = qs.filter(created_at__lte=created_before)
+        if correlation_id:
+            qs = qs.filter(correlation_id=correlation_id)
+        if request_id:
+            qs = qs.filter(notification__resource_id=request_id)
             
         return qs
 
 class NotificationMetricsService:
     @staticmethod
     def get_metrics():
+        from django.db.models import F, ExpressionWrapper, DurationField
+        
         total = NotificationDelivery.objects.count()
         sent = NotificationDelivery.objects.filter(status=NotificationDelivery.Status.SENT).count()
         failed = NotificationDelivery.objects.filter(status__in=[NotificationDelivery.Status.FAILED, NotificationDelivery.Status.DEAD_LETTERED]).count()
@@ -77,10 +83,32 @@ class NotificationMetricsService:
         
         avg_retries = NotificationDelivery.objects.aggregate(Avg('retry_count'))['retry_count__avg'] or 0
         
+        # Latency calculations
+        latency_qs = NotificationDelivery.objects.exclude(processing_started_at__isnull=True)
+        
+        queue_latency_expr = ExpressionWrapper(F('processing_started_at') - F('created_at'), output_field=DurationField())
+        processing_latency_expr = ExpressionWrapper(F('updated_at') - F('processing_started_at'), output_field=DurationField())
+        provider_latency_expr = ExpressionWrapper(F('response_timestamp') - F('request_timestamp'), output_field=DurationField())
+        
+        latencies = latency_qs.aggregate(
+            avg_queue=Avg(queue_latency_expr),
+            avg_processing=Avg(processing_latency_expr)
+        )
+        
+        provider_latencies = NotificationDelivery.objects.exclude(request_timestamp__isnull=True).exclude(response_timestamp__isnull=True).aggregate(
+            avg_provider=Avg(provider_latency_expr)
+        )
+        
+        def format_duration(td):
+            return td.total_seconds() if td else 0
+
         return {
             "total_sent": sent,
             "total_failed": failed,
             "success_rate": success_rate,
             "average_retry_count": avg_retries,
-            "dead_letter_count": dead_letter
+            "dead_letter_count": dead_letter,
+            "average_queue_latency_seconds": format_duration(latencies.get('avg_queue')),
+            "average_processing_latency_seconds": format_duration(latencies.get('avg_processing')),
+            "average_provider_latency_seconds": format_duration(provider_latencies.get('avg_provider'))
         }

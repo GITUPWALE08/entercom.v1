@@ -52,11 +52,13 @@ class EventToNotificationMapper:
             if event_name == "request.created":
                 recipient_id = data.get('customer_id')
                 message = f"Your request #{resource_id} has been created."
+                event_name = "request_submitted"
             elif event_name == "request.assigned":
                 recipient_id = data.get('technician_id')
                 title = "New Assignment"
                 message = f"You have been assigned to request #{resource_id}."
                 category = "alerts"
+                event_name = "technician_assigned"
             elif event_name == "quote.created":
                 try:
                     req = Request.objects.get(pk=resource_id)
@@ -67,6 +69,7 @@ class EventToNotificationMapper:
                 message = "Your quote is ready for review."
                 category = "alerts"
                 is_critical = True
+                event_name = "quote_ready"
             elif event_name == "quote.expired":
                 try:
                     req = Request.objects.get(pk=resource_id)
@@ -95,6 +98,7 @@ class EventToNotificationMapper:
                     pass
                 title = "Payment Successful"
                 message = f"Your payment has been received successfully."
+                event_name = "payment_receipt"
             elif event_name == "booking.scheduled":
                 try:
                     req = Request.objects.get(pk=data.get('request_id'))
@@ -104,6 +108,7 @@ class EventToNotificationMapper:
                 title = "Booking Scheduled"
                 message = f"Your service has been scheduled for {data.get('start_time')}."
                 is_critical = True
+                event_name = "booking_confirmed"
             elif event_name == "booking.rescheduled":
                 try:
                     req = Request.objects.get(pk=data.get('request_id'))
@@ -152,6 +157,7 @@ class EventToNotificationMapper:
                     pass
                 title = "Job Completed"
                 message = "Your service job has been completed successfully."
+                event_name = "request_completed"
 
             if recipient_id:
                 DispatchOrchestrator.dispatch_event(
