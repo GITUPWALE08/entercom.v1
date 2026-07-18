@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -23,7 +24,7 @@ export default function StaffRequestList() {
   const filteredAndSortedRequests = useMemo(() => {
     if (!requests) return [];
     
-    let result = requests.filter((req: any) => {
+    let result = ensureArray(requests).filter((req: any) => {
       // Tab Filters
       if (filterParam === 'assigned' && !['assigned', 'in_progress'].includes(req.status)) return false;
       if (filterParam === 'pending' && !['submitted', 'unassigned', 'awaiting_assignment', 'staff_review'].includes(req.status)) return false;

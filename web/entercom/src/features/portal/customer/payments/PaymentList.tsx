@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { paymentsApi } from '../../../../api/payments';
@@ -27,7 +28,7 @@ export default function PaymentList() {
           <div className="space-y-4">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-20 w-full rounded-2xl" />)}
           </div>
-        ) : payments && payments.length > 0 ? (
+        ) : payments && ensureArray(payments).length > 0 ? (
           <DataTable 
             data={payments}
             columns={[

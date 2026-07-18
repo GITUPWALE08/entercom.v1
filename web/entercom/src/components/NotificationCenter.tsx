@@ -1,3 +1,4 @@
+import { ensureArray } from '../utils/arrays';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bell, Check, Trash2, AlertCircle, Info, FileText, Loader2 } from 'lucide-react';
 import { useNotifications } from '../hooks/useNotifications';
@@ -78,7 +79,7 @@ export function NotificationCenter() {
     }
   };
 
-  const activeNotifications = notifications.filter(n => n.status !== 'ARCHIVED');
+  const activeNotifications = ensureArray(notifications).filter(n => n.status !== 'ARCHIVED');
 
   return (
     <div className="relative" ref={dropdownRef}>

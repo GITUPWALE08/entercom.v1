@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsApi } from '../../../../api/products';
@@ -69,7 +70,7 @@ export default function StaffInventory() {
   const filteredProducts = useMemo(() => {
     if (!products) return [];
     
-    return products.filter((prod: ProductItem) => {
+    return ensureArray(products).filter((prod: ProductItem) => {
       const isLowStock = prod.quantity_available <= (prod.low_stock_threshold || 0);
       if (stockFilter === 'low_stock' && !isLowStock) return false;
       if (stockFilter === 'in_stock' && isLowStock) return false;
@@ -89,7 +90,7 @@ export default function StaffInventory() {
     currentPage * itemsPerPage
   );
   
-  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+  const totalPages = Math.ceil(ensureArray(filteredProducts).length / itemsPerPage);
 
   return (
     <ErrorBoundary>

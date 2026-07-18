@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -25,7 +26,7 @@ export default function StaffPaymentList() {
   const filteredAndSortedPayments = useMemo(() => {
     if (!payments) return [];
     
-    let result = payments.filter((payment: PaymentItem) => {
+    let result = ensureArray(payments).filter((payment: PaymentItem) => {
       if (statusFilter !== 'all' && payment.status !== statusFilter) return false;
       if (searchTerm) {
         const term = searchTerm.toLowerCase();

@@ -6,6 +6,9 @@ from apps.authentication.views.auth_views import (
     LogoutView,
     TokenRefreshView,
     RegisterView,
+    VerifyEmailView,
+    ChangePasswordView,
+    ChangeEmailView,
 )
 
 app_name = "authentication"
@@ -16,4 +19,7 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout"),
     path("logout-all/", LogoutAllView.as_view(), name="logout_all"),
     path("refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("verify-email/", VerifyEmailView.as_view(), name="verify_email"),
+    path("change-password/", ChangePasswordView.as_view(), name="change_password"),
+    path("change-email/", ChangeEmailView.as_view(), name="change_email"),
 ]

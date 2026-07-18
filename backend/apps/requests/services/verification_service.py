@@ -24,6 +24,7 @@ from apps.requests.models import (
     Verification,
     VerificationStatus,
 )
+from apps.notification.services import DispatchOrchestrator
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -114,6 +115,20 @@ class VerificationService:
             evidence_links=evidence.get("photos", []),
         ))
 
+        # Notify staff/management that verification is required
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="verification_required",
+        #     recipient_id=0,  # Or staff group
+        #     resource_type="verification",
+        #     resource_id=str(verification.id),
+        #     category="updates",
+        #     title="Verification Required",
+        #     message=f"Request {request.public_id} is pending verification.",
+        #     context={},
+        #     is_system_critical=False,
+        # ))
+
         return verification
 
     @staticmethod
@@ -177,6 +192,19 @@ class VerificationService:
                 staff_id=actor.id,
             ))
 
+            # [DEFERRED] Non-MVP event
+            # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            #     event_type="verification_approved",
+            #     recipient_id=request.customer_id,
+            #     resource_type="request",
+            #     resource_id=str(request.id),
+            #     category="updates",
+            #     title="Verification Approved",
+            #     message="Your request has passed verification.",
+            #     context={},
+            #     is_system_critical=False,
+            # ))
+
         elif action_type == "reject":
             new_status = machine.transition(
                 action=RequestAction.REJECT_VERIFICATION,
@@ -202,6 +230,20 @@ class VerificationService:
                 actor_id=actor.id,
                 rework_notes=notes,
             ))
+
+            # Send to technician
+            # [DEFERRED] Non-MVP event
+            # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            #     event_type="verification_failed",
+            #     recipient_id=0,  # We don't have technician on hand easily here, maybe they check the request.
+            #     resource_type="request",
+            #     resource_id=str(request.id),
+            #     category="alerts",
+            #     title="Verification Failed",
+            #     message="Verification failed, rework may be needed.",
+            #     context={"notes": notes},
+            #     is_system_critical=True,
+            # ))
 
         elif action_type == "override":
             new_status = machine.transition(

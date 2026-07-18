@@ -2,9 +2,11 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.payments.models import Payment, PaymentStatus
+from apps.payments.models import Payment, PaymentStatus
 from core.events import event_publisher
 from apps.audit.services import AuditService as audit_logger
 from core.permissions import require_permission
+from apps.notification.services import DispatchOrchestrator
 
 class PaymentService:
     """
@@ -143,6 +145,19 @@ class PaymentService:
                 }
             )
 
+            # [DEFERRED] Non-MVP event
+            # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            #     event_type="payment_expired",
+            #     recipient_id=payment.customer_id,
+            #     resource_type="payment",
+            #     resource_id=str(payment.id),
+            #     category="alerts",
+            #     title="Payment Expired",
+            #     message="Your payment session has expired.",
+            #     context={},
+            #     is_system_critical=False,
+            # ))
+
     @staticmethod
     @transaction.atomic
     def cancel_payment(actor, correlation_id, payment_id):
@@ -216,6 +231,19 @@ class PaymentService:
                 'amount': float(payment.amount)
             }
         )
+
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="refund_issued",
+        #     recipient_id=payment.customer_id,
+        #     resource_type="payment",
+        #     resource_id=str(payment.id),
+        #     category="updates",
+        #     title="Refund Issued",
+        #     message="A refund has been issued for your payment.",
+        #     context={"amount": float(payment.amount)},
+        #     is_system_critical=False,
+        # ))
         
         from apps.orders.services.order_service import OrderService
         OrderService.cancel_order(

@@ -16,7 +16,17 @@ class LogoutSerializer(serializers.Serializer):
     refresh_token = serializers.CharField()
 
 class RefreshSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
+    refresh = serializers.CharField(required=True)
+
+class VerifyEmailSerializer(serializers.Serializer):
+    token = serializers.CharField(required=True)
+
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True, write_only=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+
+class ChangeEmailSerializer(serializers.Serializer):
+    new_email = serializers.EmailField(required=True)
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)

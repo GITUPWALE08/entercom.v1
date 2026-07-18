@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../utils/arrays';
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PageContainer } from '../../../shared/components/PageContainer';
@@ -62,7 +63,7 @@ export default function UserList() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-4">
-              {users?.map(user => (
+              {ensureArray(users).map(user => (
                 <div 
                   key={user.id} 
                   className={`cursor-pointer transition-colors bg-white rounded-xl shadow-sm border ${selectedUser?.id === user.id ? 'border-ess-purple ring-1 ring-ess-purple' : 'border-gray-100 hover:border-gray-300'}`}

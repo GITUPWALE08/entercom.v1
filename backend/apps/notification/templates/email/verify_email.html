@@ -1,0 +1,12 @@
+{% extends "email/base.html" %}
+
+{% block content %}
+<h2>Verify Your Email Address</h2>
+<p>Hi {{ user.first_name|default:"there" }},</p>
+<p>Thank you for registering with Entercom. Please click the link below to verify your email address:</p>
+<p>
+  <a href="{{ verification_link }}" style="display:inline-block;padding:10px 20px;background-color:#007bff;color:#ffffff;text-decoration:none;border-radius:5px;">Verify Email</a>
+</p>
+<p>Or paste this link into your browser:</p>
+<p>{{ verification_link }}</p>
+{% endblock %}

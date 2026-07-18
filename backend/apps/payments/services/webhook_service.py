@@ -8,6 +8,7 @@ from core.permissions import require_permission
 import hashlib
 import hmac
 import json
+from apps.notification.services import DispatchOrchestrator
 
 class WebhookService:
     """
@@ -119,6 +120,18 @@ class WebhookService:
                     'new_state': PaymentStatus.PAID
                 }
             )
+
+            transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+                event_type="payment_receipt",
+                recipient_id=payment.customer_id,
+                resource_type="payment",
+                resource_id=str(payment.id),
+                category="updates",
+                title="Payment Receipt",
+                message="We have successfully received your payment.",
+                context={"amount": float(payment.amount)},
+                is_system_critical=True,
+            ))
             
             from apps.orders.services.order_service import OrderService
             OrderService.process_payment_paid_event(
@@ -158,3 +171,16 @@ class WebhookService:
                     'failure_reason': failure_reason
                 }
             )
+
+            # [DEFERRED] Non-MVP event
+            # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            #     event_type="payment_failed",
+            #     recipient_id=payment.customer_id,
+            #     resource_type="payment",
+            #     resource_id=str(payment.id),
+            #     category="alerts",
+            #     title="Payment Failed",
+            #     message="Your recent payment attempt failed.",
+            #     context={"failure_reason": failure_reason},
+            #     is_system_critical=True,
+            # ))

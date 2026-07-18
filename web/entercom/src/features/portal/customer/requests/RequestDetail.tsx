@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -299,7 +300,7 @@ export default function RequestDetail() {
               currentStatus={request.status}
               historyEvents={
                 loadingTimeline ? [] : 
-                (timeline || []).map((event: any) => ({
+                ensureArray(timeline).map((event: any) => ({
                   to_state: event.state_to || event.status,
                   created_at: event.created_at,
                   reason: event.reason

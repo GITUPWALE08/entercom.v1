@@ -1,5 +1,8 @@
+import uuid
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
+from datetime import timedelta
 
 
 class UserSession(models.Model):
@@ -25,3 +28,26 @@ class UserSession(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user.email} - {self.device_name or 'Unknown Device'}"
+
+class EmailVerificationToken(models.Model):
+    """Tracks email verification tokens."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="email_verification_tokens"
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "auth_email_verification_token"
+
+    def is_valid(self):
+        return timezone.now() < self.expires_at
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(hours=24)
+        super().save(*args, **kwargs)

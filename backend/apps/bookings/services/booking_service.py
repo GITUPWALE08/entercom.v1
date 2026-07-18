@@ -11,6 +11,7 @@ from ..permissions.checkers import BookingPermissionChecker
 from ..permissions.constants import Roles
 from ..events.publishers import BookingEventPublisher
 from apps.audit_logs.services.audit_service import log_action
+from apps.notification.services import DispatchOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -66,6 +67,18 @@ class BookingService:
             actor_id=str(getattr(actor, 'id', 'SYSTEM'))
         ))
 
+        transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            event_type="booking_confirmed",
+            recipient_id=technician_id,
+            resource_type="booking",
+            resource_id=str(booking.id),
+            category="updates",
+            title="Booking Confirmed",
+            message="A new booking has been confirmed.",
+            context={"duration_days": duration_days},
+            is_system_critical=False,
+        ))
+
         logger.info(f"Created unscheduled Booking {booking.id} for Request {request_id}")
         return booking
 
@@ -112,6 +125,19 @@ class BookingService:
             actor_id=str(actor.id),
             started_at=booking.started_at.isoformat()
         ))
+
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="job_started",
+        #     recipient_id=actor.id,
+        #     resource_type="booking",
+        #     resource_id=str(booking.id),
+        #     category="updates",
+        #     title="Job Started",
+        #     message="Your job has started.",
+        #     context={},
+        #     is_system_critical=False,
+        # ))
 
         logger.info(f"Booking {booking_id} started by {actor.id}")
         return booking
@@ -208,6 +234,19 @@ class BookingService:
             correlation_id=correlation_id,
             actor_id=str(getattr(actor, 'id', 'SYSTEM'))
         ))
+
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="job_completed",
+        #     recipient_id=booking.technician_id,
+        #     resource_type="booking",
+        #     resource_id=str(booking.id),
+        #     category="updates",
+        #     title="Job Completed",
+        #     message="Your job has been marked as completed.",
+        #     context={},
+        #     is_system_critical=False,
+        # ))
 
         logger.info(f"Booking {booking_id} synced to COMPLETED")
         return booking

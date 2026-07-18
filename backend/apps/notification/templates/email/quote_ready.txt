@@ -1,0 +1,6 @@
+Hello {{ user.first_name|default:"there" }},
+
+{{ notification.message }}
+
+Thank you,
+The Entercom Team

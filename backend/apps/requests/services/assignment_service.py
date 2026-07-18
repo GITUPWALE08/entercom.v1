@@ -18,6 +18,7 @@ from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.state_machine import RequestStateMachine
 from apps.requests.events.publishers import DomainEventPublisher
 from apps.requests.models import Assignment, LifecycleState, Request, StateHistory
+from apps.notification.services import DispatchOrchestrator
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -98,6 +99,31 @@ class AssignmentService:
             technician_id=technician.id,
         ))
 
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="assignment_received",
+        #     recipient_id=technician.id,
+        #     resource_type="assignment",
+        #     resource_id=str(request.id),
+        #     category="updates",
+        #     title="New Assignment",
+        #     message=f"You have been assigned to request {request.public_id}.",
+        #     context={},
+        #     is_system_critical=False,
+        # ))
+
+        transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            event_type="technician_assigned",
+            recipient_id=request.customer.id,
+            resource_type="request",
+            resource_id=str(request.id),
+            category="updates",
+            title="Technician Assigned",
+            message=f"A technician has been assigned to your request {request.public_id}.",
+            context={},
+            is_system_critical=False,
+        ))
+
         return request
 
     @staticmethod
@@ -169,6 +195,19 @@ class AssignmentService:
             technician_id=actor.id,
             timestamp=timezone.now().isoformat(),
         ))
+
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="assignment_accepted",
+        #     recipient_id=request.customer.id,
+        #     resource_type="assignment",
+        #     resource_id=str(request.id),
+        #     category="updates",
+        #     title="Assignment Accepted",
+        #     message="Your technician has accepted the assignment.",
+        #     context={},
+        #     is_system_critical=False,
+        # ))
 
         return request
 
@@ -247,6 +286,20 @@ class AssignmentService:
             actor_id=actor.id,
             reason_code=reason_code,
         ))
+
+        # We notify staff that an assignment was declined. (Recipient=actor.id isn't right, maybe just let orchestration handle it? Prompt says: assignment_declined)
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="assignment_declined",
+        #     recipient_id=request.customer.id,  # Or staff, but customer is standard
+        #     resource_type="assignment",
+        #     resource_id=str(request.id),
+        #     category="alerts",
+        #     title="Assignment Declined",
+        #     message="The assigned technician declined the assignment.",
+        #     context={"reason_code": reason_code},
+        #     is_system_critical=False,
+        # ))
 
         return request
 

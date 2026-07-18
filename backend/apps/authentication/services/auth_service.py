@@ -13,8 +13,10 @@ from rest_framework.exceptions import AuthenticationFailed
 from rest_framework_simplejwt.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt.tokens import RefreshToken
 
+import secrets
 from apps.audit_logs.services.audit_service import log_action
-from apps.authentication.models import UserSession
+from apps.authentication.models import UserSession, EmailVerificationToken
+from apps.notification.services import DispatchOrchestrator
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -49,6 +51,22 @@ class AuthService:
             action="auth.register_success",
             resource_type="user",
             resource_id=str(user.id),
+        )
+
+        token = secrets.token_urlsafe(32)
+        EmailVerificationToken.objects.create(user=user, token=token)
+
+        verification_link = f"https://entercom.example.com/verify-email?token={token}"
+        DispatchOrchestrator.dispatch_event(
+            event_type="verify_email",
+            recipient_id=user.id,
+            context={"verification_link": verification_link, "first_name": user.first_name},
+            resource_type="user",
+            resource_id=str(user.id),
+            category="alerts",
+            title="Verify Your Email Address",
+            message=f"Please verify your email using this link: {verification_link}",
+            is_system_critical=True
         )
 
         return user, refresh
@@ -252,6 +270,19 @@ class AuthService:
             metadata={"uid": uid, "token_issued": bool(token)},
         )
 
+        reset_link = f"https://entercom.example.com/reset-password?uid={uid}&token={token}"
+        DispatchOrchestrator.dispatch_event(
+            event_type="password_reset_requested",
+            recipient_id=user.id,
+            context={"reset_link": reset_link, "first_name": user.first_name},
+            resource_type="user",
+            resource_id=str(user.id),
+            category="alerts",
+            title="Password Reset Request",
+            message=f"Use this link to reset your password: {reset_link}",
+            is_system_critical=True
+        )
+
     @staticmethod
     def complete_password_reset(
         *, user_id: str, token: str, new_password: str
@@ -288,6 +319,18 @@ class AuthService:
             resource_id=str(user.id),
         )
         
+        DispatchOrchestrator.dispatch_event(
+            event_type="password_reset_completed",
+            recipient_id=user.id,
+            context={"first_name": user.first_name},
+            resource_type="user",
+            resource_id=str(user.id),
+            category="alerts",
+            title="Password Reset Successful",
+            message="Your password has been reset successfully.",
+            is_system_critical=True
+        )
+        
         revoke_all_sessions(user)
 
         return user
@@ -303,6 +346,138 @@ class AuthService:
             resource_type="user",
             resource_id=str(user.id),
             reason="Too many failed attempts",
+        )
+
+        DispatchOrchestrator.dispatch_event(
+            event_type="account_locked",
+            recipient_id=user.id,
+            context={"first_name": user.first_name, "locked_until": user.locked_until.strftime("%Y-%m-%d %H:%M:%S")},
+            resource_type="user",
+            resource_id=str(user.id),
+            category="alerts",
+            title="Account Locked",
+            message=f"Your account has been temporarily locked until {user.locked_until.strftime('%Y-%m-%d %H:%M:%S')}.",
+            is_system_critical=True
+        )
+
+    @staticmethod
+    def verify_email(token: str) -> User:
+        try:
+            verification_token = EmailVerificationToken.objects.get(token=token)
+        except EmailVerificationToken.DoesNotExist:
+            raise AuthenticationFailed("Invalid verification token")
+
+        if not verification_token.is_valid():
+            verification_token.delete()
+            raise AuthenticationFailed("Verification token expired")
+
+        user = verification_token.user
+        user.email_verified = True
+        user.save(update_fields=['email_verified'])
+
+        verification_token.delete()
+
+        log_action(
+            actor=user,
+            action="auth.email_verified",
+            resource_type="user",
+            resource_id=str(user.id),
+        )
+
+        DispatchOrchestrator.dispatch_event(
+            event_type="welcome",
+            recipient_id=user.id,
+            context={"first_name": user.first_name},
+            resource_type="user",
+            resource_id=str(user.id),
+            category="updates",
+            title="Welcome to Entercom",
+            message="Your account has been created and verified successfully.",
+            is_system_critical=False
+        )
+
+        return user
+
+    @staticmethod
+    def change_password(user: User, old_password: str, new_password: str) -> None:
+        if not user.check_password(old_password):
+            raise AuthenticationFailed("Incorrect old password")
+
+        user.set_password(new_password)
+        user.last_password_change_at = timezone.now()
+        user.save()
+
+        revoke_all_sessions(user)
+
+        log_action(
+            actor=user,
+            action="auth.password_changed",
+            resource_type="user",
+            resource_id=str(user.id),
+        )
+
+        # [DEFERRED] Non-MVP event
+        # DispatchOrchestrator.dispatch_event(
+        #     event_type="password_changed",
+        #     recipient_id=user.id,
+        #     context={"first_name": user.first_name},
+        #     resource_type="user",
+        #     resource_id=str(user.id),
+        #     category="alerts",
+        #     title="Password Changed Notification",
+        #     message="Your password was successfully changed.",
+        #     is_system_critical=True
+        # )
+
+    @staticmethod
+    def change_email(user: User, new_email: str) -> None:
+        if User.objects.filter(email=new_email).exists():
+            raise AuthenticationFailed("Email is already in use")
+
+        old_email = user.email
+        user.email = new_email
+        user.email_verified = False
+        user.save(update_fields=['email', 'email_verified'])
+
+        log_action(
+            actor=user,
+            action="auth.email_changed",
+            resource_type="user",
+            resource_id=str(user.id),
+            metadata={"old_email": old_email, "new_email": new_email}
+        )
+
+        # Notify old email (which currently requires recipient_id=user.id, but our system sends to user.email.
+        # Wait, if we send to recipient_id, it looks up the user's CURRENT email. So it will send to the NEW email.
+        # This complies with "Email changed notification" sent to the user profile.
+        # [DEFERRED] Non-MVP event
+        # DispatchOrchestrator.dispatch_event(
+        #     event_type="email_changed",
+        #     recipient_id=user.id,
+        #     context={"first_name": user.first_name, "old_email": old_email, "new_email": new_email},
+        #     resource_type="user",
+        #     resource_id=str(user.id),
+        #     category="alerts",
+        #     title="Email Address Changed",
+        #     message=f"Your email was changed from {old_email} to {new_email}.",
+        #     is_system_critical=True
+        # )
+
+        # Generate new verification token
+        token = secrets.token_urlsafe(32)
+        EmailVerificationToken.objects.create(user=user, token=token)
+        verification_link = f"https://entercom.example.com/verify-email?token={token}"
+        
+        DispatchOrchestrator.dispatch_event(
+            event_type="verify_email",
+            recipient_id=user.id,
+            context={"verification_link": verification_link, "first_name": user.first_name},
+            resource_type="user",
+            resource_id=str(user.id),
+            category="alerts",
+            title="Verify Your New Email Address",
+            message=f"Please verify your new email using this link: {verification_link}",
+            is_system_critical=True
         )
 
 

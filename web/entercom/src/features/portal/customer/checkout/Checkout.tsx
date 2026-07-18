@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -12,7 +13,7 @@ import { Select, Alert } from '../../../../shared/components/ui';
 
 export default function Checkout() {
   const { items, clearCart } = useCartStore();
-  const subtotal = items.reduce((acc, item) => acc + parseFloat(item.product.price || '0') * item.quantity, 0);
+  const subtotal = ensureArray(items).reduce((acc, item) => acc + parseFloat(item.product.price || '0') * item.quantity, 0);
   const navigate = useNavigate();
   const [selectedRequestId, setSelectedRequestId] = useState<string>('');
   const [requiresTechnician, setRequiresTechnician] = useState<boolean>(false);
@@ -23,7 +24,7 @@ export default function Checkout() {
     queryFn: requestsApi.list,
   });
 
-  const activeRequests = requests?.filter(r => r.status !== 'completed' && r.status !== 'cancelled') || [];
+  const activeRequests = ensureArray(requests).filter(r => r.status !== 'completed' && r.status !== 'cancelled') || [];
 
   const orderMutation = useMutation({
     mutationFn: ordersApi.create,
@@ -55,7 +56,7 @@ export default function Checkout() {
     setError(null);
     
     const payload: { request_id?: string, requires_technician?: boolean, items: any[] } = {
-      items: items.map(item => ({
+      items: ensureArray(items).map(item => ({
         product_id: item.product.id,
         quantity: item.quantity
       }))
@@ -70,7 +71,7 @@ export default function Checkout() {
     orderMutation.mutate(payload);
   };
 
-  if (items.length === 0) {
+  if (ensureArray(items).length === 0) {
     return (
       <PageContainer>
         <div className="text-center py-12">
@@ -108,13 +109,13 @@ export default function Checkout() {
 
                 {loadingRequests ? (
                   <Skeleton className="h-12 w-full rounded-lg" />
-                ) : activeRequests.length > 0 ? (
+                ) : ensureArray(activeRequests).length > 0 ? (
                   <Select 
                     value={selectedRequestId}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setSelectedRequestId(e.target.value)}
                     options={[
                       { value: '', label: 'No request (Direct Purchase)' },
-                      ...activeRequests.map(req => ({
+                      ...ensureArray(activeRequests).map(req => ({
                       value: req.id,
                       label: `${req.public_id || req.id.split('-')[0]} - ${req.title || req.service_type?.replace('_', ' ')}`
                     }))]}
@@ -149,7 +150,7 @@ export default function Checkout() {
               <div className="bg-gray-50 rounded-2xl p-6 sm:p-8 border border-gray-100 sticky top-6">
                 <h2 className="text-lg font-bold text-gray-900 mb-6">Order Summary</h2>
                 <div className="space-y-4 mb-6">
-                  {items.map(item => (
+                  {ensureArray(items).map(item => (
                     <div key={item.product.id} className="flex justify-between text-sm">
                       <div className="flex gap-4 items-start">
                         <div className="relative">

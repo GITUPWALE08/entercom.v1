@@ -1,0 +1,7 @@
+Account Locked
+
+Hi {{ user.first_name|default:"there" }},
+
+We noticed multiple failed login attempts on your account. For your security, your account has been temporarily locked until {{ locked_until }}.
+
+If you did not attempt to sign in, please contact support immediately.

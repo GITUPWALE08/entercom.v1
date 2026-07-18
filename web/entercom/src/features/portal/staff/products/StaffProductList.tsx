@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState, useMemo } from 'react';
 import { Tags } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -25,7 +26,7 @@ export default function StaffProductList() {
   const filteredAndSortedProducts = useMemo(() => {
     if (!products) return [];
     
-    let result = products.filter((prod: ProductItem) => {
+    let result = ensureArray(products).filter((prod: ProductItem) => {
       if (statusFilter !== 'all' && prod.status !== statusFilter) return false;
       if (searchTerm) {
         const term = searchTerm.toLowerCase();

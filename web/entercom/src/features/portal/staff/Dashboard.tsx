@@ -1,8 +1,9 @@
+import { ensureArray } from '../../../utils/arrays';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { requestsApi } from '../../../api/requests';
 import { bookingsApi } from '../../../api/bookings';
-import { notificationsApi } from '../../../api/notifications';
+import { useNotifications } from '../../../hooks/useNotifications';
 import { useAuthStore } from '../../../store/authStore';
 import { PageContainer } from '../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../shared/components/ErrorBoundary';
@@ -26,17 +27,13 @@ export default function StaffDashboard() {
     queryFn: () => bookingsApi.list({ start_date: today, end_date: tomorrow }),
   });
 
-  const { data: notifications } = useQuery({
-    queryKey: ['notifications'],
-    queryFn: notificationsApi.getNotifications,
-  });
+  const { unreadCount } = useNotifications();
 
-  const assignedRequests = requests?.filter((r: any) => r.status === 'assigned' || r.status === 'in_progress') || [];
-  const activeJobs = requests?.filter((r: any) => r.status === 'in_progress') || [];
-  const pendingRequests = requests?.filter((r: any) => r.status === 'submitted' || r.status === 'unassigned' || r.status === 'awaiting_assignment' || r.status === 'staff_review') || [];
-  const verificationQueue = requests?.filter((r: any) => r.status === 'pending_verification') || [];
-  const quoteQueue = requests?.filter((r: any) => r.status === 'pending_quote_approval' || r.status === 'quote_review' || r.status === 'awaiting_quote') || [];
-  const unreadCount = notifications?.filter((n: any) => !n.read_at)?.length || 0;
+  const assignedRequests = ensureArray(requests).filter((r: any) => r.status === 'assigned' || r.status === 'in_progress') || [];
+  const activeJobs = ensureArray(requests).filter((r: any) => r.status === 'in_progress') || [];
+  const pendingRequests = ensureArray(requests).filter((r: any) => r.status === 'submitted' || r.status === 'unassigned' || r.status === 'awaiting_assignment' || r.status === 'staff_review') || [];
+  const verificationQueue = ensureArray(requests).filter((r: any) => r.status === 'pending_verification') || [];
+  const quoteQueue = ensureArray(requests).filter((r: any) => r.status === 'pending_quote_approval' || r.status === 'quote_review' || r.status === 'awaiting_quote') || [];
   const todaysBookings = bookings?.length || 0;
 
   const isLoading = isLoadingRequests || isLoadingBookings;
@@ -62,22 +59,22 @@ export default function StaffDashboard() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Link to="/portal/staff/requests?filter=assigned" className="block">
-            <MetricCard title="Assigned Requests" value={assignedRequests.length} />
+            <MetricCard title="Assigned Requests" value={ensureArray(assignedRequests).length} />
           </Link>
           <Link to="/portal/staff/bookings" className="block">
             <MetricCard title="Today's Bookings" value={todaysBookings} />
           </Link>
           <Link to="/portal/staff/requests?filter=active" className="block">
-            <MetricCard title="Active Jobs" value={activeJobs.length} />
+            <MetricCard title="Active Jobs" value={ensureArray(activeJobs).length} />
           </Link>
           <Link to="/portal/staff/requests?filter=pending" className="block">
-            <MetricCard title="Pending Triage" value={pendingRequests.length} />
+            <MetricCard title="Pending Triage" value={ensureArray(pendingRequests).length} />
           </Link>
           <Link to="/portal/staff/requests?filter=verification" className="block">
-            <MetricCard title="Verification Queue" value={verificationQueue.length} />
+            <MetricCard title="Verification Queue" value={ensureArray(verificationQueue).length} />
           </Link>
           <Link to="/portal/staff/requests?filter=quotes" className="block">
-            <MetricCard title="Pending Quotes" value={quoteQueue.length} />
+            <MetricCard title="Pending Quotes" value={ensureArray(quoteQueue).length} />
           </Link>
         </div>
 
@@ -93,7 +90,7 @@ export default function StaffDashboard() {
                   <div className="p-6 space-y-4">
                     {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                   </div>
-                ) : requests && requests.length > 0 ? (
+                ) : requests && ensureArray(requests).length > 0 ? (
                   requests.slice(0, 5).map(req => (
                     <Link key={req.id} to={`/portal/staff/requests/${req.id}`} className="block p-6 hover:bg-gray-50 transition-colors">
                       <div className="flex justify-between items-start mb-2">

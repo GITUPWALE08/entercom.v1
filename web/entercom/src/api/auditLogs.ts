@@ -1,3 +1,4 @@
+import { normalizeData } from './normalize';
 import { apiClient } from './axios';
 
 export interface AuditLogItem {
@@ -16,11 +17,11 @@ export interface AuditLogItem {
 export const auditLogsApi = {
   list: async () => {
     const { data } = await apiClient.get<AuditLogItem[]>('/audit-logs/');
-    return data;
+    return normalizeData(data);
   },
 
   export: async () => {
     const { data } = await apiClient.get<any>('/audit-logs/export/', { responseType: 'blob' });
-    return data;
+    return normalizeData(data);
   }
 };

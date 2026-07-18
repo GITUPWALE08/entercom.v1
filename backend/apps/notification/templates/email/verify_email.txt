@@ -1,0 +1,7 @@
+Verify Your Email Address
+
+Hi {{ user.first_name|default:"there" }},
+
+Thank you for registering with Entercom. Please verify your email by opening the following link:
+
+{{ verification_link }}

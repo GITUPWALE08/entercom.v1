@@ -1,3 +1,4 @@
+import { ensureArray } from '../utils/arrays';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { ProductItem } from '../api/products';
@@ -20,10 +21,10 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       items: [],
       addItem: (product, quantity = 1) => set((state) => {
-        const existingItem = state.items.find(item => item.product.id === product.id);
+        const existingItem = state.ensureArray(items).find(item => item.product.id === product.id);
         if (existingItem) {
           return {
-            items: state.items.map(item => 
+            items: state.ensureArray(items).map(item => 
               item.product.id === product.id 
                 ? { ...item, quantity: item.quantity + quantity }
                 : item
@@ -33,14 +34,14 @@ export const useCartStore = create<CartState>()(
         return { items: [...state.items, { product, quantity }] };
       }),
       removeItem: (productId) => set((state) => ({
-        items: state.items.filter(item => item.product.id !== productId)
+        items: state.ensureArray(items).filter(item => item.product.id !== productId)
       })),
       updateQuantity: (productId, quantity) => set((state) => {
         if (quantity <= 0) {
-          return { items: state.items.filter(item => item.product.id !== productId) };
+          return { items: state.ensureArray(items).filter(item => item.product.id !== productId) };
         }
         return {
-          items: state.items.map(item => 
+          items: state.ensureArray(items).map(item => 
             item.product.id === productId ? { ...item, quantity } : item
           )
         };

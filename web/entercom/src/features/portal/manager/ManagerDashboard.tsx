@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../utils/arrays';
 
 import { useQuery } from '@tanstack/react-query';
 import { requestsApi } from '../../../api/requests';
@@ -35,11 +36,11 @@ export default function ManagerDashboard() {
     queryFn: paymentsApi.list,
   });
 
-  const escalatedRequests = requests?.filter(r => r.status === 'escalated') || [];
-  const openRequests = requests?.filter(r => r.status !== 'completed' && r.status !== 'cancelled') || [];
-  const inventoryAlerts = products?.filter(p => p.quantity_available <= (p.low_stock_threshold || 10)) || [];
-  const pendingOrders = orders?.filter(o => o.status === 'pending') || [];
-  const pendingPayments = payments?.filter(p => p.status === 'pending') || [];
+  const escalatedRequests = ensureArray(requests).filter(r => r.status === 'escalated') || [];
+  const openRequests = ensureArray(requests).filter(r => r.status !== 'completed' && r.status !== 'cancelled') || [];
+  const inventoryAlerts = ensureArray(products).filter(p => p.quantity_available <= (p.low_stock_threshold || 10)) || [];
+  const pendingOrders = ensureArray(orders).filter(o => o.status === 'pending') || [];
+  const pendingPayments = ensureArray(payments).filter(p => p.status === 'pending') || [];
 
   return (
     <ErrorBoundary>
@@ -50,11 +51,11 @@ export default function ManagerDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <MetricCard title="Escalated" value={escalatedRequests.length} />
-          <MetricCard title="Open Requests" value={openRequests.length} />
-          <MetricCard title="Inventory Alerts" value={inventoryAlerts.length} />
-          <MetricCard title="Pending Orders" value={pendingOrders.length} />
-          <MetricCard title="Pending Payments" value={pendingPayments.length} />
+          <MetricCard title="Escalated" value={ensureArray(escalatedRequests).length} />
+          <MetricCard title="Open Requests" value={ensureArray(openRequests).length} />
+          <MetricCard title="Inventory Alerts" value={ensureArray(inventoryAlerts).length} />
+          <MetricCard title="Pending Orders" value={ensureArray(pendingOrders).length} />
+          <MetricCard title="Pending Payments" value={ensureArray(pendingPayments).length} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -68,7 +69,7 @@ export default function ManagerDashboard() {
                 <div className="p-6 space-y-4">
                   {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
-              ) : escalatedRequests.length > 0 ? (
+              ) : ensureArray(escalatedRequests).length > 0 ? (
                 escalatedRequests.slice(0, 5).map(req => (
                   <div key={req.id} className="p-6">
                     <div className="flex justify-between items-start mb-2">
@@ -96,7 +97,7 @@ export default function ManagerDashboard() {
                 <div className="p-6 space-y-4">
                   {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
-              ) : inventoryAlerts.length > 0 ? (
+              ) : ensureArray(inventoryAlerts).length > 0 ? (
                 inventoryAlerts.slice(0, 5).map(prod => (
                   <div key={prod.id} className="p-6">
                     <div className="flex justify-between items-start mb-2">

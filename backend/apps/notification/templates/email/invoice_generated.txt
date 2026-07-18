@@ -1,0 +1,5 @@
+Invoice Generated
+
+Hello,
+
+This is a notification for invoice generated.

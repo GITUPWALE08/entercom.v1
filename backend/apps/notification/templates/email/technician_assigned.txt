@@ -1,0 +1,5 @@
+Request Assigned
+
+Hello,
+
+This is a notification for request assigned.

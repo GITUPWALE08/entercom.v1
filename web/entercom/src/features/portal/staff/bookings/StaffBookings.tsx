@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -38,7 +39,7 @@ export default function StaffBookings() {
   });
 
   const getTechName = (id: string) => {
-    const u = users?.find((u: any) => u.id === id);
+    const u = ensureArray(users).find((u: any) => u.id === id);
     return u ? `${u.first_name} ${u.last_name}` : 'Unknown';
   };
 
@@ -170,7 +171,7 @@ export default function StaffBookings() {
               {Array.from({length: 35}).map((_, i) => (
                 <div key={i} className="h-24 bg-gray-50 rounded-lg border border-gray-100 p-2 text-left relative hover:bg-gray-100 transition-colors cursor-pointer">
                   <span className="text-sm font-medium text-gray-400">{i + 1 > 31 ? i - 30 : i + 1}</span>
-                  {sortedBookings.filter(b => new Date(b.start_time).getDate() === (i + 1 > 31 ? i - 30 : i + 1)).map(b => (
+                  {ensureArray(sortedBookings).filter(b => new Date(b.start_time).getDate() === (i + 1 > 31 ? i - 30 : i + 1)).map(b => (
                     <div key={b.id} className="mt-1 p-1 bg-purple-100 text-purple-800 text-xs rounded truncate">
                       {getTechName(b.technician_id)}
                     </div>

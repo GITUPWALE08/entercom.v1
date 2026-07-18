@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { Package } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -27,7 +28,7 @@ export default function OrderList() {
           <div className="space-y-4">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 w-full rounded-2xl" />)}
           </div>
-        ) : orders && orders.length > 0 ? (
+        ) : orders && ensureArray(orders).length > 0 ? (
           <DataTable 
             data={orders}
             columns={[

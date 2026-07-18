@@ -88,6 +88,43 @@ class NotificationService:
             notification.save(update_fields=['status', 'archived_at'])
         return notification
 
+    @staticmethod
+    def dispatch_email_delivery(delivery):
+        from django.template.loader import render_to_string
+        from django.template import TemplateDoesNotExist
+        from .providers import ProviderFactory
+
+        notification = delivery.notification
+        recipient = notification.recipient
+        if not recipient.email:
+            raise ValueError("Recipient has no email address configured")
+            
+        event_type_slug = str(notification.event_type).replace('.', '_').lower()
+        html_template_path = f"email/{event_type_slug}.html"
+        text_template_path = f"email/{event_type_slug}.txt"
+        
+        context = notification.context or {}
+        context['user'] = recipient
+        context['notification'] = notification
+
+        try:
+            html_body = render_to_string(html_template_path, context)
+        except TemplateDoesNotExist:
+            html_body = f"<p>{notification.message}</p>"
+            
+        try:
+            text_body = render_to_string(text_template_path, context)
+        except TemplateDoesNotExist:
+            text_body = notification.message
+
+        provider = ProviderFactory.get_provider()
+        return provider.send_email(
+            to_email=recipient.email,
+            subject=notification.title,
+            html_body=html_body,
+            plain_text_body=text_body
+        )
+
 
 class DeliveryMonitor:
     @staticmethod

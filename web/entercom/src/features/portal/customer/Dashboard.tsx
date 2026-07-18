@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../utils/arrays';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { useAuthStore } from '../../../store/authStore';
@@ -27,7 +28,7 @@ export default function CustomerDashboard() {
     queryFn: productsApi.list,
   });
 
-  const activeRequest = requests?.find(r => r.status !== 'completed' && r.status !== 'cancelled');
+  const activeRequest = ensureArray(requests).find(r => r.status !== 'completed' && r.status !== 'cancelled');
   const recentOrder = orders?.[0];
   const recommendedProducts = products?.slice(0, 3) || [];
 
@@ -138,9 +139,9 @@ export default function CustomerDashboard() {
               <h2 className="text-base font-semibold text-gray-900 mb-4">Recommended for You</h2>
               {loadingProducts ? (
                  <div className="space-y-4"><SkeletonFallback className="h-20 w-full" /><SkeletonFallback className="h-20 w-full" /></div>
-              ) : recommendedProducts.length > 0 ? (
+              ) : ensureArray(recommendedProducts).length > 0 ? (
                 <div className="space-y-4">
-                  {recommendedProducts.map(product => (
+                  {ensureArray(recommendedProducts).map(product => (
                     <Card key={product.id} className="hover:shadow-md transition-shadow">
                       <CardContent className="flex items-center space-x-4 p-4">
                       <div className="h-16 w-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">

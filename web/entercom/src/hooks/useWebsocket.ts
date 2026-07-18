@@ -46,7 +46,7 @@ function handleEvent(data: any) {
     }
 }
 
-function connectWs() {
+function connectWs(channel: string = 'requests') {
     if (globalWs && (globalWs.readyState === WebSocket.CONNECTING || globalWs.readyState === WebSocket.OPEN)) {
         return; // Already connected
     }
@@ -55,7 +55,7 @@ function connectWs() {
     if (!token) return;
 
     // Remove token from URL query, use protocol header
-    const wsUrl = `${WS_BASE_URL}/ws/requests/`;
+    const wsUrl = `${WS_BASE_URL}/ws/${channel}/`;
     isIntentionalClose = false;
     
     try {
@@ -144,7 +144,7 @@ export function useWebsocket(channel: 'system' | 'requests' = 'requests') {
         subscribers++;
         
         if (subscribers === 1) {
-            connectWs();
+            connectWs(channel);
         }
         
         return () => {

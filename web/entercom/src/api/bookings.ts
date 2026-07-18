@@ -1,3 +1,4 @@
+import { normalizeData } from './normalize';
 import { apiClient } from './axios';
 
 export interface BookingItem {
@@ -18,22 +19,22 @@ export const bookingsApi = {
   },
   get: async (id: string) => {
     const { data } = await apiClient.get<BookingItem>(`/bookings/${id}/`);
-    return data;
+    return normalizeData(data);
   },
   schedule: async (id: string, payload: { start_date: string }) => {
     const { data } = await apiClient.post<BookingItem>(`/bookings/${id}/schedule/`, payload);
-    return data;
+    return normalizeData(data);
   },
   reschedule: async (id: string, payload: { new_start_date: string, reason_code?: string }) => {
     const { data } = await apiClient.post<BookingItem>(`/bookings/${id}/reschedule/`, payload);
-    return data;
+    return normalizeData(data);
   },
   extend: async (id: string, payload: { new_duration_days: number }) => {
     const { data } = await apiClient.post<BookingItem>(`/bookings/${id}/extend/`, payload);
-    return data;
+    return normalizeData(data);
   },
   noShow: async (id: string, payload: { absent_party: string }) => {
     const { data } = await apiClient.post(`/bookings/${id}/no-show/`, payload);
-    return data;
+    return normalizeData(data);
   }
 };

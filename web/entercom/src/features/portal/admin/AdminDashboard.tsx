@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../utils/arrays';
 import { useQuery } from '@tanstack/react-query';
 import { auditLogsApi } from '../../../api/auditLogs';
 import { PageContainer } from '../../../shared/components/PageContainer';
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
   const recentLogs = logs?.slice(0, 10) || [];
   
   // High severity errors/events
-  const alerts = logs?.filter(log => log.status === 'failed' || log.status === 'error') || [];
+  const alerts = ensureArray(logs).filter(log => log.status === 'failed' || log.status === 'error') || [];
 
   return (
     <ErrorBoundary>
@@ -41,7 +42,7 @@ export default function AdminDashboard() {
           />
           <MetricCard 
             title="Recent Alerts" 
-            value={alerts.length} 
+            value={ensureArray(alerts).length} 
             icon={<Activity className="w-6 h-6" />} 
           />
           <MetricCard 
@@ -63,8 +64,8 @@ export default function AdminDashboard() {
                   <div className="p-6 space-y-4">
                     {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                   </div>
-                ) : recentLogs.length > 0 ? (
-                  recentLogs.map(log => (
+                ) : ensureArray(recentLogs).length > 0 ? (
+                  ensureArray(recentLogs).map(log => (
                     <div key={log.id} className="p-4 sm:px-6 hover:bg-gray-50 transition-colors">
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-semibold text-gray-900 truncate mr-4">{log.action}</span>

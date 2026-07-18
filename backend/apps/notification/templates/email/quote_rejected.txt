@@ -1,0 +1,5 @@
+Quote Rejected
+
+Hello,
+
+This is a notification for quote rejected.

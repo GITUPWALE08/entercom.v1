@@ -109,6 +109,36 @@ class EventToNotificationMapper:
                     pass
                 title = "Verification Approved"
                 message = "Your verification has been approved."
+            elif event_name == "booking.reminder.sent":
+                try:
+                    req = Request.objects.get(pk=data.get('request_id'))
+                    recipient_id = req.customer_id
+                except:
+                    pass
+                title = "Booking Reminder"
+                message = "This is a reminder for your upcoming booking."
+                is_critical = True
+                category = "alerts"
+            elif event_name == "quote.approved":
+                try:
+                    req = Request.objects.get(pk=resource_id)
+                    recipient_id = data.get('technician_id') # Usually notify staff
+                except:
+                    pass
+                title = "Quote Approved"
+                message = "A quote has been approved."
+            elif event_name == "request.declined":
+                recipient_id = data.get('customer_id')
+                title = "Assignment Declined"
+                message = "Your assignment was declined."
+            elif event_name == "booking.completed" or event_name == "job.completed":
+                try:
+                    req = Request.objects.get(pk=data.get('request_id'))
+                    recipient_id = req.customer_id
+                except:
+                    pass
+                title = "Job Completed"
+                message = "Your service job has been completed successfully."
 
             if recipient_id:
                 DispatchOrchestrator.dispatch_event(

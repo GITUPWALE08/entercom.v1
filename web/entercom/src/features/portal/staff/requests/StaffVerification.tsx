@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -33,7 +34,7 @@ export default function StaffVerification() {
     setError(null);
 
     const photos = photosStr.split(',').map(p => p.trim()).filter(Boolean);
-    if (photos.length === 0) {
+    if (ensureArray(photos).length === 0) {
       setError('At least one photo URL is required');
       return;
     }

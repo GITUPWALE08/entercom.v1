@@ -11,6 +11,7 @@ from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.transitions import TRANSITIONS, TriggerType
 from apps.requests.services.context_builder import RequestContextBuilder
 from apps.requests.events.publishers import DomainEventPublisher
+from apps.notification.services import DispatchOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -95,6 +96,19 @@ class RequestProcessOrchestrator:
                     actor_id=None,
                     updates={"status": ns.value if hasattr(ns, 'value') else ns}
                 ))
+
+                if new_status == LifecycleState.COMPLETED:
+                    transaction.on_commit(lambda r_id=request.id, cid=request.customer_id: DispatchOrchestrator.dispatch_event(
+                        event_type="request_completed",
+                        recipient_id=cid,
+                        resource_type="request",
+                        resource_id=str(r_id),
+                        category="updates",
+                        title="Request Completed",
+                        message="Your request has been fully completed.",
+                        context={},
+                        is_system_critical=False,
+                    ))
                 
             except Exception as e:
                 logger.warning(f"Orchestrator failed to auto-transition request {request.id} via {t.action}: {str(e)}")

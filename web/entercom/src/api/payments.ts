@@ -1,3 +1,4 @@
+import { normalizeData } from './normalize';
 import { apiClient } from './axios';
 
 export interface PaymentItem {
@@ -13,33 +14,33 @@ export interface PaymentItem {
 export const paymentsApi = {
   list: async () => {
     const { data } = await apiClient.get<PaymentItem[]>('/payments/');
-    return data;
+    return normalizeData(data);
   },
   get: async (id: string) => {
     const { data } = await apiClient.get<PaymentItem>(`/payments/${id}/`);
-    return data;
+    return normalizeData(data);
   },
   initialize: async (payload: { order_id: string }) => {
     const { data } = await apiClient.post<PaymentItem>('/payments/initialize/', payload);
-    return data;
+    return normalizeData(data);
   },
   cancel: async (id: string, reason?: string) => {
     const { data } = await apiClient.post<PaymentItem>(`/payments/${id}/cancel/`, { reason });
-    return data;
+    return normalizeData(data);
   },
   refund: async (id: string, reason?: string) => {
     const { data } = await apiClient.post<PaymentItem>(`/payments/${id}/refund/`, { reason });
-    return data;
+    return normalizeData(data);
   },
   escalate: async (id: string, reason: string) => {
     const { data } = await apiClient.post<PaymentItem>(`/payments/${id}/escalate/`, { reason });
-    return data;
+    return normalizeData(data);
   },
   simulateWebhook: async (reference: string) => {
     const { data } = await apiClient.post('/payments/webhooks/paystack/', {
       event: 'charge.success',
       data: { reference }
     });
-    return data;
+    return normalizeData(data);
   }
 };

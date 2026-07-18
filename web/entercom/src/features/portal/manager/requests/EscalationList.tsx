@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { requestsApi } from '../../../../api/requests';
@@ -18,7 +19,7 @@ export default function EscalationList() {
 
   // For manager escalation queue, we only want to show escalated requests by default,
   // or open requests requiring attention.
-  const filteredRequests = requests?.filter(req => {
+  const filteredRequests = ensureArray(requests).filter(req => {
     if (filterParam === 'escalated') return req.status === 'escalated';
     if (filterParam === 'open') return req.status !== 'completed' && req.status !== 'cancelled';
     return true; // 'all'

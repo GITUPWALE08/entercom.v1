@@ -29,3 +29,7 @@ uvicorn[standard]>=0.32,<0.33
 
 # static
 whitenoise
+
+
+# Mailing
+resend

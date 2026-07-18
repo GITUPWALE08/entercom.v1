@@ -1,3 +1,4 @@
+import { normalizeData } from './normalize';
 import { apiClient } from './axios';
 
 export interface ProductItem {
@@ -16,32 +17,32 @@ export interface ProductItem {
 export const productsApi = {
   list: async () => {
     const { data } = await apiClient.get<ProductItem[]>('/products/');
-    return data;
+    return normalizeData(data);
   },
   get: async (id: string) => {
     const { data } = await apiClient.get<ProductItem>(`/products/${id}/`);
-    return data;
+    return normalizeData(data);
   },
   create: async (payload: any) => {
     const { data } = await apiClient.post<ProductItem>(`/products/`, payload);
-    return data;
+    return normalizeData(data);
   },
   update: async (id: string, payload: any) => {
     const { data } = await apiClient.patch<ProductItem>(`/products/${id}/`, payload);
-    return data;
+    return normalizeData(data);
   },
   archive: async (id: string) => {
     const { data } = await apiClient.post<ProductItem>(`/products/${id}/archive/`);
-    return data;
+    return normalizeData(data);
   },
   adjust_inventory: async (id: string, payload: { adjustment_amount: number, reason: string }) => {
     const { data } = await apiClient.post<ProductItem>(`/products/${id}/inventory-adjust/`, payload);
-    return data;
+    return normalizeData(data);
   },
   categories: {
     list: async () => {
       const { data } = await apiClient.get('/categories/');
-      return data;
+      return normalizeData(data);
     }
   }
 };

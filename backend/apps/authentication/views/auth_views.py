@@ -9,6 +9,9 @@ from apps.authentication.serializers.auth_serializers import (
     RefreshSerializer,
     RegisterSerializer,
     UserSummarySerializer,
+    VerifyEmailSerializer,
+    ChangePasswordSerializer,
+    ChangeEmailSerializer,
 )
 from apps.authentication.services.auth_service import AuthService
 
@@ -148,3 +151,43 @@ class TokenRefreshView(APIView):
         else:
             ip = request.META.get("REMOTE_ADDR")
         return ip
+
+class VerifyEmailView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthAnonRateThrottle]
+
+    def post(self, request):
+        serializer = VerifyEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        AuthService.verify_email(token=serializer.validated_data["token"])
+        return Response({"detail": "Email verified successfully."}, status=status.HTTP_200_OK)
+
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [AuthUserRateThrottle]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        AuthService.change_password(
+            user=request.user,
+            old_password=serializer.validated_data["old_password"],
+            new_password=serializer.validated_data["new_password"]
+        )
+        return Response({"detail": "Password changed successfully."}, status=status.HTTP_200_OK)
+
+class ChangeEmailView(APIView):
+    permission_classes = [IsAuthenticated]
+    throttle_classes = [AuthUserRateThrottle]
+
+    def post(self, request):
+        serializer = ChangeEmailSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        AuthService.change_email(
+            user=request.user,
+            new_email=serializer.validated_data["new_email"]
+        )
+        return Response({"detail": "Email changed successfully. Please verify your new email."}, status=status.HTTP_200_OK)

@@ -1,3 +1,4 @@
+import { ensureArray } from '../utils/arrays';
 import { useNotificationPreferences } from '../hooks/useNotifications';
 
 export function NotificationPreferences() {
@@ -31,7 +32,7 @@ export function NotificationPreferences() {
       </div>
 
       <div className="space-y-6">
-        {categories.map((cat) => (
+        {ensureArray(categories).map((cat) => (
           <div key={cat.id} className="border border-gray-200 rounded-xl overflow-hidden">
             <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
               <h4 className="font-medium text-gray-900">{cat.label}</h4>

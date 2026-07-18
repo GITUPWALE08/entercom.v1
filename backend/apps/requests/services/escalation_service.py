@@ -21,9 +21,9 @@ from apps.requests.models import (
     EscalationReasonCode,
     EscalationStatus,
     LifecycleState,
-    Request,
     StateHistory,
 )
+from apps.notification.services import DispatchOrchestrator
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -108,6 +108,32 @@ class EscalationService:
             actor_id=actor.id if actor else 0,
             trigger_type=trigger_type,
         ))
+
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="request_escalated",
+        #     recipient_id=request.customer_id,
+        #     resource_type="request",
+        #     resource_id=str(request.id),
+        #     category="alerts",
+        #     title="Request Escalated",
+        #     message="Your request has been escalated for priority review.",
+        #     context={"trigger": trigger_type},
+        #     is_system_critical=True,
+        # ))
+        
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="manager_escalated" if trigger_type == "MANUAL" else "emergency_queue_entered",
+        #     recipient_id=0,
+        #     resource_type="escalation",
+        #     resource_id=str(escalation.id),
+        #     category="alerts",
+        #     title="Escalation Required",
+        #     message=f"Request {request.public_id} requires management attention.",
+        #     context={"trigger": trigger_type},
+        #     is_system_critical=True,
+        # ))
 
         return escalation
 

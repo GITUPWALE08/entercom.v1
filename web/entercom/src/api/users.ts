@@ -1,3 +1,4 @@
+import { normalizeData } from './normalize';
 import { apiClient } from './axios';
 
 export interface UserRole {
@@ -23,7 +24,7 @@ export interface User {
 export const usersApi = {
   list: async (): Promise<User[]> => {
     const { data } = await apiClient.get<User[]>('/users/');
-    return data;
+    return normalizeData(data);
   },
 
   assignRole: async (userId: string, roleSlug: string, reason: string = ''): Promise<void> => {

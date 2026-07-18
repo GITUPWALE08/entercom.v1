@@ -245,7 +245,7 @@ if REDIS_URL:
     CELERY_BROKER_URL = REDIS_URL
     CELERY_RESULT_BACKEND = REDIS_URL
     CELERY_BROKER_USE_SSL = {
-        "ssl_cert_reqs": ssl.CERT_NONE,
+        "ssl_cert_reqs": ssl.CERT_NONE, #I have to replace with proper certificate later
     }
 
     CELERY_REDIS_BACKEND_USE_SSL = {
@@ -291,6 +291,14 @@ else:
 # }
 
 
+CELERY_BEAT_SCHEDULE = {
+    "audit-retention-daily": {
+        "task": "audit_logs.run_retention",
+        "schedule": timedelta(days=1),
+        "kwargs": {"dry_run": False},
+    },
+}
+
 
 
 
@@ -303,13 +311,14 @@ AUDIT_ALERT_EMAILS=[
 ...
 ]
 
-CELERY_BEAT_SCHEDULE = {
-    "audit-retention-daily": {
-        "task": "audit_logs.run_retention",
-        "schedule": timedelta(days=1),
-        "kwargs": {"dry_run": False},
-    },
-}
+EMAIL_BACKEND = "anymail.backends.resend.EmailBackend"
+
+EMAIL_HOST = os.environ.get("EMAIL_HOST")
+EMAIL_TIMEOUT = 60
+
+
+RESEND_API_KEY = env("RESEND_API_KEY", default="")
+RESEND_FROM_EMAIL = env("RESEND_FROM_EMAIL", default="")
 
 
 SUPABASE_URL = env("SUPABASE_URL", default="")

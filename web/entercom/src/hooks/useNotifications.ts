@@ -1,3 +1,4 @@
+import { ensureArray } from '../utils/arrays';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { notificationsApi } from '../api/notifications';
 import type { Notification, NotificationPreference } from '../api/notifications';
@@ -20,7 +21,7 @@ export function useNotifications() {
     },
   });
 
-  const notifications = query.data?.pages.flatMap(p => p.results) || [];
+  const notifications = query.data?.pages.flatMap(p => ensureArray(p)) || [];
 
   const markAsRead = useMutation({
     mutationFn: notificationsApi.markAsRead,
@@ -29,12 +30,15 @@ export function useNotifications() {
         if (!data) return data;
         return {
           ...data,
-          pages: data.pages.map((page: any) => ({
-            ...page,
-            results: page.results.map((n: Notification) => 
+          pages: data.pages.map((page: any) => {
+            const newPage = ensureArray(page).map((n: Notification) => 
               n.id === updatedNotification.id ? updatedNotification : n
-            )
-          }))
+            ) as any;
+            newPage.next = page.next;
+            newPage.count = page.count;
+            newPage.previous = page.previous;
+            return newPage;
+          })
         };
       });
     },
@@ -47,12 +51,15 @@ export function useNotifications() {
         if (!data) return data;
         return {
           ...data,
-          pages: data.pages.map((page: any) => ({
-            ...page,
-            results: page.results.map((n: Notification) => 
+          pages: data.pages.map((page: any) => {
+            const newPage = ensureArray(page).map((n: Notification) => 
               n.id === updatedNotification.id ? updatedNotification : n
-            )
-          }))
+            ) as any;
+            newPage.next = page.next;
+            newPage.count = page.count;
+            newPage.previous = page.previous;
+            return newPage;
+          })
         };
       });
     },
@@ -84,7 +91,7 @@ export function useNotifications() {
     archive,
     markAllRead,
     archiveAll,
-    unreadCount: query.data?.pages[0]?.count || notifications.filter(n => !n.read_at).length
+    unreadCount: query.data?.pages[0]?.count || ensureArray(notifications).filter(n => !n.read_at).length
   };
 }
 

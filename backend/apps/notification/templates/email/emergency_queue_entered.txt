@@ -1,0 +1,5 @@
+Emergency Queue Entered
+
+Hello,
+
+This is a notification for emergency queue entered.

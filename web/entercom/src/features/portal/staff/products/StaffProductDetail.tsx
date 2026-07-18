@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -130,7 +131,7 @@ export default function StaffProductDetail() {
                     label="Category"
                     value={formData.category}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, category: e.target.value })}
-                    options={[{ value: '', label: 'Select a category' }, ...(categories?.map((c: any) => ({ value: c.id, label: c.name })) || [])]}
+                    options={[{ value: '', label: 'Select a category' }, ...(ensureArray(categories).map((c: any) => ({ value: c.id, label: c.name })) || [])]}
                     required
                   />
                 </div>

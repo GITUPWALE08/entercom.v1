@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ordersApi } from '../../../../api/orders';
@@ -86,7 +87,7 @@ export default function StaffOrderDetail() {
               
               <div className="space-y-6">
                 <h3 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2">Items</h3>
-                {order.items?.map((item: any) => (
+                {order.ensureArray(items).map((item: any) => (
                   <div key={item.id} className="flex justify-between items-center py-3 border-b border-gray-50 last:border-0">
                     <div>
                       <p className="font-medium text-gray-900">{item.product_name || `Product ID: ${item.product_id}`}</p>

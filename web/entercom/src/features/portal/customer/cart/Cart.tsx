@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCartStore } from '../../../../store/cartStore';
 import { PageContainer } from '../../../../shared/components/PageContainer';
@@ -6,10 +7,10 @@ import { ShoppingCart } from 'lucide-react';
 
 export default function Cart() {
   const { items, updateQuantity, removeItem } = useCartStore();
-  const subtotal = items.reduce((acc, item) => acc + parseFloat(item.product.price || '0') * item.quantity, 0);
+  const subtotal = ensureArray(items).reduce((acc, item) => acc + parseFloat(item.product.price || '0') * item.quantity, 0);
   const navigate = useNavigate();
 
-  if (items.length === 0) {
+  if (ensureArray(items).length === 0) {
     return (
       <PageContainer>
         <EmptyState
@@ -37,7 +38,7 @@ export default function Cart() {
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
-          {items.map((item) => (
+          {ensureArray(items).map((item) => (
             <div key={item.product.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 flex flex-col sm:flex-row gap-6">
               <div className="w-full sm:w-32 h-32 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 shrink-0 overflow-hidden">
                 {item.product.images && item.product.images.length > 0 ? (

@@ -19,6 +19,7 @@ from apps.requests.domain.exceptions import RuleViolationError
 from apps.requests.domain.state_machine import RequestStateMachine
 from apps.requests.events.publishers import DomainEventPublisher
 from apps.requests.models import LifecycleState, Quote, QuoteStatus, Request, StateHistory
+from apps.notification.services import DispatchOrchestrator
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -120,6 +121,18 @@ class QuoteService:
             quote_id=quote.id,
             version=new_version,
             amount=float(quote.amount),
+        ))
+
+        transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            event_type="quote_ready",
+            recipient_id=request.customer.id,
+            resource_type="quote",
+            resource_id=str(quote.id),
+            category="updates",
+            title="Quote Ready",
+            message=f"A new quote for request {request.public_id} is ready.",
+            context={"amount": float(quote.amount), "version": new_version},
+            is_system_critical=False,
         ))
 
         return quote
@@ -224,6 +237,19 @@ class QuoteService:
                 customer_id=actor.id,
             ))
 
+            # [DEFERRED] Non-MVP event
+            # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            #     event_type="quote_approved",
+            #     recipient_id=request.customer.id,
+            #     resource_type="quote",
+            #     resource_id=str(latest_quote.id),
+            #     category="updates",
+            #     title="Quote Approved",
+            #     message="Your quote has been approved.",
+            #     context={"amount": float(latest_quote.amount)},
+            #     is_system_critical=False,
+            # ))
+
         elif action_type == "reject":
             new_status = machine.transition(
                 action=RequestAction.REJECT_QUOTE,
@@ -253,6 +279,19 @@ class QuoteService:
                 reason_code=reason,
             ))
 
+            # [DEFERRED] Non-MVP event
+            # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            #     event_type="quote_rejected",
+            #     recipient_id=request.customer.id,
+            #     resource_type="quote",
+            #     resource_id=str(latest_quote.id),
+            #     category="alerts",
+            #     title="Quote Rejected",
+            #     message="Your quote has been rejected.",
+            #     context={"reason": reason},
+            #     is_system_critical=False,
+            # ))
+
         elif action_type == "revise":
             new_status = machine.transition(
                 action=RequestAction.REQUEST_REVISION,
@@ -281,6 +320,19 @@ class QuoteService:
                 quote_id=latest_quote.id,
                 revision_notes=reason,
             ))
+
+            # [DEFERRED] Non-MVP event
+            # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            #     event_type="quote_revision_requested",
+            #     recipient_id=request.customer.id,
+            #     resource_type="quote",
+            #     resource_id=str(latest_quote.id),
+            #     category="updates",
+            #     title="Quote Revision Requested",
+            #     message="A revision has been requested for your quote.",
+            #     context={"reason": reason},
+            #     is_system_critical=False,
+            # ))
         else:
             raise ValueError(f"Invalid action type: {action_type}")
 
@@ -359,6 +411,19 @@ class QuoteService:
                     actor_id=0,
                     quote_id=q_id,
                 ))
+
+                # [DEFERRED] Non-MVP event
+                # transaction.on_commit(lambda r_id=req.id, q_id=quote.id, c_id=req.customer_id: DispatchOrchestrator.dispatch_event(
+                #     event_type="quote_expired",
+                #     recipient_id=c_id,
+                #     resource_type="quote",
+                #     resource_id=str(q_id),
+                #     category="alerts",
+                #     title="Quote Expired",
+                #     message="Your quote has expired.",
+                #     context={},
+                #     is_system_critical=False,
+                # ))
                 transaction.on_commit(lambda r_id=req.id, c_id=correlation_id: DomainEventPublisher.publish_request_cancelled(
                     request_id=r_id,
                     correlation_id=c_id,

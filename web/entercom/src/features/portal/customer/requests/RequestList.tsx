@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { requestsApi } from '../../../../api/requests';
@@ -35,9 +36,9 @@ export default function RequestList() {
           <div className="space-y-4">
             {[1, 2, 3].map((i) => <Skeleton key={i} className="h-24 w-full rounded-xl" />)}
           </div>
-        ) : requests && requests.length > 0 ? (
+        ) : requests && ensureArray(requests).length > 0 ? (
           <div className="space-y-4">
-            {requests.map((req: RequestItem) => (
+            {ensureArray(requests).map((req: RequestItem) => (
               <Card key={req.id} className="hover:shadow-md transition-shadow">
                 <CardContent className="p-5">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

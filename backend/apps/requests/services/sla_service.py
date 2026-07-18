@@ -13,6 +13,7 @@ from apps.audit_logs.services.audit_service import log_action
 from apps.requests.events.publishers import DomainEventPublisher
 from apps.requests.models import LifecycleState, Request, SLAStatus
 from apps.requests.services.escalation_service import EscalationService
+from apps.notification.services import DispatchOrchestrator
 
 logger = logging.getLogger(__name__)
 
@@ -81,6 +82,19 @@ class SLAService:
                         priority=req.priority,
                         delay="N/A",
                     )
+
+                    # [DEFERRED] Non-MVP event
+                    # transaction.on_commit(lambda r=req: DispatchOrchestrator.dispatch_event(
+                    #     event_type="sla_breached",
+                    #     recipient_id=r.customer_id,
+                    #     resource_type="request",
+                    #     resource_id=str(r.id),
+                    #     category="alerts",
+                    #     title="SLA Breached",
+                    #     message=f"Request {r.public_id} has breached SLA.",
+                    #     context={"priority": r.priority},
+                    #     is_system_critical=True,
+                    # ))
 
                     processed_ids.append(str(req.id))
             except Exception as e:

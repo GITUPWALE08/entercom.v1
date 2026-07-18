@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -345,7 +346,7 @@ export default function StaffRequestDetail() {
                         onChange={(e) => setSelectedTechId(e.target.value)}
                         options={[
                           { label: 'Select a technician…', value: '' },
-                          ...technicians.map((t: any) => ({
+                          ...ensureArray(technicians).map((t: any) => ({
                             label: `${t.first_name} ${t.last_name} (${t.email})`,
                             value: t.id,
                           })),
@@ -569,7 +570,7 @@ export default function StaffRequestDetail() {
               currentStatus={request.status}
               historyEvents={
                 !timeline ? [] : 
-                timeline.map((event: any) => ({
+                ensureArray(timeline).map((event: any) => ({
                   to_state: event.to_state || event.new_state || event.status,
                   created_at: event.created_at,
                   reason: event.reason

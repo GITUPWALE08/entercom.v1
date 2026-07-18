@@ -16,6 +16,7 @@ from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.state_machine import RequestStateMachine
 from apps.requests.events.publishers import DomainEventPublisher
 from apps.requests.models import LifecycleState, Request, StateHistory
+from apps.notification.services import DispatchOrchestrator
 from apps.requests.permissions.constants import Permission, Role
 from apps.requests.permissions.checks import RBACChecker
 from apps.requests.domain.exceptions import InvalidTransitionError
@@ -105,6 +106,19 @@ class RequestService:
             customer_id=user.id,
             category=request.category,
         ))
+
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="request_created",
+        #     recipient_id=user.id,
+        #     resource_type="request",
+        #     resource_id=str(request.id),
+        #     category="updates",
+        #     title="Request Created",
+        #     message=f"Request {request.public_id} created.",
+        #     context={"category": request.category},
+        #     is_system_critical=False,
+        # ))
 
         return request
 
@@ -285,6 +299,18 @@ class RequestService:
             category=request.category,
         ))
 
+        transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            event_type="request_submitted",
+            recipient_id=request.customer.id,
+            resource_type="request",
+            resource_id=str(request.id),
+            category="updates",
+            title="Request Submitted",
+            message=f"Request {request.public_id} has been submitted.",
+            context={"priority": request.priority},
+            is_system_critical=False,
+        ))
+
         from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
         transaction.on_commit(lambda: RequestProcessOrchestrator.sync(request.id))
 
@@ -362,6 +388,19 @@ class RequestService:
             actor_id=actor.id,
             reason_code=reason_code,
         ))
+
+        # [DEFERRED] Non-MVP event
+        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+        #     event_type="request_cancelled",
+        #     recipient_id=request.customer.id,
+        #     resource_type="request",
+        #     resource_id=str(request.id),
+        #     category="alerts",
+        #     title="Request Cancelled",
+        #     message=f"Request {request.public_id} has been cancelled.",
+        #     context={"reason_code": reason_code},
+        #     is_system_critical=True,
+        # ))
 
         return request
 

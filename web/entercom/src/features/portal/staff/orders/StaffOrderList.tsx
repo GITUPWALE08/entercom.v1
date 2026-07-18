@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState, useMemo } from 'react';
 import { PackageCheck } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -25,7 +26,7 @@ export default function StaffOrderList() {
   const filteredAndSortedOrders = useMemo(() => {
     if (!orders) return [];
     
-    let result = orders.filter((order: any) => {
+    let result = ensureArray(orders).filter((order: any) => {
       if (statusFilter !== 'all' && order.status !== statusFilter) return false;
       if (searchTerm) {
         const term = searchTerm.toLowerCase();

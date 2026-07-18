@@ -1,3 +1,4 @@
+import { ensureArray } from '../../../../utils/arrays';
 import { useState } from 'react';
 import { ShoppingBag } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
@@ -18,9 +19,9 @@ export default function ProductList() {
     queryFn: productsApi.list,
   });
 
-  const categories = Array.from(new Set(products?.map(p => p.category).filter(Boolean))) as string[];
+  const categories = Array.from(new Set(ensureArray(products).map(p => p.category).filter(Boolean))) as string[];
 
-  const filteredProducts = products?.filter(p => {
+  const filteredProducts = ensureArray(products).filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.description?.toLowerCase().includes(search.toLowerCase());
     const matchesCat = selectedCategory ? p.category === selectedCategory : true;
     return matchesSearch && matchesCat;
@@ -50,7 +51,7 @@ export default function ProductList() {
               >
                 All
               </button>
-              {categories.map(cat => (
+              {ensureArray(categories).map(cat => (
                 <button 
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
@@ -67,9 +68,9 @@ export default function ProductList() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1,2,3,4,5,6].map(i => <Skeleton key={i} className="h-80 w-full rounded-2xl" />)}
           </div>
-        ) : filteredProducts && filteredProducts.length > 0 ? (
+        ) : filteredProducts && ensureArray(filteredProducts).length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map(product => (
+            {ensureArray(filteredProducts).map(product => (
               <Link 
                 to={`/portal/customer/products/${product.id}`} 
                 key={product.id}

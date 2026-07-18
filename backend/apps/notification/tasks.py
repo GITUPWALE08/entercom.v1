@@ -57,70 +57,43 @@ def task_dispatch_email(self, delivery_id):
     delivery.save(update_fields=['status'])
     
     try:
-        dispatch_email(delivery)
+        response_data = NotificationService.dispatch_email_delivery(delivery)
         delivery.status = NotificationDelivery.Status.SENT
-        delivery.provider_response = {"status": "success"}
+        delivery.provider_response = response_data
         delivery.save(update_fields=['status', 'provider_response', 'updated_at'])
     except CircuitBreakerOpenException as e:
+        logger.warning(f"Circuit breaker open for email dispatch delivery {delivery_id}: {e}")
         FailureRecoveryService.classify_and_handle_failure(delivery_id, str(e), is_transient=True)
         raise self.retry(exc=e, countdown=self.default_retry_delay * (2 ** self.request.retries))
     except Exception as e:
-        is_transient = True
-        if hasattr(e, 'response') and e.response is not None:
-            status = getattr(e.response, 'status_code', 500)
-            if status in [400, 401, 403, 404]:
-                is_transient = False
-            
-            # Check for Retry-After header
-            retry_after = getattr(e.response.headers, 'get', lambda x: None)('Retry-After')
-            if retry_after and is_transient:
-                try:
-                    countdown = int(retry_after)
-                    FailureRecoveryService.classify_and_handle_failure(delivery_id, str(e), is_transient)
-                    raise self.retry(exc=e, countdown=countdown)
-                except ValueError:
-                    pass
+        from .providers import (
+            ProviderTemporaryError,
+            ProviderRateLimitError,
+            ProviderConnectionError,
+            ProviderAuthenticationError,
+            ProviderConfigurationError,
+            ProviderPermanentError,
+            ProviderError
+        )
+        
+        is_transient = False
+        if isinstance(e, (ProviderTemporaryError, ProviderRateLimitError, ProviderConnectionError)):
+            is_transient = True
+        elif not isinstance(e, ProviderError):
+            # Unknown exception, assume transient as a fallback safety measure
+            is_transient = True
+                
+        logger.error(f"Email dispatch failed for delivery {delivery_id}: {e}", extra={
+            'delivery_id': delivery_id,
+            'is_transient': is_transient,
+            'error_type': e.__class__.__name__
+        })
         
         FailureRecoveryService.classify_and_handle_failure(delivery_id, str(e), is_transient)
         if is_transient:
-            # Exponential backoff
             countdown = self.default_retry_delay * (2 ** self.request.retries)
-            # Max 3600s
             countdown = min(3600, countdown)
             raise self.retry(exc=e, countdown=countdown)
-
-@circuit_breaker("email_provider", failure_threshold=5, recovery_timeout=60)
-def dispatch_email(delivery):
-    from django.core.mail import EmailMultiAlternatives
-    from django.template import Template, Context
-    from .models import NotificationTemplate
-
-    notification = delivery.notification
-    recipient = notification.recipient
-    if not recipient.email:
-        # Cannot send if no email
-        raise ValueError("Recipient has no email address configured")
-        
-    try:
-        template = NotificationTemplate.objects.get(event_type=notification.event_type)
-        ctx = Context(notification.context)
-        subject = Template(template.subject).render(ctx)
-        html_body = Template(template.html_body).render(ctx)
-        text_body = Template(template.plain_text_body).render(ctx)
-    except NotificationTemplate.DoesNotExist:
-        subject = notification.title
-        text_body = notification.message
-        html_body = None
-
-    msg = EmailMultiAlternatives(
-        subject=subject,
-        body=text_body,
-        to=[recipient.email]
-    )
-    if html_body:
-        msg.attach_alternative(html_body, "text/html")
-    msg.send()
-
 
 @shared_task(bind=True, max_retries=10, acks_late=True, default_retry_delay=15)
 def task_dispatch_push(self, delivery_id):
