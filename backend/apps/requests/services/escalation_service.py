@@ -22,6 +22,7 @@ from apps.requests.models import (
     EscalationStatus,
     LifecycleState,
     StateHistory,
+    Request,
 )
 from apps.notification.services import DispatchOrchestrator
 

@@ -21,10 +21,10 @@ export const useCartStore = create<CartState>()(
     (set) => ({
       items: [],
       addItem: (product, quantity = 1) => set((state) => {
-        const existingItem = state.ensureArray(items).find(item => item.product.id === product.id);
+        const existingItem = ensureArray(state.items).find((item: CartItem) => item.product.id === product.id);
         if (existingItem) {
           return {
-            items: state.ensureArray(items).map(item => 
+            items: ensureArray(state.items).map((item: CartItem) => 
               item.product.id === product.id 
                 ? { ...item, quantity: item.quantity + quantity }
                 : item
@@ -34,14 +34,14 @@ export const useCartStore = create<CartState>()(
         return { items: [...state.items, { product, quantity }] };
       }),
       removeItem: (productId) => set((state) => ({
-        items: state.ensureArray(items).filter(item => item.product.id !== productId)
+        items: ensureArray(state.items).filter((item: CartItem) => item.product.id !== productId)
       })),
       updateQuantity: (productId, quantity) => set((state) => {
         if (quantity <= 0) {
-          return { items: state.ensureArray(items).filter(item => item.product.id !== productId) };
+          return { items: ensureArray(state.items).filter((item: CartItem) => item.product.id !== productId) };
         }
         return {
-          items: state.ensureArray(items).map(item => 
+          items: ensureArray(state.items).map((item: CartItem) => 
             item.product.id === productId ? { ...item, quantity } : item
           )
         };

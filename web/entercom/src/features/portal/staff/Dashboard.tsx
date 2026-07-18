@@ -91,7 +91,7 @@ export default function StaffDashboard() {
                     {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                   </div>
                 ) : requests && ensureArray(requests).length > 0 ? (
-                  requests.slice(0, 5).map(req => (
+                  ensureArray(requests).slice(0, 5).map((req: any) => (
                     <Link key={req.id} to={`/portal/staff/requests/${req.id}`} className="block p-6 hover:bg-gray-50 transition-colors">
                       <div className="flex justify-between items-start mb-2">
                         <span className="font-semibold text-gray-900">{req.public_id || req.id.split('-')[0].toUpperCase()} - {req.category?.replace('_', ' ')}</span>

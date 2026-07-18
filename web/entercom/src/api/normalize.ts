@@ -7,9 +7,9 @@ export function normalizeData<T = any>(payload: any): T {
   if (typeof payload === 'object' && !Array.isArray(payload) && 'data' in payload) {
     const data = payload.data as any;
     if (payload.pagination && Array.isArray(data)) {
-        data.count = payload.pagination.count;
-        data.next = payload.pagination.next;
-        data.previous = payload.pagination.previous;
+        (data as any).count = payload.pagination.count;
+        (data as any).next = payload.pagination.next;
+        (data as any).previous = payload.pagination.previous;
     }
     return data as T;
   }
@@ -18,9 +18,9 @@ export function normalizeData<T = any>(payload: any): T {
   if (typeof payload === 'object' && !Array.isArray(payload) && 'results' in payload && Array.isArray(payload.results)) {
     const results = payload.results as any;
     // Attach pagination metadata directly to the array object to preserve pagination support
-    results.count = payload.count;
-    results.next = payload.next;
-    results.previous = payload.previous;
+    (results as any).count = payload.count;
+    (results as any).next = payload.next;
+    (results as any).previous = payload.previous;
     return results as unknown as T;
   }
 

@@ -1,302 +1,54 @@
-# Frontend Response Normalization & Runtime Stability Audit
-
-You are a Senior React + TypeScript Architect working on the Entercom frontend.
-
-Your objective is to eliminate all runtime crashes caused by inconsistent backend response shapes and make the frontend resilient to future backend changes.
-
-## Background
-
-The backend intentionally returns two response patterns.
-
-### Pattern A (DRF Pagination)
-
-```json
-{
-  "count": 0,
-  "next": null,
-  "previous": null,
-  "results": []
-}
-```
-
-### Pattern B (Application Envelope)
-
-```json
-{
-  "success": true,
-  "message": "...",
-  "data": [...],
-  "pagination": {
-    "count": 10,
-    "next": null,
-    "previous": null
-  }
-}
-```
-
-The frontend currently assumes every endpoint returns an array directly.
-
-This causes runtime errors such as:
-
-```text
-TypeError:
-(data || []).filter is not a function
-```
-
-because data is actually an object.
-
----
-
-# PRIMARY GOAL
-
-Do NOT patch individual pages.
-
-Fix the architecture.
-
-Implement a centralized response normalization layer.
-
-Every React component should receive predictable data structures regardless of backend response format.
-
----
-
-# REQUIRED TASKS
-
-## Phase 1 — Audit
-
-Search the entire frontend for:
-
-* .filter(
-* .map(
-* .reduce(
-* .find(
-* .some(
-* .every(
-* .length
-* Array.isArray
-* response.data
-* query.data
-
-Locate every place where array methods are called.
-
-Determine whether the variable may actually contain:
-
-* Application envelope
-* DRF pagination object
-* plain array
-* undefined
-* null
-
-Generate an audit report.
-
----
-
-## Phase 2 — Normalize API Layer
-
-Locate all API client/service files.
-
-Examples:
-
-* api.ts
-* axios.ts
-* requestService.ts
-* notificationService.ts
-* hooks
-* React Query fetchers
-
-Create ONE reusable normalization utility.
-
-Example behavior:
-
-Application Envelope
-
-↓
-
-returns
-
-```ts
-response.data
-```
-
-DRF Pagination
-
-↓
-
-returns
-
-```ts
-response.results
-```
-
-Plain Array
-
-↓
-
-returns itself
-
-Object
-
-↓
-
-returns object
-
-The rest of the application should never know which backend format was received.
-
----
-
-## Phase 3 — Refactor Components
-
-Update every page, hook and component to consume normalized responses instead of raw axios responses.
-
-Remove duplicated extraction logic such as:
-
-```ts
-response.data.data
-```
-
-or
-
-```ts
-response.results
-```
-
-Components should only consume already-normalized values.
-
----
-
-## Phase 4 — Defensive Programming
-
-Where arrays are expected:
-
-Never assume.
-
-Use:
-
-* Array.isArray()
-* null coalescing
-* optional chaining
-
-Prevent crashes from:
-
-undefined
-
-null
-
-objects
-
-unexpected payloads
-
----
-
-## Phase 5 — React Query
-
-Audit every query.
-
-Ensure:
-
-query.data
-
-always has a deterministic shape.
-
-Avoid:
-
-```ts
-query.data.filter(...)
-```
-
-unless query.data is guaranteed to be an array.
-
----
-
-## Phase 6 — Dashboard Audit
-
-Inspect all pages loaded immediately after login.
-
-Examples:
-
-* Dashboard
-* Requests
-* Notifications
-* Bookings
-* Orders
-
-Ensure none can crash because of malformed payloads.
-
----
-
-## Phase 7 — API Consistency Report
-
-Generate a report listing every backend endpoint whose response differs from the standard.
-
-For each endpoint include:
-
-* endpoint
-* actual shape
-* normalized output
-* frontend consumers
-
-Do NOT modify backend.
-
----
-
-## Phase 8 — Runtime Stability
-
-Search for similar runtime risks beyond this bug.
-
-Examples:
-
-* .map on objects
-* .filter on null
-* destructuring undefined
-* invalid optional chaining
-* missing loading guards
-* stale React Query assumptions
-* pagination assumptions
-* unsafe casts
-* unsafe type assertions
-
-Fix them.
-
----
-
-## Phase 9 — Type Safety
-
-Where possible:
-
-Introduce reusable TypeScript types for:
-
-ApplicationResponse<T>
-
-PaginatedResponse<T>
-
-NormalizedResponse<T>
-
-Avoid using any.
-
-Improve inference.
-
----
-
-## Constraints
-
-* Do NOT modify backend APIs.
-* Do NOT change business logic.
-* Do NOT remove pagination support.
-* Do NOT hardcode endpoint-specific fixes.
-* Prefer architectural solutions over local patches.
-* Maintain backwards compatibility.
-
----
-
-## Deliverables
-
-1. Audit Report
-2. Response Normalization Utility
-3. Updated API Layer
-4. Refactored Components
-5. React Query Improvements
-6. Runtime Stability Fixes
-7. TypeScript Improvements
-8. API Consistency Report
-9. Summary of every bug fixed
-
-The final result should ensure that no frontend page can crash because an endpoint returns an application envelope, DRF pagination object, plain array, or null payload.
+src/store/cartStore.ts(1,1): error TS6133: 'ensureArray' is declared but its value is never read.
+src/store/cartStore.ts(24,36): error TS2339: Property 'ensureArray' does not exist on type 'CartState'.
+src/store/cartStore.ts(24,48): error TS2304: Cannot find name 'items'.
+src/store/cartStore.ts(24,60): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/store/cartStore.ts(27,26): error TS2339: Property 'ensureArray' does not exist on type 'CartState'.
+src/store/cartStore.ts(27,38): error TS2304: Cannot find name 'items'.
+src/store/cartStore.ts(27,49): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/store/cartStore.ts(37,22): error TS2339: Property 'ensureArray' does not exist on type 'CartState'.
+src/store/cartStore.ts(37,34): error TS2304: Cannot find name 'items'.
+src/store/cartStore.ts(37,48): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/store/cartStore.ts(41,33): error TS2339: Property 'ensureArray' does not exist on type 'CartState'.
+src/store/cartStore.ts(41,45): error TS2304: Cannot find name 'items'.
+src/store/cartStore.ts(41,59): error TS7006: Parameter 'item' implicitly has an 'any' type.
+src/store/cartStore.ts(44,24): error TS2339: Property 'ensureArray' does not exist on type 'CartState'.
+src/store/cartStore.ts(44,36): error TS2304: Cannot find name 'items'.
+src/store/cartStore.ts(44,47): error TS7006: Parameter 'item' implicitly has an 'any' type.
+Error: Command "npm run build" exited with 2
+
+
+
+
+File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/render/project/src/backend/config/urls.py", line 13, in <module>
+    path("api/v1/requests/", include("apps.requests.api.urls")),
+                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/urls/conf.py", line 39, in include
+    urlconf_module = import_module(urlconf_module)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/python/Python-3.12.10/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/opt/render/project/src/backend/apps/requests/api/urls.py", line 3, in <module>
+    from .views import RequestViewSet, RequestQuoteViewSet, RequestVerificationViewSet
+  File "/opt/render/project/src/backend/apps/requests/api/views.py", line 9, in <module>
+    from .serializers import (
+  File "/opt/render/project/src/backend/apps/requests/api/serializers.py", line 3, in <module>
+    from apps.requests.services.context_builder import RequestContextBuilder
+  File "/opt/render/project/src/backend/apps/requests/services/__init__.py", line 5, in <module>
+    from .escalation_service import EscalationService
+  File "/opt/render/project/src/backend/apps/requests/services/escalation_service.py", line 32, in <module>
+    class EscalationService:
+  File "/opt/render/project/src/backend/apps/requests/services/escalation_service.py", line 144, in EscalationService
+    ) -> Request:
+         ^^^^^^^
+NameError: name 'Request' is not defined
+==> Build failed 😞
