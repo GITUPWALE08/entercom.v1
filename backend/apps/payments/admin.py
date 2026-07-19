@@ -5,9 +5,9 @@ import uuid
 from apps.payments.models.payment import Payment
 
 class PaymentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'reference', 'customer', 'amount', 'status', 'created_at')
+    list_display = ('id', 'provider_reference', 'customer', 'amount', 'status', 'created_at')
     list_filter = ('status', 'currency')
-    search_fields = ('reference', 'customer__email')
+    search_fields = ('provider_reference', 'customer__email')
 
     def save_model(self, request, obj, form, change):
         if change:
@@ -26,13 +26,13 @@ class PaymentAdmin(admin.ModelAdmin):
                 from apps.payments.events.publishers import PaymentEventPublisher
                 correlation_id = str(uuid.uuid4())
                 
-                if obj.status == 'successful':
+                if obj.status == 'successful' or obj.status == 'paid':
                     transaction.on_commit(lambda: PaymentEventPublisher.publish_payment_successful(
                         payment_id=obj.id,
                         correlation_id=correlation_id,
                         customer_id=obj.customer_id,
                         amount=obj.amount,
-                        reference=obj.reference
+                        reference=obj.provider_reference
                     ))
                 elif obj.status == 'failed':
                     transaction.on_commit(lambda: PaymentEventPublisher.publish_payment_failed(
@@ -40,7 +40,7 @@ class PaymentAdmin(admin.ModelAdmin):
                         correlation_id=correlation_id,
                         customer_id=obj.customer_id,
                         amount=obj.amount,
-                        reference=obj.reference,
+                        reference=obj.provider_reference,
                         reason="Failed via Admin"
                     ))
         else:

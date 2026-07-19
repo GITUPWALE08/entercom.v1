@@ -63,14 +63,14 @@ class QuoteAdmin(admin.ModelAdmin):
             super().save_model(request, obj, form, change)
 
 class AssignmentAdmin(admin.ModelAdmin):
-    list_display = ('id', 'request', 'technician', 'status')
-    list_filter = ('status',)
+    list_display = ('id', 'request', 'technician', 'response_status')
+    list_filter = ('response_status',)
 
     def save_model(self, request, obj, form, change):
         if change:
             old_obj = Assignment.objects.get(pk=obj.pk)
             super().save_model(request, obj, form, change)
-            if old_obj.status != obj.status:
+            if old_obj.response_status != obj.response_status:
                 from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
                 transaction.on_commit(lambda: RequestProcessOrchestrator.sync(obj.request_id))
         else:

@@ -43,6 +43,10 @@ const EscalationList = lazy(() => import('../features/portal/manager/requests/Es
 const ManagerRequestDetail = lazy(() => import('../features/portal/manager/requests/ManagerRequestDetail'));
 const TechnicianList = lazy(() => import('../features/portal/manager/technicians/TechnicianList'));
 
+const TechnicianRequestList = lazy(() => import('../features/portal/staff/requests/TechnicianRequestList'));
+const TechnicianRequestDetail = lazy(() => import('../features/portal/staff/requests/TechnicianRequestDetail'));
+const TechnicianVerification = lazy(() => import('../features/portal/staff/requests/TechnicianVerification'));
+
 const AdminDashboard = lazy(() => import('../features/portal/admin/AdminDashboard'));
 const AuditLogList = lazy(() => import('../features/portal/admin/AuditLogList'));
 const UserList = lazy(() => import('../features/portal/admin/UserList'));
@@ -116,6 +120,9 @@ export const router = createBrowserRouter([
             children: [
               { index: true, element: <Suspense fallback={<LoadingScreen/>}><StaffDashboard /></Suspense> },
               { path: 'technician', element: <Suspense fallback={<LoadingScreen/>}><TechnicianDashboard /></Suspense> },
+              { path: 'technician/requests', element: <Suspense fallback={<LoadingScreen/>}><TechnicianRequestList /></Suspense> },
+              { path: 'technician/requests/:id', element: <Suspense fallback={<LoadingScreen/>}><TechnicianRequestDetail /></Suspense> },
+              { path: 'technician/requests/:id/verification', element: <Suspense fallback={<LoadingScreen/>}><TechnicianVerification /></Suspense> },
               { path: 'requests', element: <Suspense fallback={<LoadingScreen/>}><StaffRequestList /></Suspense> },
               { path: 'requests/:id', element: <Suspense fallback={<LoadingScreen/>}><StaffRequestDetail /></Suspense> },
               { path: 'requests/:id/verification', element: <Suspense fallback={<LoadingScreen/>}><StaffVerification /></Suspense> },
