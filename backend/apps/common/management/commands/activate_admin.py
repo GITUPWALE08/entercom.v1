@@ -10,9 +10,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         User = get_user_model()
 
-        email = os.getenv("DJANGO_SUPERUSER_EMAIL", "entercom@gmail.com")
+        email = os.getenv("DJANGO_SUPERUSER_EMAIL", "adewale@gmail.com")
         password = os.getenv("DJANGO_SUPERUSER_PASSWORD", "entercom01")
-        first_name = os.getenv("DJANGO_SUPERUSER_FIRST_NAME", "Entercom")
+        first_name = os.getenv("DJANGO_SUPERUSER_FIRST_NAME", "Adewale")
         last_name = os.getenv("DJANGO_SUPERUSER_LAST_NAME", "Admin")
 
         admin_user, created = User.objects.get_or_create(

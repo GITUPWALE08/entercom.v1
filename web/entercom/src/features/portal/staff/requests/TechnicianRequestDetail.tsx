@@ -26,12 +26,14 @@ export default function TechnicianRequestDetail() {
     queryKey: ['requests', id],
     queryFn: () => requestsApi.get(id!),
     enabled: !!id,
+    refetchInterval: 10000,
   });
 
   const { data: timeline } = useQuery({
     queryKey: ['requests', id, 'timeline'],
     queryFn: () => requestsApi.timeline(id!),
     enabled: !!id,
+    refetchInterval: 10000,
   });
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['requests', id] });
@@ -267,6 +269,7 @@ function TechnicianQuotesSection({ requestId, status }: { requestId: string; sta
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['requests', requestId, 'quotes'],
     queryFn: () => requestsApi.quotes.list(requestId),
+    refetchInterval: 10000,
   });
 
   const createQuoteMutation = useMutation({
