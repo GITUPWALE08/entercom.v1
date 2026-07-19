@@ -45,6 +45,9 @@ class OrderService:
             if quantity <= 0:
                 raise ValidationError("Quantity must be greater than zero.")
                 
+            if product.quantity_available < quantity:
+                raise ValidationError(f"Insufficient stock for product {product.name}. Only {product.quantity_available} available.")
+                
             line_total = product.unit_price * quantity
             total_amount += line_total
             
@@ -166,7 +169,22 @@ class OrderService:
         order.save()
         
         reductions = [{'product_id': str(item.product_id), 'quantity': item.quantity} for item in order.items.all()]
-        InventoryService.reduce_inventory(actor, correlation_id, order.id, reductions)
+        try:
+            InventoryService.reduce_inventory(actor, correlation_id, order.id, reductions)
+        except ValidationError as e:
+            import logging
+            from apps.audit.services import resolve_actor_type
+            logging.getLogger(__name__).critical(f"Order {order.id} paid but inventory insufficient: {str(e)}")
+            audit_logger.log(
+                action='order.inventory_shortfall',
+                actor_id=actor.id,
+                actor_type=resolve_actor_type(actor),
+                correlation_id=correlation_id,
+                metadata={
+                    'order_id': str(order.id),
+                    'error': str(e)
+                }
+            )
         
         from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
         try:

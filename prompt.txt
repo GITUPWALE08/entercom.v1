@@ -1,19 +1,14 @@
--> on the customer's dashboard, on the recommended for you section product/service should be clickable like that of quick action 
+only tell me the problem, do not apply any fix
 
--> the ui is inconsistent sometimes
-Unexpected Application Error!
-
-Failed to fetch dynamically imported module: [https://entercom-v1.vercel.app/assets/CreateRequest-j1kMWaJc.js](https://entercom-v1.vercel.app/assets/CreateRequest-j1kMWaJc.js)
-
-TypeError: Failed to fetch dynamically imported module: [https://entercom-v1.vercel.app/assets/CreateRequest-j1kMWaJc.js](https://entercom-v1.vercel.app/assets/CreateRequest-j1kMWaJc.js)
-💿 Hey developer 👋
-You can provide a way better UX than this when your app throws errors by providing your own ErrorBoundary or errorElement prop on your route.
-
-fetch dynamically imported module: [https://entercom-v1.vercel.app/assets/ProductList-QADUo5pd.js](https://entercom-v1.vercel.app/assets/ProductList-QADUo5pd.js)
-
-TypeError: Failed to fetch dynamically imported module: [https://entercom-v1.vercel.app/assets/ProductList-QADUo5pd.js](https://entercom-v1.vercel.app/assets/ProductList-QADUo5pd.js)
-💿 Hey developer 👋
-You can provide a way better UX than this when your app throws errors by providing your own ErrorBoundary or errorElement prop on your route
+when a customer make order and they proceed to payment, the order is still showing payment pending after paying on paystack
 
 
--> guard transition error popupp message: all error should throw better ErrorBoundary or errorElement prop.
+2026-07-19 11:57:16,185 [WARNING] django.request - Method Not Allowed: /api/v1/payments/webhooks/paystack/
+2026-07-19 12:00:12,672 [WARNING] django.request - Method Not Allowed: /api/v1/payments/webhooks/paystack/
+2026-07-19 12:00:15,415 [WARNING] django.request - Method Not Allowed: /api/v1/payments/webhooks/paystack/
+2026-07-19 12:00:16,739 [WARNING] django.request - Not Found: /api/v1/payments/webhook/paystack
+2026-07-19 12:00:29,628 [WARNING] django.request - Method Not Allowed: /api/v1/payments/webhooks/paystack/
+2026-07-19 12:01:03,676 [INFO] core.events 111a4de6-1258-4703-865b-912b80da49b5 Published Event: payment.initialized (Correlation: ec47995a-1e74-4b58-984a-e8063dc3f3f2) from PaymentService
+2026-07-19 12:01:37,113 [INFO] core.events a7771747-27bb-4ab5-9b6b-4b221e5b8c04 Published Event: webhook.received (Correlation: f383b2b7-62c1-40e7-aa78-f06c8a0cc183) from WebhookService
+2026-07-19 12:01:37,181 [INFO] core.events a7771747-27bb-4ab5-9b6b-4b221e5b8c04 Published Event: payment.paid (Correlation: f383b2b7-62c1-40e7-aa78-f06c8a0cc183) from WebhookService
+2026-07-19 12:01:37,423 [WARNING] django.request - Bad Request: /api/v1/payments/webhooks/paystack/

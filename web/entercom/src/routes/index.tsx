@@ -36,6 +36,7 @@ const CustomerPaymentDetail = lazy(() => import('../features/portal/customer/pay
 const Profile = lazy(() => import('../features/portal/customer/profile/Profile'));
 
 const StaffDashboard = lazy(() => import('../features/portal/staff/Dashboard'));
+const TechnicianDashboard = lazy(() => import('../features/portal/staff/TechnicianDashboard'));
 const ManagerDashboard = lazy(() => import('../features/portal/manager/ManagerDashboard'));
 const ManagerReports = lazy(() => import('../features/portal/manager/Reports'));
 const EscalationList = lazy(() => import('../features/portal/manager/requests/EscalationList'));
@@ -114,6 +115,7 @@ export const router = createBrowserRouter([
             element: <StaffGuard />,
             children: [
               { index: true, element: <Suspense fallback={<LoadingScreen/>}><StaffDashboard /></Suspense> },
+              { path: 'technician', element: <Suspense fallback={<LoadingScreen/>}><TechnicianDashboard /></Suspense> },
               { path: 'requests', element: <Suspense fallback={<LoadingScreen/>}><StaffRequestList /></Suspense> },
               { path: 'requests/:id', element: <Suspense fallback={<LoadingScreen/>}><StaffRequestDetail /></Suspense> },
               { path: 'requests/:id/verification', element: <Suspense fallback={<LoadingScreen/>}><StaffVerification /></Suspense> },

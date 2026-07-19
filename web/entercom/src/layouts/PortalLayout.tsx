@@ -27,7 +27,8 @@ export function PortalLayout() {
   ];
 
   const staffNavigation = [
-    { name: 'Dashboard', href: '/portal/staff' },
+    { name: 'Back-Office Dashboard', href: '/portal/staff' },
+    { name: 'Technician Dashboard', href: '/portal/staff/technician' },
     { name: 'Requests', href: '/portal/staff/requests' },
     { name: 'Bookings', href: '/portal/staff/bookings' },
     { name: 'Inventory', href: '/portal/staff/inventory' },
