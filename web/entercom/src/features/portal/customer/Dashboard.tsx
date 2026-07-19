@@ -142,21 +142,23 @@ export default function CustomerDashboard() {
               ) : ensureArray(recommendedProducts).length > 0 ? (
                 <div className="space-y-4">
                   {ensureArray(recommendedProducts).map(product => (
-                    <Card key={product.id} className="hover:shadow-md transition-shadow">
-                      <CardContent className="flex items-center space-x-4 p-4">
-                      <div className="h-16 w-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
-                        {product.images && product.images.length > 0 ? (
-                          <img src={product.images[0].image} alt={product.name} className="h-full w-full object-cover" />
-                        ) : (
-                          <div className="h-full w-full flex items-center justify-center text-gray-400">img</div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
-                        <p className="text-sm font-bold text-ess-purple mt-1">${product.price}</p>
-                      </div>
-                    </CardContent>
-                    </Card>
+                    <Link key={product.id} to={`/portal/customer/products/${product.id}`} className="block">
+                      <Card className="hover:shadow-md hover:border-ess-purple transition-all cursor-pointer h-full">
+                        <CardContent className="flex items-center space-x-4 p-4">
+                          <div className="h-16 w-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
+                            {product.images && product.images.length > 0 ? (
+                              <img src={product.images[0].image} alt={product.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <div className="h-full w-full flex items-center justify-center text-gray-400">img</div>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{product.name}</p>
+                            <p className="text-sm font-bold text-ess-purple mt-1">${product.price}</p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Link>
                   ))}
                 </div>
               ) : (
