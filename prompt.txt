@@ -1,13 +1,143 @@
-staticfiles/admin/js/SelectFilter2.js
-staticfiles/admin/js/calendar.js
-staticfiles/admin/js/theme.js
-staticfiles/admin/js/jquery.init.js
-staticfiles/admin/js/popup_response.js
-staticfiles/admin/js/actions.js
-SystemCheckError: System check identified some issues:
-ERRORS:
-<class 'apps.payments.admin.PaymentAdmin'>: (admin.E108) The value of 'list_display[1]' refers to 'reference', which is not a callable or attribute of 'PaymentAdmin', or an attribute, method, or field on 'payments.Payment'.
-<class 'apps.requests.admin.AssignmentAdmin'>: (admin.E108) The value of 'list_display[3]' refers to 'status', which is not a callable or attribute of 'AssignmentAdmin', or an attribute, method, or field on 'requests.Assignment'.
-<class 'apps.requests.admin.AssignmentAdmin'>: (admin.E116) The value of 'list_filter[0]' refers to 'status', which does not refer to a Field.
-==> Build failed 😞
-==> Common ways to troubleshoot your deploy: https://render.com/docs/troubleshooting-deploys
+# Entercom — Phase: Production Hardening & Pilot Launch
+
+You are a Senior Full-Stack Engineer working on the Entercom platform.
+
+## RULES
+
+* Do NOT redesign architecture.
+* Do NOT add new business features.
+* Do NOT add WebSockets, SMS, push notifications, AI features, or analytics dashboards.
+* Focus only on stability, reliability, observability, and pilot readiness.
+
+## OBJECTIVE
+
+Make the platform safe for a real-world pilot with technicians, staff, and customers.
+
+---
+
+# PHASE A — COMPLETE OPERATIONAL FLOW
+
+Validate the full workflow:
+Customer submits request
+→ Staff reviews
+→ Technician assigned
+→ Technician accepts
+→ Inspection performed
+→ Quote submitted
+→ Customer approves
+→ Work completed
+→ Verification submitted
+→ Request marked completed
+→ Completion email delivered
+
+Fix any blockers found in this flow.
+
+---
+
+# PHASE B — PRODUCTION OBSERVABILITY
+
+Implement backend observability for:
+
+* API error rate
+* Slow request logging (>2s)
+* Celery task failures
+* Queue backlog monitoring
+* Email delivery failures
+* Redis connectivity issues
+* Database connection exhaustion
+* Unhandled exceptions with correlation IDs
+
+Expose reusable service methods and admin views only.
+
+---
+
+# PHASE C — OPERATIONAL DASHBOARDS
+
+Create lightweight staff dashboards showing:
+
+* Unassigned requests
+* Requests stuck in submitted state
+* Quotes awaiting customer approval
+* Verification pending approval
+* Failed payment webhooks
+* Failed email deliveries
+* SLA risk indicators
+
+Use existing APIs and models.
+
+---
+
+# PHASE D — SECURITY HARDENING
+
+Verify and enforce:
+
+* JWT rotation works correctly
+* Refresh token blacklist works
+* Login throttling works
+* Account lockout works
+* CSRF configuration is correct
+* CORS is restricted to production origins
+* Secrets are never logged
+* Admin endpoints require proper roles
+* Audit logs capture all privileged actions
+
+Generate a security checklist with PASS/FAIL status.
+
+---
+
+# PHASE E — PILOT TOOLING
+
+Add operational tooling for support staff:
+
+* Search request by public ID
+* Search customer by email/phone
+* View request timeline
+* View quote history
+* View assignment history
+* View notification delivery history
+* Manually resend failed email from admin
+* Force refresh request status from admin
+
+Do not add customer-facing features here.
+
+---
+
+# PHASE F — TESTING & LAUNCH GATE
+
+Create a launch gate report with:
+
+* Authentication tests
+* Request workflow tests
+* Quote workflow tests
+* Assignment workflow tests
+* Verification tests
+* Payment webhook tests
+* Notification delivery tests
+* Celery/Beat tests
+* Redis failover behavior
+* Frontend route protection tests
+* Error boundary tests
+* Mobile responsiveness tests
+
+For each test provide:
+
+* Scenario
+* Expected result
+* Actual result
+* PASS/FAIL
+* Blocking severity
+
+---
+
+# FINAL DELIVERABLES
+
+Produce:
+
+1. Operational Flow Validation Report
+2. Production Observability Report
+3. Security Hardening Checklist
+4. Pilot Readiness Scorecard
+5. Blocking Issues List (P0/P1/P2)
+6. Recommended Go/No-Go decision for a 5-user pilot
+
+The goal is not to add more features. The goal is to make the existing platform reliable enough for real technicians and customers to use without developer intervention.

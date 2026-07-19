@@ -1,5 +1,5 @@
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ordersApi } from '../../../../api/orders';
 import { paymentsApi } from '../../../../api/payments';
 import { PageContainer } from '../../../../shared/components/PageContainer';
@@ -11,6 +11,7 @@ export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const location = useLocation();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const queryParams = new URLSearchParams(location.search);
   const isMockPayment = queryParams.get('mock_payment') === 'true';
   const paymentReference = queryParams.get('reference');
@@ -19,6 +20,18 @@ export default function OrderDetail() {
     queryKey: ['orders', id],
     queryFn: () => ordersApi.get(id!),
     enabled: !!id,
+  });
+
+  const { data: payments } = useQuery({
+    queryKey: ['payments'],
+    queryFn: paymentsApi.list,
+  });
+
+  const orderPayment = payments?.find((p: any) => p.order_id === id);
+
+  const cancelOrderMutation = useMutation({
+    mutationFn: (reason: string) => ordersApi.cancel(id!, reason),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['orders', id] }),
   });
 
   const paymentMutation = useMutation({
@@ -93,13 +106,27 @@ export default function OrderDetail() {
                       {simulateWebhookMutation.isPending ? 'Simulating...' : 'Simulate Payment Success'}
                     </button>
                   ) : (
-                    <button
-                      onClick={() => paymentMutation.mutate({ order_id: id! })}
-                      disabled={paymentMutation.isPending}
-                      className="inline-flex justify-center w-full sm:w-auto items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-ess-purple hover:bg-ess-purple/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ess-purple disabled:opacity-50 transition-colors"
-                    >
-                      {paymentMutation.isPending ? 'Redirecting...' : 'Pay Now'}
-                    </button>
+                    <>
+                      <button
+                        onClick={() => {
+                          const reason = prompt("Please provide a reason for cancelling this order:");
+                          if (reason) {
+                            cancelOrderMutation.mutate(reason);
+                          }
+                        }}
+                        disabled={cancelOrderMutation.isPending}
+                        className="inline-flex justify-center w-full sm:w-auto items-center px-4 py-2 border border-red-200 rounded-lg shadow-sm text-sm font-medium text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 disabled:opacity-50 transition-colors"
+                      >
+                        {cancelOrderMutation.isPending ? 'Cancelling...' : 'Cancel Order'}
+                      </button>
+                      <button
+                        onClick={() => paymentMutation.mutate({ order_id: id! })}
+                        disabled={paymentMutation.isPending}
+                        className="inline-flex justify-center w-full sm:w-auto items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-ess-purple hover:bg-ess-purple/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-ess-purple disabled:opacity-50 transition-colors"
+                      >
+                        {paymentMutation.isPending ? 'Redirecting...' : 'Pay Now'}
+                      </button>
+                    </>
                   )}
                 </div>
               )}
@@ -139,8 +166,15 @@ export default function OrderDetail() {
           </div>
           
           <div className="bg-gray-50 p-8 sm:p-12 flex flex-col sm:flex-row justify-between items-center gap-6">
-             <div className="text-sm text-gray-500">
-               Attached to Request: <Link to={`/portal/customer/requests/${orderData.request_id}`} className="text-ess-purple hover:underline font-medium">{orderData.request_id.split('-')[0].toUpperCase()}</Link>
+             <div className="flex flex-col gap-2">
+               <div className="text-sm text-gray-500">
+                 Attached to Request: <Link to={`/portal/customer/requests/${orderData.request_id}`} className="text-ess-purple hover:underline font-medium">{orderData.request_id.split('-')[0].toUpperCase()}</Link>
+               </div>
+               {orderPayment && (
+                 <div className="text-sm text-gray-500">
+                   Attached Payment: <Link to={`/portal/customer/payments/${orderPayment.id}`} className="text-ess-purple hover:underline font-medium">{orderPayment.id.split('-')[0].toUpperCase()}</Link>
+                 </div>
+               )}
              </div>
              
              {/* Note: Invoices would go here if backend supported them */}

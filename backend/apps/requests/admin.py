@@ -11,7 +11,17 @@ from apps.requests.models.verification import Verification, Evidence
 class RequestAdmin(admin.ModelAdmin):
     list_display = ('public_id', 'customer', 'category', 'status', 'priority', 'created_at')
     list_filter = ('status', 'priority', 'category')
-    search_fields = ('public_id', 'description')
+    search_fields = ('public_id', 'description', 'customer__email', 'customer__phone_number')
+    actions = ['force_refresh_status']
+
+    @admin.action(description='Force refresh request status (run orchestrator)')
+    def force_refresh_status(self, request, queryset):
+        from apps.requests.services.request_process_orchestrator import RequestProcessOrchestrator
+        count = 0
+        for req in queryset:
+            RequestProcessOrchestrator.sync(req.id)
+            count += 1
+        self.message_user(request, f"Successfully ran orchestrator sync on {count} requests.")
 
     def save_model(self, request, obj, form, change):
         if change:

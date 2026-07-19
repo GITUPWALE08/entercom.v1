@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { paymentsApi } from '../../../../api/payments';
+import { ordersApi } from '../../../../api/orders';
 import { PageContainer } from '../../../../shared/components/PageContainer';
 import { Skeleton } from '../../../../shared/components/Skeleton';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
@@ -12,7 +13,7 @@ export default function CustomerPaymentDetail() {
   const queryClient = useQueryClient();
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState('');
-  
+  const [cancelOrderToo, setCancelOrderToo] = useState(false);
 
   const [isEscalateModalOpen, setIsEscalateModalOpen] = useState(false);
   const [escalateReason, setEscalateReason] = useState('');
@@ -21,6 +22,10 @@ export default function CustomerPaymentDetail() {
     queryKey: ['payments', id],
     queryFn: () => paymentsApi.get(id!),
     enabled: !!id,
+  });
+
+  const cancelOrderMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => ordersApi.cancel(id, reason),
   });
 
   const cancelMutation = useMutation({
@@ -222,11 +227,48 @@ export default function CustomerPaymentDetail() {
                   placeholder="e.g. User requested, duplicate order..."
                   required
                 />
+
+                <div className="flex items-start gap-3 mt-4">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="cancelOrder"
+                      name="cancelType"
+                      type="radio"
+                      className="focus:ring-ess-purple h-4 w-4 text-ess-purple border-gray-300"
+                      defaultChecked
+                    />
+                  </div>
+                  <div className="text-sm">
+                    <label htmlFor="cancelOrder" className="font-medium text-gray-700">Cancel Payment Only</label>
+                    <p className="text-gray-500">The associated order will remain active.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <div className="flex items-center h-5">
+                    <input
+                      id="cancelOrderToo"
+                      name="cancelType"
+                      type="radio"
+                      className="focus:ring-ess-purple h-4 w-4 text-ess-purple border-gray-300"
+                      onChange={(e) => {
+                        if(e.target.checked) {
+                          setCancelOrderToo(true);
+                        }
+                      }}
+                      onClick={() => setCancelOrderToo(true)}
+                    />
+                  </div>
+                  <div className="text-sm">
+                    <label htmlFor="cancelOrderToo" className="font-medium text-gray-700">Cancel Order & Payment</label>
+                    <p className="text-gray-500">Cancel both this payment and its associated order.</p>
+                  </div>
+                </div>
                 
                 <div className="flex justify-end gap-3 mt-8">
                   <button 
                     type="button"
-                    onClick={() => { setIsCancelModalOpen(false); setCancelReason(''); }}
+                    onClick={() => { setIsCancelModalOpen(false); setCancelReason(''); setCancelOrderToo(false); }}
                     className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium text-sm"
                   >
                     Close
@@ -236,10 +278,13 @@ export default function CustomerPaymentDetail() {
                     onClick={() => {
                       if (cancelReason) {
                         cancelMutation.mutate(cancelReason);
+                        if (cancelOrderToo && payment.order_id) {
+                          cancelOrderMutation.mutate({ id: payment.order_id, reason: cancelReason });
+                        }
                         setIsCancelModalOpen(false);
                       }
                     }}
-                    disabled={!cancelReason || cancelMutation.isPending}
+                    disabled={!cancelReason || cancelMutation.isPending || cancelOrderMutation.isPending}
                     className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium text-sm disabled:opacity-50"
                   >
                     Confirm Cancellation

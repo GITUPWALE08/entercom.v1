@@ -14,6 +14,16 @@ class NotificationDeliveryAdmin(admin.ModelAdmin):
     list_filter = ('channel', 'status')
     search_fields = ('notification__id', 'idempotency_key')
     readonly_fields = ('id',)
+    actions = ['resend_delivery']
+
+    @admin.action(description='Manually resend failed delivery')
+    def resend_delivery(self, request, queryset):
+        from .observability import ResendService
+        count = 0
+        for delivery in queryset.filter(status__in=['failed', 'dead_lettered']):
+            ResendService.manual_resend(delivery.id, request.user)
+            count += 1
+        self.message_user(request, f"{count} failed deliveries queued for resend.")
 
 @admin.register(NotificationPreference)
 class NotificationPreferenceAdmin(admin.ModelAdmin):

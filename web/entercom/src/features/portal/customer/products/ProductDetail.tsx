@@ -79,29 +79,36 @@ export default function ProductDetail() {
               </div>
 
               <div className="mt-auto space-y-6 pt-8 border-t border-gray-100">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center border border-gray-300 rounded-lg bg-white">
+                {product.status !== 'active' || product.quantity_available <= 0 ? (
+                  <div className="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 font-medium text-center">
+                    This product is currently unavailable.
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center border border-gray-300 rounded-lg bg-white">
+                      <button 
+                        onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                        className="px-4 py-3 text-gray-500 hover:text-gray-900 transition-colors focus:outline-none"
+                      >
+                        &minus;
+                      </button>
+                      <span className="w-8 text-center font-medium text-gray-900">{quantity}</span>
+                      <button 
+                        onClick={() => setQuantity(q => Math.min(product.quantity_available, q + 1))}
+                        disabled={quantity >= product.quantity_available}
+                        className="px-4 py-3 text-gray-500 hover:text-gray-900 transition-colors focus:outline-none disabled:opacity-50"
+                      >
+                        +
+                      </button>
+                    </div>
                     <button 
-                      onClick={() => setQuantity(q => Math.max(1, q - 1))}
-                      className="px-4 py-3 text-gray-500 hover:text-gray-900 transition-colors focus:outline-none"
+                      onClick={handleAddToCart}
+                      className="flex-1 bg-ess-purple text-white py-3 px-6 rounded-lg font-medium hover:bg-ess-darkPurple transition-colors shadow-sm relative overflow-hidden disabled:opacity-50"
                     >
-                      &minus;
-                    </button>
-                    <span className="w-8 text-center font-medium text-gray-900">{quantity}</span>
-                    <button 
-                      onClick={() => setQuantity(q => q + 1)}
-                      className="px-4 py-3 text-gray-500 hover:text-gray-900 transition-colors focus:outline-none"
-                    >
-                      +
+                      {added ? 'Added to Cart ✓' : 'Add to Cart'}
                     </button>
                   </div>
-                  <button 
-                    onClick={handleAddToCart}
-                    className="flex-1 bg-ess-purple text-white py-3 px-6 rounded-lg font-medium hover:bg-ess-darkPurple transition-colors shadow-sm relative overflow-hidden"
-                  >
-                    {added ? 'Added to Cart ✓' : 'Add to Cart'}
-                  </button>
-                </div>
+                )}
                 {added && (
                   <p className="text-sm text-green-600 font-medium animate-fade-in-up text-center">
                     Added to your cart successfully! <Link to="/portal/customer/cart" className="underline">View cart</Link>
