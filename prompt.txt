@@ -1,131 +1,133 @@
-# Entercom — Phase: Production Hardening & Pilot Launch
+# Entercom — Phase: Production Stabilization After Real-User Testing
 
-You are a Senior Full-Stack Engineer working on the Entercom platform.
+You are a Senior Full-Stack Engineer working on the Entercom platform. The platform has been running in production for several days with real users, and the customer workflow is already functioning.
 
-## RULES
+## CURRENT REAL-WORLD FINDINGS
 
-* Do NOT redesign architecture.
-* Do NOT add new business features.
-* Do NOT add WebSockets, SMS, push notifications, AI features, or analytics dashboards.
-* Focus only on stability, reliability, observability, and pilot readiness.
+* Celery Worker and Celery Beat are healthy on Railway.
+* Redis (Upstash) is healthy.
+* Payment webhooks are working.
+* Customer dashboard is stable.
+* Notifications are clickable and deep-link correctly.
+* Payment cancellation flow has been improved.
+* Product availability is enforced in the UI.
+* WebSocket connection attempts are being repeatedly rejected by the backend while polling remains functional.
 
 ## OBJECTIVE
 
-Make the platform safe for a real-world pilot with technicians, staff, and customers.
+Do NOT add new features. Perform production stabilization focused on internal operational workflows.
 
 ---
 
-# PHASE A — COMPLETE OPERATIONAL FLOW
+# PHASE A — DISABLE WEBSOCKET AUTO-CONNECT
 
-Validate the full workflow:
-Customer submits request
-→ Staff reviews
-→ Technician assigned
-→ Technician accepts
-→ Inspection performed
-→ Quote submitted
-→ Customer approves
-→ Work completed
-→ Verification submitted
-→ Request marked completed
-→ Completion email delivered
+Requirements:
 
-Fix any blockers found in this flow.
+* Introduce `VITE_ENABLE_WEBSOCKETS=false`.
+* Prevent automatic connection attempts when disabled.
+* Keep existing polling as the source of truth.
+* Remove noisy reconnect loops from production logs.
+* Ensure the app still receives updates through React Query polling.
 
 ---
 
-# PHASE B — PRODUCTION OBSERVABILITY
+# PHASE B — FRESH USER ONBOARDING VALIDATION
 
-Implement backend observability for:
+Create an automated/manual validation flow for brand-new users (not legacy accounts).
 
-* API error rate
-* Slow request logging (>2s)
-* Celery task failures
-* Queue backlog monitoring
-* Email delivery failures
-* Redis connectivity issues
-* Database connection exhaustion
-* Unhandled exceptions with correlation IDs
+Test roles:
 
-Expose reusable service methods and admin views only.
+* Customer
+* Technician
+* Staff
+* Manager
 
----
+For each role verify:
 
-# PHASE C — OPERATIONAL DASHBOARDS
+1. Registration
+2. Verification email delivery
+3. Verification link activation
+4. First login
+5. Dashboard rendering
+6. Role-based navigation
+7. Profile update persistence
+8. Logout
+9. Re-login
 
-Create lightweight staff dashboards showing:
-
-* Unassigned requests
-* Requests stuck in submitted state
-* Quotes awaiting customer approval
-* Verification pending approval
-* Failed payment webhooks
-* Failed email deliveries
-* SLA risk indicators
-
-Use existing APIs and models.
+Generate a PASS/FAIL report.
 
 ---
 
-# PHASE D — SECURITY HARDENING
+# PHASE C — END-TO-END EMAIL VALIDATION
 
-Verify and enforce:
+Using the existing Resend infrastructure, verify these events end-to-end:
 
-* JWT rotation works correctly
-* Refresh token blacklist works
-* Login throttling works
-* Account lockout works
-* CSRF configuration is correct
-* CORS is restricted to production origins
-* Secrets are never logged
-* Admin endpoints require proper roles
-* Audit logs capture all privileged actions
+* verify_email
+* password_reset_requested
+* password_reset_completed
+* request_submitted
+* technician_assigned
+* quote_ready
+* booking_confirmed
+* payment_receipt
+* request_completed
 
-Generate a security checklist with PASS/FAIL status.
+For each event verify:
+Business Service → DispatchOrchestrator → NotificationService → Celery → ProviderFactory → ResendProvider → Resend Dashboard → Inbox.
+
+Capture provider response IDs and delivery timestamps.
 
 ---
 
-# PHASE E — PILOT TOOLING
+# PHASE D — TECHNICIAN OPERATIONAL TEST
 
-Add operational tooling for support staff:
+This is the highest-risk area. Validate the complete technician workflow with a fresh technician account.
 
+Scenario:
+
+1. Staff assigns request.
+2. Technician receives assignment.
+3. Technician accepts assignment.
+4. Technician opens job workspace.
+5. Technician creates quote.
+6. Customer approves quote.
+7. Technician submits verification.
+8. Manager approves verification.
+9. Request becomes completed.
+10. Completion email is delivered.
+
+Document any blocker with exact API response and UI location.
+
+---
+
+# PHASE E — STAFF & MANAGER EDGE CASES
+
+Validate:
+
+* Reassign technician
+* Cancel assigned request
+* Approve/reject verification
+* Override quote revision
+* View audit history
+* Resend failed notification
 * Search request by public ID
-* Search customer by email/phone
-* View request timeline
-* View quote history
-* View assignment history
-* View notification delivery history
-* Manually resend failed email from admin
-* Force refresh request status from admin
+* Search customer by email
 
-Do not add customer-facing features here.
+Ensure permissions are enforced correctly.
 
 ---
 
-# PHASE F — TESTING & LAUNCH GATE
+# PHASE F — CUSTOMER PROFILE HARDENING
 
-Create a launch gate report with:
+Improve only persistence and reliability, not visual redesign. Verify:
 
-* Authentication tests
-* Request workflow tests
-* Quote workflow tests
-* Assignment workflow tests
-* Verification tests
-* Payment webhook tests
-* Notification delivery tests
-* Celery/Beat tests
-* Redis failover behavior
-* Frontend route protection tests
-* Error boundary tests
-* Mobile responsiveness tests
-
-For each test provide:
-
-* Scenario
-* Expected result
-* Actual result
-* PASS/FAIL
-* Blocking severity
+* Name update
+* Phone update
+* Address update
+* Password change
+* Session remains valid after profile edits
+* Validation errors display correctly
+* Changes persist after refresh and re-login
 
 ---
 
@@ -133,11 +135,12 @@ For each test provide:
 
 Produce:
 
-1. Operational Flow Validation Report
-2. Production Observability Report
-3. Security Hardening Checklist
-4. Pilot Readiness Scorecard
-5. Blocking Issues List (P0/P1/P2)
-6. Recommended Go/No-Go decision for a 5-user pilot
+1. WebSocket Stabilization Report
+2. Fresh User Onboarding Report
+3. Email Delivery Verification Matrix
+4. Technician Workflow Validation Report
+5. Staff/Manager Edge Case Report
+6. Customer Profile Persistence Report
+7. Final P0/P1/P2 Blocking List based on real production behavior only
 
-The goal is not to add more features. The goal is to make the existing platform reliable enough for real technicians and customers to use without developer intervention.
+Focus on reliability, permissions, persistence, and operational correctness—not new features.

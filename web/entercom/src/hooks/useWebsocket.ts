@@ -46,7 +46,14 @@ function handleEvent(data: any) {
     }
 }
 
+const ENABLE_WEBSOCKETS = import.meta.env.VITE_ENABLE_WEBSOCKETS !== 'false';
+
 function connectWs(channel: string = 'requests') {
+    if (!ENABLE_WEBSOCKETS) {
+        console.log('[WebSocket] Disabled via environment variable');
+        return;
+    }
+
     if (globalWs && (globalWs.readyState === WebSocket.CONNECTING || globalWs.readyState === WebSocket.OPEN)) {
         return; // Already connected
     }

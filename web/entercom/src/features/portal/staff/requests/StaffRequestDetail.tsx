@@ -45,6 +45,7 @@ export default function StaffRequestDetail() {
     queryKey: ['requests', id],
     queryFn: () => requestsApi.get(id!),
     enabled: !!id,
+    refetchInterval: 10000,
   });
 
   const { data: usersData } = useQuery({
@@ -56,6 +57,7 @@ export default function StaffRequestDetail() {
     queryKey: ['requests', id, 'timeline'],
     queryFn: () => requestsApi.timeline(id!),
     enabled: !!id,
+    refetchInterval: 10000,
   });
 
   const technicians = usersData?.filter((u: any) =>
@@ -598,6 +600,7 @@ function StaffQuotesSection({ requestId, status }: { requestId: string; status: 
   const { data: quotes, isLoading } = useQuery({
     queryKey: ['requests', requestId, 'quotes'],
     queryFn: () => requestsApi.quotes.list(requestId),
+    refetchInterval: 10000,
   });
 
   const createQuoteMutation = useMutation({

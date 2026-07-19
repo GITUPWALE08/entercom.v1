@@ -31,18 +31,21 @@ export default function RequestDetail() {
     queryKey: ['requests', id],
     queryFn: () => requestsApi.get(id!),
     enabled: !!id,
+    refetchInterval: 10000,
   });
 
   const { data: timeline, isLoading: loadingTimeline } = useQuery({
     queryKey: ['requests', id, 'timeline'],
     queryFn: () => requestsApi.timeline(id!),
     enabled: !!id,
+    refetchInterval: 10000,
   });
 
   const { data: quotes } = useQuery({
     queryKey: ['requests', id, 'quotes'],
     queryFn: () => requestsApi.quotes.list(id!),
     enabled: !!id,
+    refetchInterval: 10000,
   });
 
   const submitMutation = useMutation({
