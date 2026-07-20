@@ -187,23 +187,21 @@ export default function OrderDetail() {
                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                  {orderData.request_id && (
                                    <div>
-                                     <h3 className="text-sm font-medium text-gray-500 mb-1">Order Status</h3>
+                                     <h3 className="text-sm font-medium text-gray-500 mb-1">Request</h3>
                                      <div className="flex items-center gap-3">
-                                       <StatusBadge status={(order as any).order_status || 'unknown'} />
                                        <Link 
-                                         to={`/portal/customer/orders/${orderData.request_id}`}
+                                         to={`/portal/customer/requests/${orderData.request_id}`}
                                          className="text-sm font-medium text-ess-purple hover:underline"
                                        >
-                                         View Order
+                                         View Request
                                        </Link>
                                      </div>
                                    </div>
                                  )}
                                  {orderPayment.id && (
                                    <div>
-                                     <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Status</h3>
+                                     <h3 className="text-sm font-medium text-gray-500 mb-1">Payment</h3>
                                      <div className="flex items-center gap-3">
-                                       <StatusBadge status={(order as any).payment_status || 'unknown'} />
                                        <Link 
                                          to={`/portal/customer/payments/${orderPayment.id}`}
                                          className="text-sm font-medium text-ess-purple hover:underline"
