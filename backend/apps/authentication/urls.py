@@ -9,6 +9,8 @@ from apps.authentication.views.auth_views import (
     VerifyEmailView,
     ChangePasswordView,
     ChangeEmailView,
+    RequestPasswordResetView,
+    ResetPasswordView,
 )
 
 app_name = "authentication"
@@ -22,4 +24,6 @@ urlpatterns = [
     path("verify-email/", VerifyEmailView.as_view(), name="verify_email"),
     path("change-password/", ChangePasswordView.as_view(), name="change_password"),
     path("change-email/", ChangeEmailView.as_view(), name="change_email"),
+    path("request-password-reset/", RequestPasswordResetView.as_view(), name="request_password_reset"),
+    path("reset-password/", ResetPasswordView.as_view(), name="reset_password"),
 ]

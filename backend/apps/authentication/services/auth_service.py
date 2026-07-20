@@ -15,7 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 import secrets
 from apps.audit_logs.services.audit_service import log_action
-from apps.authentication.models import UserSession, EmailVerificationToken
+from apps.authentication.models import UserSession, EmailVerificationToken, PasswordResetToken
 from apps.notification.services import DispatchOrchestrator
 
 User = get_user_model()
@@ -255,53 +255,70 @@ class AuthService:
             )
             return
 
-        uid = urlsafe_base64_encode(force_bytes(user.pk))
-        token = default_token_generator.make_token(user)
+        otp = f"{secrets.randbelow(1000000):06d}"
+        # Invalidate old unused tokens
+        PasswordResetToken.objects.filter(user=user, is_used=False).update(is_used=True)
+        PasswordResetToken.objects.create(user=user, token=otp)
+
         log_action(
             actor=user,
             action="auth.password_reset_requested",
             resource_type="user",
             resource_id=str(user.id),
-            metadata={"uid": uid, "token_issued": bool(token)},
+            metadata={"token_issued": True},
         )
 
-        reset_link = f"https://entercom.example.com/reset-password?uid={uid}&token={token}"
-        DispatchOrchestrator.dispatch_event(
-            event_type="password_reset_requested",
-            recipient_id=user.id,
-            context={"reset_link": reset_link, "first_name": user.first_name},
-            resource_type="user",
-            resource_id=str(user.id),
-            category="alerts",
-            title="Password Reset Request",
-            message=f"Use this link to reset your password: {reset_link}",
-            is_system_critical=True
+        from apps.notification.providers import ProviderFactory
+        provider = ProviderFactory.get_provider()
+        html_body = f"<p>Hello {user.first_name},</p><p>You requested a password reset. Use this 6-digit OTP: <strong>{otp}</strong></p>"
+        text_body = f"Hello {user.first_name},\n\nYou requested a password reset. Use this 6-digit OTP: {otp}"
+        
+        provider.send_email(
+            to_email=user.email,
+            subject="Password Reset OTP",
+            html_body=html_body,
+            plain_text_body=text_body
         )
 
     @staticmethod
     def complete_password_reset(
-        *, user_id: str, token: str, new_password: str
+        *, email: str, token: str, new_password: str
     ) -> User:
         try:
-            user = User.objects.get(pk=user_id)
+            user = User.objects.get(email=email)
         except User.DoesNotExist:
             log_action(
                 action="auth.password_reset_failed",
                 resource_type="user",
-                resource_id=user_id,
+                resource_id=email,
                 reason="User not found",
             )
             raise AuthenticationFailed("Invalid password reset request")
 
-        if not default_token_generator.check_token(user, token):
+        try:
+            reset_token = PasswordResetToken.objects.get(user=user, token=token, is_used=False)
+        except PasswordResetToken.DoesNotExist:
             log_action(
                 actor=user,
                 action="auth.password_reset_failed",
                 resource_type="user",
                 resource_id=str(user.id),
-                reason="Invalid or expired token",
+                reason="Invalid token",
             )
             raise AuthenticationFailed("Invalid or expired password reset token")
+
+        if not reset_token.is_valid():
+            log_action(
+                actor=user,
+                action="auth.password_reset_failed",
+                resource_type="user",
+                resource_id=str(user.id),
+                reason="Expired token",
+            )
+            raise AuthenticationFailed("Invalid or expired password reset token")
+
+        reset_token.is_used = True
+        reset_token.save(update_fields=['is_used'])
 
         user.set_password(new_password)
         user.last_password_change_at = timezone.now()

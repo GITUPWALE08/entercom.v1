@@ -188,3 +188,31 @@ class ChangeEmailView(APIView):
             new_email=serializer.validated_data["new_email"]
         )
         return Response({"detail": "Email changed successfully. Please verify your new email."}, status=status.HTTP_200_OK)
+
+class RequestPasswordResetView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthAnonRateThrottle]
+
+    def post(self, request):
+        from apps.authentication.serializers.auth_serializers import RequestPasswordResetSerializer
+        serializer = RequestPasswordResetSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        AuthService.request_password_reset(email=serializer.validated_data["email"])
+        return Response({"detail": "If the email exists, a password reset OTP has been sent."}, status=status.HTTP_200_OK)
+
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthAnonRateThrottle]
+
+    def post(self, request):
+        from apps.authentication.serializers.auth_serializers import ResetPasswordSerializer
+        serializer = ResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        AuthService.complete_password_reset(
+            email=serializer.validated_data["email"],
+            token=serializer.validated_data["otp"],
+            new_password=serializer.validated_data["new_password"]
+        )
+        return Response({"detail": "Password has been reset successfully."}, status=status.HTTP_200_OK)

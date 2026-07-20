@@ -30,6 +30,7 @@ class User(AbstractBaseUser, PermissionsMixin):
         default="",
         validators=[_phone_validator],
     )
+    address = models.TextField(blank=True, default="")
 
     is_staff = models.BooleanField(
         "staff status",

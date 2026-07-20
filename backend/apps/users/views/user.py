@@ -63,6 +63,22 @@ class UserViewSet(viewsets.ModelViewSet):
         AuthService.request_password_reset(email=user.email)
         return Response({'message': 'Password reset triggered successfully.'}, status=status.HTTP_200_OK)
 
+    @action(detail=False, methods=['get', 'patch'])
+    def me(self, request):
+        if request.method == 'GET':
+            serializer = UserListSerializer(request.user)
+            return Response(serializer.data)
+        elif request.method == 'PATCH':
+            serializer = UserUpdateSerializer(data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            UserService.update_user(
+                user=request.user,
+                data=serializer.validated_data,
+                actor=request.user
+            )
+            # Re-serialize updated user
+            return Response(UserListSerializer(request.user).data)
+
     @action(detail=True, methods=['post'])
     def assign_role(self, request, pk=None):
         user = self.get_object()

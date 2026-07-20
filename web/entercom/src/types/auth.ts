@@ -5,6 +5,10 @@ export interface User {
   last_name: string;
   role: 'customer' | 'staff' | 'manager' | 'admin' | 'super_admin';
   permissions: string[];
+  phone_number?: string;
+  address?: string;
+  profile_image?: string;
+  mfa_enabled?: boolean;
 }
 
 export interface AuthTokens {

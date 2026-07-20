@@ -18,6 +18,7 @@ const Products = lazy(() => import('../pages/products'));
 const About = lazy(() => import('../pages/about'));
 const Login = lazy(() => import('../pages/login'));
 const Register = lazy(() => import('../pages/register'));
+const ForgotPassword = lazy(() => import('../pages/forgot-password'));
 
 // Lazy loaded portal pages
 const CustomerDashboard = lazy(() => import('../features/portal/customer/Dashboard'));
@@ -80,6 +81,7 @@ export const router = createBrowserRouter([
         children: [
           { path: '/login', element: <Suspense fallback={<LoadingScreen/>}><Login /></Suspense> },
           { path: '/register', element: <Suspense fallback={<LoadingScreen/>}><Register /></Suspense> },
+          { path: '/forgot-password', element: <Suspense fallback={<LoadingScreen/>}><ForgotPassword /></Suspense> },
         ]
       }
     ],

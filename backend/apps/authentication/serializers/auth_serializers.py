@@ -35,3 +35,11 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ("email", "password", "first_name", "last_name", "phone_number")
 
+class RequestPasswordResetSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+class ResetPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+    otp = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, write_only=True)
+

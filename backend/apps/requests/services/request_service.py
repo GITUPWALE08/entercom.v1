@@ -40,10 +40,12 @@ class RequestService:
         """
         if not hasattr(user, "role"):
             return Request.objects.filter(customer=user)
+
+        role = user.role.upper() # <--- Normalize case here
             
-        if user.role in ["STAFF", "MANAGER", "SUPER_ADMIN"]:
+        if role in ["STAFF", "MANAGER", "SUPER_ADMIN"]:
             return Request.objects.all()
-        elif user.role == "TECHNICIAN":
+        elif role == "TECHNICIAN":
             return Request.objects.filter(Q(assigned_technician=user) | Q(assignments__technician=user)).distinct()
         else:
             return Request.objects.filter(customer=user)

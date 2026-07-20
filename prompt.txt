@@ -1,7 +1,23 @@
-I am still getting this 404 not found error (https://entercom-v1.vercel.app/portal/technician)
+implement these:
 
-404 Not Found
-The page you are looking for doesn't exist or has been moved.
+Password reset:
 
-Go back home
-Reload Page
+Request reset
+
+Receive email
+
+Open link
+
+Set new password
+
+Login with new password
+
+
+Profile Setup:
+Name
+Phone
+Address
+Password reset
+Avatar
+2FA
+and 

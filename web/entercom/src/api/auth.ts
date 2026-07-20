@@ -29,5 +29,11 @@ export const authApi = {
   },
   logoutAll: async (): Promise<void> => {
     await apiClient.post('/auth/logout-all/');
+  },
+  requestPasswordReset: async (email: string): Promise<void> => {
+    await apiClient.post('/auth/request-password-reset/', { email });
+  },
+  resetPassword: async (data: Record<string, string>): Promise<void> => {
+    await apiClient.post('/auth/reset-password/', data);
   }
 };

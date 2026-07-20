@@ -18,6 +18,10 @@ export interface User {
   first_name: string;
   last_name: string;
   is_active: boolean;
+  phone_number?: string;
+  address?: string;
+  profile_image?: string;
+  mfa_enabled?: boolean;
   role_assignments: UserRole[];
 }
 
@@ -33,5 +37,15 @@ export const usersApi = {
 
   deassignRole: async (userId: string, roleSlug: string): Promise<void> => {
     await apiClient.post(`/users/${userId}/deassign_role/`, { role_slug: roleSlug });
+  },
+
+  getProfile: async (): Promise<User> => {
+    const { data } = await apiClient.get<User>('/users/me/');
+    return normalizeData(data);
+  },
+
+  updateProfile: async (profileData: Partial<User>): Promise<User> => {
+    const { data } = await apiClient.patch<User>('/users/me/', profileData);
+    return normalizeData(data);
   }
 };

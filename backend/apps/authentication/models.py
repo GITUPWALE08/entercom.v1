@@ -51,3 +51,27 @@ class EmailVerificationToken(models.Model):
         if not self.expires_at:
             self.expires_at = timezone.now() + timedelta(hours=24)
         super().save(*args, **kwargs)
+
+class PasswordResetToken(models.Model):
+    """Tracks password reset tokens."""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="password_reset_tokens"
+    )
+    token = models.CharField(max_length=64, unique=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    expires_at = models.DateTimeField()
+    is_used = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = "auth_password_reset_token"
+
+    def is_valid(self):
+        return timezone.now() < self.expires_at and not self.is_used
+
+    def save(self, *args, **kwargs):
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(minutes=15)
+        super().save(*args, **kwargs)
