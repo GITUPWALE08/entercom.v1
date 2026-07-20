@@ -54,7 +54,8 @@ class AuditLogEntry(models.Model):
         settings.AUTH_USER_MODEL,
         null=True,
         blank=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.DO_NOTHING,
+        db_constraint=False,
         related_name="audit_actions",
     )
     actor_id_snapshot = models.CharField(max_length=64, blank=True, db_index=True)

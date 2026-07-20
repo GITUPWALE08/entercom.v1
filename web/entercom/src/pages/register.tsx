@@ -3,10 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { useAuthStore } from '../store/authStore';
 import { authApi } from '../api/auth';
-import { requestsApi } from '../api/requests';
-import { apiClient } from '../api/axios';
 import logo from '../assets/logo.png';
 
 const registerSchema = z.object({
@@ -22,7 +19,6 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 export default function Register() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { setUser } = useAuthStore();
   const [serverError, setServerError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showOtp, setShowOtp] = useState(false);
@@ -57,7 +53,7 @@ export default function Register() {
     setServerError(null);
     try {
       // 1. Register User
-      const response = await authApi.register(data);
+      await authApi.register(data);
       
       // Show OTP screen
       setShowOtp(true);
