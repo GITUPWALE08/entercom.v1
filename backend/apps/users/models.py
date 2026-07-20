@@ -56,7 +56,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(null=True, blank=True, db_index=True)
     last_activity_at = models.DateTimeField(null=True, blank=True)
-    is_active = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
 
     mfa_enabled = models.BooleanField(default=False)
     profile_image = models.URLField(max_length=500, blank=True, default="")
