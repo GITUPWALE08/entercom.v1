@@ -9,6 +9,7 @@ export interface ProductItem {
   status: string;
   images?: { id: string, image: string, display_order: number }[];
   category?: string;
+  category_name?: string;
   quantity_available: number;
   low_stock_threshold?: number;
   sku?: string;

@@ -19,11 +19,11 @@ export default function ProductList() {
     queryFn: productsApi.list,
   });
 
-  const categories = Array.from(new Set(ensureArray(products).map(p => p.category).filter(Boolean))) as string[];
+  const categories = Array.from(new Set(ensureArray(products).map(p => p.category_name || p.category).filter(Boolean))) as string[];
 
   const filteredProducts = ensureArray(products).filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.description?.toLowerCase().includes(search.toLowerCase());
-    const matchesCat = selectedCategory ? p.category === selectedCategory : true;
+    const matchesCat = selectedCategory ? (p.category_name || p.category) === selectedCategory : true;
     return matchesSearch && matchesCat;
   });
 
@@ -82,9 +82,9 @@ export default function ProductList() {
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
                   )}
-                  {product.category && (
+                  {(product.category_name || product.category) && (
                     <div className="absolute top-3 left-3 px-2.5 py-1 bg-white/90 backdrop-blur-sm rounded-md text-xs font-semibold text-gray-900 capitalize shadow-sm">
-                      {product.category.replace('_', ' ')}
+                      {(product.category_name || product.category)?.replace('_', ' ')}
                     </div>
                   )}
                 </div>

@@ -24,6 +24,7 @@ class ProductImageSerializer(serializers.Serializer):
 class ProductSerializer(serializers.Serializer):
     id = serializers.UUIDField(read_only=True)
     category = serializers.UUIDField(source='category_id')
+    category_name = serializers.CharField(source='category.name', read_only=True)
     name = serializers.CharField()
     sku = serializers.CharField()
     description = serializers.CharField(allow_null=True)

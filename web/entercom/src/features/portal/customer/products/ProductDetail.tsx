@@ -48,9 +48,9 @@ export default function ProductDetail() {
         <div className="mb-6 flex items-center text-sm text-gray-500">
           <Link to="/portal/customer/products" className="hover:text-ess-purple transition-colors">Products</Link>
           <span className="mx-2">/</span>
-          {product.category && (
+          {(product.category_name || product.category) && (
             <>
-              <span className="capitalize">{product.category.replace('_', ' ')}</span>
+              <span className="capitalize">{(product.category_name || product.category)?.replace('_', ' ')}</span>
               <span className="mx-2">/</span>
             </>
           )}
