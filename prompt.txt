@@ -1,0 +1,2 @@
+src/features/portal/staff/requests/TechnicianRequestList.tsx(20,9): error TS6133: 'user' is declared but its value is never read.
+Error: Command "npm run build" exited with 2

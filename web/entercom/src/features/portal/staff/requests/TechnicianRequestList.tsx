@@ -3,7 +3,6 @@ import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
 import { requestsApi } from '../../../../api/requests';
-import { useAuthStore } from '../../../../store/authStore';
 import { PageContainer } from '../../../../shared/components/PageContainer';
 import { Skeleton } from '../../../../shared/components/Skeleton';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
@@ -16,9 +15,6 @@ export default function TechnicianRequestList() {
   const [sortOrder, setSortOrder] = useState('newest');
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-  
-  const { user } = useAuthStore();
-
   const { data: requests, isLoading } = useQuery({
     queryKey: ['requests'],
     queryFn: requestsApi.list,
