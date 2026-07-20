@@ -16,7 +16,7 @@ export function CustomerGuard() {
 }
 
 export function StaffGuard() {
-  return <RoleGuard allowedRoles={['staff', 'manager', 'admin', 'super_admin']} />;
+  return <RoleGuard allowedRoles={['staff', 'manager', 'admin', 'super_admin', 'technician']} />;
 }
 
 export function ManagerGuard() {

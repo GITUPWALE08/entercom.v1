@@ -185,6 +185,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                     Sign In
                   </Link>
                   <Link 
+                    to="/register"
+                    className="text-sm font-bold text-ess-navy hover:text-ess-purple transition-colors"
+                  >
+                    Sign Up
+                  </Link>
+                  <Link 
                     to="/contact" 
                     className="block w-full bg-ess-purple text-white text-center py-4 rounded-xl font-bold text-lg shadow-lg shadow-purple-200"
                   >

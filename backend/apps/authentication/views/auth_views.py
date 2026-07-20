@@ -79,10 +79,7 @@ class RegisterView(APIView):
         return Response(
             {
                 "user": UserSummarySerializer(user).data,
-                "tokens": {
-                    "access": str(refresh.access_token),
-                    "refresh": str(refresh),
-                },
+                "message": "Registration successful. Please verify your email.",
             },
             status=status.HTTP_201_CREATED,
         )

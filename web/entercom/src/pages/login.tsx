@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { authApi } from '../api/auth';
 import { apiClient } from '../api/axios';
@@ -17,6 +17,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const state = location.state as { requestData?: any; message?: string };
   const { setUser } = useAuthStore();
   const [serverError, setServerError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -42,6 +44,23 @@ export default function Login() {
       
       // Update store
       setUser(response.user);
+
+      const state = location.state as { requestData?: any; message?: string };
+      if (state?.requestData) {
+        try {
+          const payload = {
+            category: 'information',
+            service_type: state.requestData.service_type || 'General Inquiry',
+            description: state.requestData.message || 'Onboarded via Guest Request',
+            priority: 'normal'
+          };
+          
+          const { requestsApi } = await import('../api/requests');
+          await requestsApi.create(payload);
+        } catch (err) {
+          console.error("Failed to create request after login:", err);
+        }
+      }
 
       // Redirect based on role
       const roleMap: Record<string, string> = {
@@ -86,6 +105,11 @@ export default function Login() {
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          {state?.message && (
+            <div className="rounded-md bg-green-50 p-4 border border-green-200">
+              <div className="text-sm text-green-700">{state.message}</div>
+            </div>
+          )}
           {serverError && (
             <div className="rounded-md bg-red-50 p-4 border border-red-200">
               <div className="text-sm text-red-700">{serverError}</div>

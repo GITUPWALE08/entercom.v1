@@ -25,6 +25,9 @@ export default function Register() {
   const { setUser } = useAuthStore();
   const [serverError, setServerError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
 
   // Extract request data if navigating from QuoteForm
   const state = location.state as { requestData?: any };
@@ -56,29 +59,8 @@ export default function Register() {
       // 1. Register User
       const response = await authApi.register(data);
       
-      // Save tokens
-      localStorage.setItem('access_token', response.tokens.access);
-      localStorage.setItem('refresh_token', response.tokens.refresh);
-      apiClient.defaults.headers.common.Authorization = `Bearer ${response.tokens.access}`;
-      
-      // Update store
-      setUser(response.user);
-
-      // 2. Create the Request automatically if data exists
-      if (requestData) {
-        // Map emailjs fields to backend payload
-        const payload = {
-          category: 'information', // default category
-          service_type: requestData.service_type || 'General Inquiry',
-          description: requestData.message || 'Onboarded via Guest Request',
-          priority: 'normal'
-        };
-        
-        await requestsApi.create(payload);
-      }
-
-      // Redirect to customer portal
-      navigate('/portal/customer');
+      // Show OTP screen
+      setShowOtp(true);
     } catch (error: any) {
       if (error.response?.status === 400 || error.response?.status === 403) {
         setServerError(error.response?.data?.detail || error.response?.data?.message || 'Validation error. Please check your inputs.');
@@ -89,6 +71,58 @@ export default function Register() {
       }
     }
   };
+
+  const handleVerifyOtp = async () => {
+    setServerError(null);
+    setIsVerifying(true);
+    try {
+      await authApi.verifyEmail(otp);
+      
+      // Navigate to login after successful verification
+      navigate('/login', { state: { message: 'Email verified successfully. Please log in to complete your request.', requestData } });
+    } catch (error: any) {
+      setServerError(error.response?.data?.detail || 'Invalid OTP. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  if (showOtp) {
+    return (
+      <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8 bg-white p-8 shadow-lg rounded-xl text-center">
+          <div>
+            <h2 className="mt-6 text-3xl font-bold tracking-tight text-gray-900">Verify Your Email</h2>
+            <p className="mt-2 text-sm text-gray-600">
+              We've sent a 6-digit OTP to your email address. Please enter it below.
+            </p>
+          </div>
+          {serverError && (
+            <div className="rounded-md bg-red-50 p-4 border border-red-200">
+              <div className="text-sm text-red-700">{serverError}</div>
+            </div>
+          )}
+          <div className="space-y-4">
+            <input
+              type="text"
+              value={otp}
+              onChange={(e) => setOtp(e.target.value)}
+              placeholder="Enter 6-digit OTP"
+              maxLength={6}
+              className="block w-full rounded-md border border-gray-300 p-3 text-center text-2xl tracking-widest shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+            <button
+              onClick={handleVerifyOtp}
+              disabled={isVerifying || otp.length !== 6}
+              className="w-full flex justify-center rounded-md border border-transparent bg-ess-purple py-2.5 px-4 text-sm font-bold text-white hover:bg-ess-darkPurple focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 disabled:opacity-50 transition-all shadow-md"
+            >
+              {isVerifying ? 'Verifying...' : 'Verify OTP'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-[calc(100vh-64px)] items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">

@@ -28,7 +28,7 @@ class AuthService:
     SESSION_INACTIVITY_DAYS = 20
 
     @staticmethod
-    def register(data: dict[str, Any], request_metadata: dict[str, Any]) -> tuple[User, RefreshToken]:
+    def register(data: dict[str, Any], request_metadata: dict[str, Any]) -> tuple[User, None]:
         email = data["email"]
         if User.objects.filter(email=email).exists():
             raise AuthenticationFailed("User with this email already exists")
@@ -39,12 +39,8 @@ class AuthService:
             first_name=data.get("first_name", ""),
             last_name=data.get("last_name", ""),
             phone_number=data.get("phone_number", ""),
+            email_verified=False,
         )
-
-        refresh = RefreshToken.for_user(user)
-        refresh["role_version"] = user.role_version
-        refresh.access_token["role_version"] = user.role_version
-        AuthService.track_session(user, refresh, request_metadata)
 
         log_action(
             actor=user,
@@ -53,23 +49,22 @@ class AuthService:
             resource_id=str(user.id),
         )
 
-        token = secrets.token_urlsafe(32)
-        EmailVerificationToken.objects.create(user=user, token=token)
+        otp = f"{secrets.randbelow(1000000):06d}"
+        EmailVerificationToken.objects.create(user=user, token=otp)
 
-        verification_link = f"https://entercom.example.com/verify-email?token={token}"
-        DispatchOrchestrator.dispatch_event(
-            event_type="verify_email",
-            recipient_id=user.id,
-            context={"verification_link": verification_link, "first_name": user.first_name},
-            resource_type="user",
-            resource_id=str(user.id),
-            category="alerts",
-            title="Verify Your Email Address",
-            message=f"Please verify your email using this link: {verification_link}",
-            is_system_critical=True
+        from apps.notification.providers import ProviderFactory
+        provider = ProviderFactory.get_provider()
+        html_body = f"<p>Hello {user.first_name},</p><p>Please verify your email using this 6-digit OTP: <strong>{otp}</strong></p>"
+        text_body = f"Hello {user.first_name},\n\nPlease verify your email using this 6-digit OTP: {otp}"
+        
+        provider.send_email(
+            to_email=user.email,
+            subject="Verify Your Email Address",
+            html_body=html_body,
+            plain_text_body=text_body
         )
 
-        return user, refresh
+        return user, None
 
     @staticmethod
     def login(email: str, password: str, request_metadata: dict[str, Any]) -> tuple[User, RefreshToken]:
@@ -464,20 +459,19 @@ class AuthService:
         # )
 
         # Generate new verification token
-        token = secrets.token_urlsafe(32)
-        EmailVerificationToken.objects.create(user=user, token=token)
-        verification_link = f"https://entercom.example.com/verify-email?token={token}"
+        otp = f"{secrets.randbelow(1000000):06d}"
+        EmailVerificationToken.objects.create(user=user, token=otp)
         
-        DispatchOrchestrator.dispatch_event(
-            event_type="verify_email",
-            recipient_id=user.id,
-            context={"verification_link": verification_link, "first_name": user.first_name},
-            resource_type="user",
-            resource_id=str(user.id),
-            category="alerts",
-            title="Verify Your New Email Address",
-            message=f"Please verify your new email using this link: {verification_link}",
-            is_system_critical=True
+        from apps.notification.providers import ProviderFactory
+        provider = ProviderFactory.get_provider()
+        html_body = f"<p>Hello {user.first_name},</p><p>Please verify your new email using this 6-digit OTP: <strong>{otp}</strong></p>"
+        text_body = f"Hello {user.first_name},\n\nPlease verify your new email using this 6-digit OTP: {otp}"
+        
+        provider.send_email(
+            to_email=user.email,
+            subject="Verify Your New Email Address",
+            html_body=html_body,
+            plain_text_body=text_body
         )
 
 

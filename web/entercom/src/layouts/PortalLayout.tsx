@@ -37,6 +37,12 @@ export function PortalLayout() {
     { name: 'Payments', href: '/portal/staff/payments' },
   ];
 
+  const technicianNavigation = [
+    { name: 'Technician Dashboard', href: '/portal/staff/technician' },
+    { name: 'Requests', href: '/portal/staff/technician/requests' },
+    { name: 'Profile', href: '/portal/staff/profile' },
+  ];
+
   const managerNavigation = [
     { name: 'Dashboard', href: '/portal/manager' },
     { name: 'Escalations', href: '/portal/manager/requests' },
@@ -68,6 +74,8 @@ export function PortalLayout() {
     ? managerNavigation
     : userRole === 'staff'
     ? staffNavigation 
+    : userRole === 'technician'
+    ? technicianNavigation
     : customerNavigation;
 
   const isActive = (path: string) => {

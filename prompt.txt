@@ -1,2 +1,11 @@
-src/features/portal/staff/requests/TechnicianRequestList.tsx(20,9): error TS6133: 'user' is declared but its value is never read.
-Error: Command "npm run build" exited with 2
+-> the email was sent to the user after registeration as a notification instead of to the user's email
+-> the user wasn't supposed to be able to be logged in before verification
+-> And I want a 6 digit otp instead of verification link
+
+
+-> the technician portal is not available, which can only mean you have been generating a lot of hallucination replies for me (although the backend api routes maybe verified but you didn't verify the frontend causing me to get 404 error)
+404 Not Found
+The page you are looking for doesn't exist or has been moved.
+
+Go back home
+Reload Page

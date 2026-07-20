@@ -6,7 +6,7 @@ import { PageContainer } from '../../../../shared/components/PageContainer';
 import { Skeleton } from '../../../../shared/components/Skeleton';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
 import { DataTable } from '../../../../shared/components/ui/DataTable';
-import { StatusBadge } from '../../../../shared/components/ui/StatusBadge';
+// import { StatusBadge } from '../../../../shared/components/ui/StatusBadge';
 import { Card, CardContent} from '../../../../shared/components/ui';
 
 export default function OrderDetail() {
