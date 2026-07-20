@@ -66,6 +66,7 @@ export default function Login() {
       const roleMap: Record<string, string> = {
         customer: '/portal/customer',
         staff: '/portal/staff',
+        technician: '/portal/staff/technician',
         manager: '/portal/manager',
         admin: '/portal/admin',
         super_admin: '/portal/admin',

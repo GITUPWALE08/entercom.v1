@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { PublicLayout } from '../layouts/PublicLayout';
 import { PortalLayout } from '../layouts/PortalLayout';
 import { ProtectedRoute } from '../guards/ProtectedRoute';
@@ -91,6 +91,11 @@ export const router = createBrowserRouter([
       {
         element: <PortalLayout />,
         children: [
+          // Fallback alias for technicians trying to access /portal/technician directly
+          {
+            path: 'technician',
+            element: <Navigate to="/portal/staff/technician" replace />
+          },
           // Customer Portal
           {
             path: 'customer',
