@@ -1,1 +1,3 @@
-on the product when filtering by category, it should show category name not id of the products/category
+fix to perform:
+-> on the product when filtering by category, it should show category name not id of the products/category
+-> order detail page should have attached payments 

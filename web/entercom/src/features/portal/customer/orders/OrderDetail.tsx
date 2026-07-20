@@ -6,6 +6,8 @@ import { PageContainer } from '../../../../shared/components/PageContainer';
 import { Skeleton } from '../../../../shared/components/Skeleton';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
 import { DataTable } from '../../../../shared/components/ui/DataTable';
+import { StatusBadge } from '../../../../shared/components/ui/StatusBadge';
+import { Card, CardContent} from '../../../../shared/components/ui';
 
 export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
@@ -166,7 +168,7 @@ export default function OrderDetail() {
           </div>
           
           <div className="bg-gray-50 p-8 sm:p-12 flex flex-col sm:flex-row justify-between items-center gap-6">
-             <div className="flex flex-col gap-2">
+             {/* <div className="flex flex-col gap-2">
                <div className="text-sm text-gray-500">
                  Attached to Request: <Link to={`/portal/customer/requests/${orderData.request_id}`} className="text-ess-purple hover:underline font-medium">{orderData.request_id.split('-')[0].toUpperCase()}</Link>
                </div>
@@ -175,7 +177,46 @@ export default function OrderDetail() {
                    Attached Payment: <Link to={`/portal/customer/payments/${orderPayment.id}`} className="text-ess-purple hover:underline font-medium">{orderPayment.id.split('-')[0].toUpperCase()}</Link>
                  </div>
                )}
-             </div>
+             </div> */}
+
+             {/* Associated Order / Payment */}
+                         {(orderData.request_id || orderPayment.id) && (
+                           <Card>
+                             <CardContent>
+                               <h2 className="text-lg font-semibold text-gray-900 mb-4">Associated Request & Payment</h2>
+                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                 {orderData.request_id && (
+                                   <div>
+                                     <h3 className="text-sm font-medium text-gray-500 mb-1">Order Status</h3>
+                                     <div className="flex items-center gap-3">
+                                       <StatusBadge status={(order as any).order_status || 'unknown'} />
+                                       <Link 
+                                         to={`/portal/customer/orders/${orderData.request_id}`}
+                                         className="text-sm font-medium text-ess-purple hover:underline"
+                                       >
+                                         View Order
+                                       </Link>
+                                     </div>
+                                   </div>
+                                 )}
+                                 {orderPayment.id && (
+                                   <div>
+                                     <h3 className="text-sm font-medium text-gray-500 mb-1">Payment Status</h3>
+                                     <div className="flex items-center gap-3">
+                                       <StatusBadge status={(order as any).payment_status || 'unknown'} />
+                                       <Link 
+                                         to={`/portal/customer/payments/${orderPayment.id}`}
+                                         className="text-sm font-medium text-ess-purple hover:underline"
+                                       >
+                                         View Payment
+                                       </Link>
+                                     </div>
+                                   </div>
+                                 )}
+                               </div>
+                             </CardContent>
+                           </Card>
+                         )}
              
              {/* Note: Invoices would go here if backend supported them */}
              <button className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
