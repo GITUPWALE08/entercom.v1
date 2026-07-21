@@ -19,6 +19,6 @@ def test_verification_submit_requires_accepted_assignment():
         VerificationService.submit(request.id, technician, {})
         
     # Pending assignment
-    assignment = Assignment.objects.create(request=request, technician=technician, status=AssignmentResponseStatus.PENDING)
+    assignment = Assignment.objects.create(request=request, technician=technician, response_status=AssignmentResponseStatus.PENDING)
     with pytest.raises(ValidationError, match="You must accept the assignment before submitting verification"):
         VerificationService.submit(request.id, technician, {})

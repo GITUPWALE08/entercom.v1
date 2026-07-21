@@ -61,7 +61,7 @@ class VerificationService:
         if not Assignment.objects.filter(
             request=request, 
             technician=actor, 
-            status=AssignmentResponseStatus.ACCEPTED
+            response_status=AssignmentResponseStatus.ACCEPTED
         ).exists():
             raise ValidationError("You must accept the assignment before submitting verification.")
 
