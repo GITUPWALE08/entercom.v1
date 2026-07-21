@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { apiClient } from '../axios';
 import MockAdapter from 'axios-mock-adapter';

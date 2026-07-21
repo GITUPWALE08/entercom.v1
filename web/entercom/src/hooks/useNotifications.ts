@@ -54,7 +54,7 @@ export function useNotifications() {
       
       return { previousData, previousCount };
     },
-    onError: (err, id, context) => {
+    onError: (_err, _id, context) => {
       queryClient.setQueryData(NOTIFICATIONS_KEY, context?.previousData);
       queryClient.setQueryData([...NOTIFICATIONS_KEY, 'unreadCount'], context?.previousCount);
     },
