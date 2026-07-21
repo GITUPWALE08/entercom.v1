@@ -30,22 +30,37 @@ export function useNotifications() {
 
   const markAsRead = useMutation({
     mutationFn: notificationsApi.markAsRead,
-    onSuccess: (updatedNotification) => {
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: NOTIFICATIONS_KEY });
+      const previousData = queryClient.getQueryData(NOTIFICATIONS_KEY);
+      const previousCount = queryClient.getQueryData([...NOTIFICATIONS_KEY, 'unreadCount']);
+      
       queryClient.setQueryData(NOTIFICATIONS_KEY, (data: any) => {
-        if (!data) return data;
+        if (!data || !data.pages) return data;
         return {
           ...data,
           pages: data.pages.map((page: any) => {
             const newPage = ensureArray(page).map((n: Notification) => 
-              n.id === updatedNotification.id ? updatedNotification : n
+              n.id === id ? { ...n, read_at: new Date().toISOString() } : n
             ) as any;
-            newPage.next = page.next;
-            newPage.count = page.count;
-            newPage.previous = page.previous;
+            newPage.next = page?.next;
+            newPage.count = page?.count;
+            newPage.previous = page?.previous;
             return newPage;
           })
         };
       });
+      queryClient.setQueryData([...NOTIFICATIONS_KEY, 'unreadCount'], (old: any) => Math.max(0, (old || 1) - 1));
+      
+      return { previousData, previousCount };
+    },
+    onError: (err, id, context) => {
+      queryClient.setQueryData(NOTIFICATIONS_KEY, context?.previousData);
+      queryClient.setQueryData([...NOTIFICATIONS_KEY, 'unreadCount'], context?.previousCount);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
+      queryClient.invalidateQueries({ queryKey: [...NOTIFICATIONS_KEY, 'unreadCount'] });
     },
   });
 

@@ -35,6 +35,7 @@ function handleEvent(data: any) {
         globalQueryClient.invalidateQueries({ queryKey: ['bookings'] });
     } else if (eventType.startsWith('notification.')) {
         globalQueryClient.invalidateQueries({ queryKey: ['notifications'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
         // Realtime Toast Alert
         if (data.payload && data.payload.title) {
             globalAddToast?.(data.payload.message || data.payload.title, 'info', 5000);

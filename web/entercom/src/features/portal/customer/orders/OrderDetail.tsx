@@ -180,7 +180,7 @@ export default function OrderDetail() {
              </div> */}
 
              {/* Associated Order / Payment */}
-                         {(orderData.request_id || orderPayment.id) && (
+                         {(orderData.request_id || orderPayment?.id) && (
                            <Card>
                              <CardContent>
                                <h2 className="text-lg font-semibold text-gray-900 mb-4">Associated Request & Payment</h2>
@@ -198,7 +198,7 @@ export default function OrderDetail() {
                                      </div>
                                    </div>
                                  )}
-                                 {orderPayment.id && (
+                                 {orderPayment?.id && (
                                    <div>
                                      <h3 className="text-sm font-medium text-gray-500 mb-1">Payment</h3>
                                      <div className="flex items-center gap-3">

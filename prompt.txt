@@ -1,15 +1,21 @@
-src/components/NotificationCenter.tsx(52,20): error TS2304: Cannot find name 'useAuthStore'.
-src/features/portal/customer/profile/Profile.tsx(13,10): error TS2451: Cannot redeclare block-scoped variable 'isEditing'.
-src/features/portal/customer/profile/Profile.tsx(13,21): error TS2451: Cannot redeclare block-scoped variable 'setIsEditing'.
-src/features/portal/customer/profile/Profile.tsx(14,10): error TS2451: Cannot redeclare block-scoped variable 'isSaving'.
-src/features/portal/customer/profile/Profile.tsx(14,20): error TS2451: Cannot redeclare block-scoped variable 'setIsSaving'.
-src/features/portal/customer/profile/Profile.tsx(15,10): error TS2451: Cannot redeclare block-scoped variable 'message'.
-src/features/portal/customer/profile/Profile.tsx(15,19): error TS2451: Cannot redeclare block-scoped variable 'setMessage'.
-src/features/portal/customer/profile/Profile.tsx(17,10): error TS2451: Cannot redeclare block-scoped variable 'isEditing'.
-src/features/portal/customer/profile/Profile.tsx(17,21): error TS2451: Cannot redeclare block-scoped variable 'setIsEditing'.
-src/features/portal/customer/profile/Profile.tsx(18,10): error TS2451: Cannot redeclare block-scoped variable 'isSaving'.
-src/features/portal/customer/profile/Profile.tsx(18,20): error TS2451: Cannot redeclare block-scoped variable 'setIsSaving'.
-src/features/portal/customer/profile/Profile.tsx(19,10): error TS2451: Cannot redeclare block-scoped variable 'message'.
-src/features/portal/customer/profile/Profile.tsx(19,19): error TS2451: Cannot redeclare block-scoped variable 'setMessage'.
-src/layouts/PortalLayout.tsx(13,9): error TS2451: Cannot redeclare block-scoped variable 'location'.
-src/layouts/PortalLayout.tsx(14,9): error TS2451: Cannot redeclare block-scoped variable 'location'.
+-> the notification is still showing unread on the customers page 
+
+-> I approved the quote on a customer page just now and I wanted to pay so I was redirect to this page:
+https://entercom-v1.vercel.app/portal/customer/orders/5067ea59-3df7-4dbc-8700-a2be190996f9
+and then got this error:
+Unexpected Application Error!
+Cannot read properties of undefined (reading 'id')
+TypeError: Cannot read properties of undefined (reading 'id')
+    at T (https://entercom-v1.vercel.app/assets/OrderDetail-BkV9ohHm.js:2:3188)
+    at Lo (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:48089)
+    at nc (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:70883)
+    at gm (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:81214)
+    at Xm (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:116960)
+    at ub (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:116006)
+    at Rc (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:115838)
+    at Qm (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:112631)
+    at sp (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:124549)
+    at ci (https://entercom-v1.vercel.app/assets/index-CgNlcLrR.js:9:123098)
+💿 Hey developer 👋
+
+You can provide a way better UX than this when your app throws errors by providing your own ErrorBoundary or errorElement prop on your route.
