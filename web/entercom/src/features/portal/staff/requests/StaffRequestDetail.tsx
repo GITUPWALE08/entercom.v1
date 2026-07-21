@@ -30,8 +30,7 @@ export default function StaffRequestDetail() {
   }, [id, subscribeToRequest]);
 
   // UI state
-  const [showDecline, setShowDecline] = useState(false);
-  const [declineReason, setDeclineReason] = useState('');
+
   const [showEscalate, setShowEscalate] = useState(false);
   const [escalateReason, setEscalateReason] = useState('');
   const [showReviewReject, setShowReviewReject] = useState(false);
@@ -91,15 +90,7 @@ export default function StaffRequestDetail() {
     onError: (err: any) => alert(err.response?.data?.message || 'Failed to assign technician'),
   });
 
-  const acceptMutation = useMutation({
-    mutationFn: () => requestsApi.accept(id!),
-    onSuccess: invalidate,
-  });
 
-  const declineMutation = useMutation({
-    mutationFn: (reason: string) => requestsApi.decline(id!, reason),
-    onSuccess: () => { invalidate(); setShowDecline(false); },
-  });
 
   const escalateMutation = useMutation({
     mutationFn: (reason: string) => requestsApi.escalate(id!, reason),
