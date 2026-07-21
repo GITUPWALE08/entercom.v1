@@ -4,6 +4,7 @@ import { Bell, Check, Trash2, AlertCircle, Info, FileText, Loader2 } from 'lucid
 import { useNotifications } from '../hooks/useNotifications';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../store/authStore';
 
 export function NotificationCenter() {
   const [isOpen, setIsOpen] = useState(false);

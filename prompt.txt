@@ -1,14 +1,15 @@
--> The button to activate the mfa is not working
-
--> On the technician page, the unread button notification make senese but it is returning 404 error when clicked
-
--> The profile on the customer page is going to ./staff/profile, and I want the profile to be available on mobile too for all users.
-
--> The notification is not reading i.e marking as read both individually and mark all as read
-
--> I'm getting a 500 server error for ./booking/?start_date...
-
--> the search bar on the product page should look for the search item in the entire product (at least onces available on the frontend) not just the filtered ones available
-on the screen
-
--> And the staff requestlist page is still not showing all the requests list
+src/components/NotificationCenter.tsx(52,20): error TS2304: Cannot find name 'useAuthStore'.
+src/features/portal/customer/profile/Profile.tsx(13,10): error TS2451: Cannot redeclare block-scoped variable 'isEditing'.
+src/features/portal/customer/profile/Profile.tsx(13,21): error TS2451: Cannot redeclare block-scoped variable 'setIsEditing'.
+src/features/portal/customer/profile/Profile.tsx(14,10): error TS2451: Cannot redeclare block-scoped variable 'isSaving'.
+src/features/portal/customer/profile/Profile.tsx(14,20): error TS2451: Cannot redeclare block-scoped variable 'setIsSaving'.
+src/features/portal/customer/profile/Profile.tsx(15,10): error TS2451: Cannot redeclare block-scoped variable 'message'.
+src/features/portal/customer/profile/Profile.tsx(15,19): error TS2451: Cannot redeclare block-scoped variable 'setMessage'.
+src/features/portal/customer/profile/Profile.tsx(17,10): error TS2451: Cannot redeclare block-scoped variable 'isEditing'.
+src/features/portal/customer/profile/Profile.tsx(17,21): error TS2451: Cannot redeclare block-scoped variable 'setIsEditing'.
+src/features/portal/customer/profile/Profile.tsx(18,10): error TS2451: Cannot redeclare block-scoped variable 'isSaving'.
+src/features/portal/customer/profile/Profile.tsx(18,20): error TS2451: Cannot redeclare block-scoped variable 'setIsSaving'.
+src/features/portal/customer/profile/Profile.tsx(19,10): error TS2451: Cannot redeclare block-scoped variable 'message'.
+src/features/portal/customer/profile/Profile.tsx(19,19): error TS2451: Cannot redeclare block-scoped variable 'setMessage'.
+src/layouts/PortalLayout.tsx(13,9): error TS2451: Cannot redeclare block-scoped variable 'location'.
+src/layouts/PortalLayout.tsx(14,9): error TS2451: Cannot redeclare block-scoped variable 'location'.

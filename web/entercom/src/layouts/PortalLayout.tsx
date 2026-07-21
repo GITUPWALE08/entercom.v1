@@ -11,7 +11,6 @@ export function PortalLayout() {
   const { user } = useAuthStore();
   const { logout } = useLogout();
   const location = useLocation();
-  const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
 
