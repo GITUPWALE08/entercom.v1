@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { requestsApi } from '../../../../api/requests';
+import { usersApi } from '../../../../api/users';
 import { PageContainer } from '../../../../shared/components/PageContainer';
 import { Skeleton } from '../../../../shared/components/Skeleton';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
@@ -31,6 +32,12 @@ export default function ManagerRequestDetail() {
     queryKey: ['requests', id, 'timeline'],
     queryFn: () => requestsApi.timeline(id!),
     enabled: !!id,
+  });
+
+  const { data: technicians } = useQuery({
+    queryKey: ['users', 'technician'],
+    queryFn: () => usersApi.list('technician'),
+    enabled: showAssign,
   });
 
   const assignMutation = useMutation({
@@ -207,13 +214,21 @@ export default function ManagerRequestDetail() {
 
                 {showAssign && (
                   <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl space-y-3">
-                    <Input 
-                      label="Technician ID"
-                      type="text"
-                      placeholder="Enter Technician ID..."
-                      value={technicianId} 
-                      onChange={e => setTechnicianId(e.target.value)}
-                    />
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Select Technician</label>
+                      <select 
+                        value={technicianId} 
+                        onChange={e => setTechnicianId(e.target.value)}
+                        className="w-full rounded-lg border-gray-300 shadow-sm focus:border-ess-purple focus:ring-ess-purple sm:text-sm p-2 border"
+                      >
+                        <option value="">-- Choose a technician --</option>
+                        {ensureArray(technicians).map((tech: any) => (
+                          <option key={tech.id} value={tech.id}>
+                            {tech.first_name} {tech.last_name} ({tech.email})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                     <div className="flex justify-end gap-2">
                       <button onClick={() => setShowAssign(false)} className="px-3 py-1.5 text-sm font-medium text-gray-600">Cancel</button>
                       <button 

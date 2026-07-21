@@ -14,8 +14,17 @@ from core.exceptions import PermissionDeniedError
 User = get_user_model()
 
 class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all().prefetch_related('role_assignments__role')
     permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        queryset = User.objects.all().prefetch_related('role_assignments__role')
+        role = self.request.query_params.get('role')
+        if role:
+            queryset = queryset.filter(
+                role_assignments__role__slug=role,
+                role_assignments__is_active=True
+            ).distinct()
+        return queryset
 
     def get_serializer_class(self):
         if self.action == 'create':

@@ -18,7 +18,7 @@ export default function UserList() {
 
   const { data: users, isLoading: loadingUsers } = useQuery({
     queryKey: ['users'],
-    queryFn: usersApi.list,
+    queryFn: () => usersApi.list(),
   });
 
   const { data: roles } = useQuery({

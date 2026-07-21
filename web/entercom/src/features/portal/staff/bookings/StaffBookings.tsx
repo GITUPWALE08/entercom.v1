@@ -35,7 +35,7 @@ export default function StaffBookings() {
 
   const { data: users } = useQuery({
     queryKey: ['users'],
-    queryFn: usersApi.list,
+    queryFn: () => usersApi.list(),
   });
 
   const getTechName = (id: string) => {

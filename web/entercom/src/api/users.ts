@@ -26,8 +26,9 @@ export interface User {
 }
 
 export const usersApi = {
-  list: async (): Promise<User[]> => {
-    const { data } = await apiClient.get<User[]>('/users/');
+  list: async (role?: string): Promise<User[]> => {
+    const url = role ? `/users/?role=${role}` : '/users/';
+    const { data } = await apiClient.get<User[]>(url);
     return normalizeData(data);
   },
 

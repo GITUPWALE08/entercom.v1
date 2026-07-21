@@ -48,9 +48,9 @@ export default function StaffRequestDetail() {
     refetchInterval: 10000,
   });
 
-  const { data: usersData } = useQuery({
-    queryKey: ['users'],
-    queryFn: usersApi.list,
+  const { data: technicians } = useQuery({
+    queryKey: ['users', 'technician'],
+    queryFn: () => usersApi.list('technician'),
   });
 
   const { data: timeline } = useQuery({
@@ -60,9 +60,6 @@ export default function StaffRequestDetail() {
     refetchInterval: 10000,
   });
 
-  const technicians = usersData?.filter((u: any) =>
-    u.role_assignments?.some((r: any) => r.role?.slug === 'technician')
-  ) || [];
 
   // Mutations
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['requests', id] });
