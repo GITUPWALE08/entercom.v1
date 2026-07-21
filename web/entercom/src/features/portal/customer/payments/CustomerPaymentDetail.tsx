@@ -113,7 +113,7 @@ export default function CustomerPaymentDetail() {
                   <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-1">Order ID</h3>
                     <Link to={`/portal/customer/orders/${payment.order_id}`} className="font-medium text-ess-purple hover:underline">
-                      {payment.order_id?.split('-')[0].toUpperCase() || 'N/A'}
+                      {payment.order_id ? payment.order_id.split('-')[0].toUpperCase() : 'N/A'}
                     </Link>
                   </div>
                   <div>

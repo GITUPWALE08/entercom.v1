@@ -12,7 +12,14 @@ def test_verification_submit_requires_accepted_assignment():
     customer = User.objects.create_user(email="customer@test.com", password="pwd", first_name="C", last_name="C", role="CUSTOMER")
     technician = User.objects.create_user(email="tech@test.com", password="pwd", first_name="T", last_name="T", role="TECHNICIAN")
     
-    request = Request.objects.create(customer=customer, status="in_progress")
+    request = Request.objects.create(
+        customer=customer, 
+        status="in_progress",
+        public_id="REQ-12345",
+        category="maintenance",
+        priority="high",
+        description="Test description"
+    )
     
     # Missing assignment completely
     with pytest.raises(ValidationError, match="You must accept the assignment before submitting verification"):

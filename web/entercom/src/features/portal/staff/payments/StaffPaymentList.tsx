@@ -107,7 +107,7 @@ export default function StaffPaymentList() {
                 },
                 {
                   header: 'Order ID',
-                  accessor: (payment) => <span className="text-gray-500 font-mono text-xs">{payment.order_id?.split('-')[0].toUpperCase() || 'N/A'}</span>
+                  accessor: (payment) => <span className="text-gray-500 font-mono text-xs">{payment.order_id ? payment.order_id.split('-')[0].toUpperCase() : 'N/A'}</span>
                 },
                 {
                   header: 'Date',
