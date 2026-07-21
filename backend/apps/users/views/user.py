@@ -17,12 +17,13 @@ class UserViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        from django.db.models import Q
         queryset = User.objects.all().prefetch_related('role_assignments__role')
         role = self.request.query_params.get('role')
         if role:
             queryset = queryset.filter(
-                role_assignments__role__slug__iexact=role,
-                role_assignments__is_active=True
+                Q(role_assignments__role__slug__iexact=role, role_assignments__is_active=True) |
+                Q(role__iexact=role)
             ).distinct()
         return queryset
 
