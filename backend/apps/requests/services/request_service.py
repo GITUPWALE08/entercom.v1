@@ -41,7 +41,7 @@ class RequestService:
         if not hasattr(user, "role"):
             return Request.objects.filter(customer=user)
 
-        role = user.role.upper() # <--- Normalize case here
+        role = user.role.upper()
             
         if role in ["STAFF", "MANAGER", "SUPER_ADMIN"]:
             return Request.objects.all()

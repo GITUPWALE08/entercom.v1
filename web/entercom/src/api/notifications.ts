@@ -39,6 +39,11 @@ export const notificationsApi = {
     await apiClient.post('/notifications/mark-all-read/');
   },
 
+  getUnreadCount: async (): Promise<number> => {
+    const { data } = await apiClient.get<{unread_count: number}>('/notifications/unread-count/');
+    return data.unread_count;
+  },
+
   archiveAll: async (): Promise<void> => {
     await apiClient.post('/notifications/archive-all/');
   },

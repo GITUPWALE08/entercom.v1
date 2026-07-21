@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError, PermissionDenied
 from django.utils.dateparse import parse_date
 from django.utils import timezone
 from django.db.models import Q
-from datetime import datetime, time
+from datetime import datetime, time, timezone as dt_timezone
 import uuid
 
 from ..models.booking import Booking
@@ -100,7 +100,7 @@ class BookingViewSet(viewsets.ReadOnlyModelViewSet):
             if (end_date - start_date).days > 365:
                 raise ValidationError("Date range must not exceed 365 days.")
 
-            tz = timezone.utc
+            tz = dt_timezone.utc
             dt_start = timezone.make_aware(datetime.combine(start_date, time.min), tz)
             dt_end = timezone.make_aware(datetime.combine(end_date, time.min), tz)
 

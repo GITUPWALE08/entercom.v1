@@ -23,6 +23,11 @@ export function useNotifications() {
 
   const notifications = query.data?.pages.flatMap(p => ensureArray(p)) || [];
 
+  const unreadCountQuery = useQuery({
+    queryKey: [...NOTIFICATIONS_KEY, 'unreadCount'],
+    queryFn: notificationsApi.getUnreadCount,
+  });
+
   const markAsRead = useMutation({
     mutationFn: notificationsApi.markAsRead,
     onSuccess: (updatedNotification) => {
@@ -69,6 +74,7 @@ export function useNotifications() {
     mutationFn: notificationsApi.markAllRead,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
+      queryClient.invalidateQueries({ queryKey: [...NOTIFICATIONS_KEY, 'unreadCount'] });
     },
   });
 
@@ -76,6 +82,7 @@ export function useNotifications() {
     mutationFn: notificationsApi.archiveAll,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY });
+      queryClient.invalidateQueries({ queryKey: [...NOTIFICATIONS_KEY, 'unreadCount'] });
     },
   });
 
@@ -91,7 +98,7 @@ export function useNotifications() {
     archive,
     markAllRead,
     archiveAll,
-    unreadCount: query.data?.pages[0]?.count || ensureArray(notifications).filter(n => !n.read_at).length
+    unreadCount: unreadCountQuery.data ?? ensureArray(notifications).filter(n => !n.read_at).length
   };
 }
 

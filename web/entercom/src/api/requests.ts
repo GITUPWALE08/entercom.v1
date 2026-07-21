@@ -29,7 +29,7 @@ export interface QuoteItem {
 
 export const requestsApi = {
   list: async () => {
-    const { data } = await apiClient.get<{data: RequestItem[]}>('/requests/');
+    const { data } = await apiClient.get<{data: RequestItem[]}>('/requests/?limit=1000');
     return normalizeData(data); // Standard pagination response uses data.data
   },
   get: async (id: string) => {

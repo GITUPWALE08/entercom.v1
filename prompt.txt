@@ -1,23 +1,14 @@
-implement these:
+-> The button to activate the mfa is not working
 
-Password reset:
+-> On the technician page, the unread button notification make senese but it is returning 404 error when clicked
 
-Request reset
+-> The profile on the customer page is going to ./staff/profile, and I want the profile to be available on mobile too for all users.
 
-Receive email
+-> The notification is not reading i.e marking as read both individually and mark all as read
 
-Open link
+-> I'm getting a 500 server error for ./booking/?start_date...
 
-Set new password
+-> the search bar on the product page should look for the search item in the entire product (at least onces available on the frontend) not just the filtered ones available
+on the screen
 
-Login with new password
-
-
-Profile Setup:
-Name
-Phone
-Address
-Password reset
-Avatar
-2FA
-and 
+-> And the staff requestlist page is still not showing all the requests list

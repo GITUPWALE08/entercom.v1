@@ -17,7 +17,7 @@ export interface ProductItem {
 
 export const productsApi = {
   list: async () => {
-    const { data } = await apiClient.get<ProductItem[]>('/products/');
+    const { data } = await apiClient.get<ProductItem[]>('/products/?limit=1000');
     return normalizeData(data);
   },
   get: async (id: string) => {
