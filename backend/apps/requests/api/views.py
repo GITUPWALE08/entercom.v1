@@ -506,6 +506,8 @@ class RequestVerificationViewSet(viewsets.ViewSet):
         except DomainException as e:
             return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
+            if type(e).__name__ == "ValidationError":
+                return error_response(str(e), status_code=status.HTTP_400_BAD_REQUEST)
             import traceback
             traceback.print_exc()
             logger.error(f"Service error: {e}")

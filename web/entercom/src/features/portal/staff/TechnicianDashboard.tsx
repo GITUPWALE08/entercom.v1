@@ -125,14 +125,14 @@ export default function TechnicianDashboard() {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
               <h2 className="text-lg font-bold text-gray-900 mb-6 border-b border-gray-100 pb-4">Quick Actions</h2>
               <div className="space-y-3">
-                <Link to="/portal/staff/technician/requests" className="block w-full py-3 px-4 bg-gray-50 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-colors text-center shadow-sm">
-                  Review Pending Requests
+                <Link to="/portal/staff/technician/requests?filter=assigned" className="block w-full py-3 px-4 bg-gray-50 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-colors text-center shadow-sm">
+                  View Assigned Jobs
                 </Link>
-                <Link to="/portal/staff/inventory" className="block w-full py-3 px-4 bg-gray-50 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-colors text-center shadow-sm">
-                  Update Inventory Levels
+                <Link to="/portal/staff/bookings" className="block w-full py-3 px-4 bg-gray-50 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-colors text-center shadow-sm">
+                  View Today's Bookings
                 </Link>
-                <Link to="/portal/staff/orders" className="block w-full py-3 px-4 bg-gray-50 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-colors text-center shadow-sm">
-                  Fulfill Orders
+                <Link to="/portal/staff/technician/requests?filter=verification" className="block w-full py-3 px-4 bg-gray-50 text-gray-700 font-medium rounded-xl hover:bg-gray-100 transition-colors text-center shadow-sm">
+                  Submit Verifications
                 </Link>
               </div>
             </div>

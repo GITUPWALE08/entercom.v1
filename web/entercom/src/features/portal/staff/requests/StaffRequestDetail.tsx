@@ -362,51 +362,12 @@ export default function StaffRequestDetail() {
                   </div>
                 )}
 
-                {/* ASSIGNED: accept/decline */}
+                {/* ASSIGNED: wait for technician */}
                 {s === 'assigned' && (
-                  <div className="flex gap-4 pt-2">
-                    <button
-                      onClick={() => acceptMutation.mutate()}
-                      disabled={acceptMutation.isPending}
-                      className="flex-1 py-3 px-4 bg-ess-purple text-white font-medium rounded-xl hover:bg-ess-darkPurple transition-colors shadow-sm disabled:opacity-50"
-                    >
-                      {acceptMutation.isPending ? 'Accepting…' : 'Accept Assignment'}
-                    </button>
-                    <button
-                      onClick={() => setShowDecline(!showDecline)}
-                      className="flex-1 py-3 px-4 bg-white border border-red-200 text-red-600 font-medium rounded-xl hover:bg-red-50 transition-colors"
-                    >
-                      Decline
-                    </button>
-                  </div>
-                )}
-
-                {showDecline && (
-                  <div className="p-4 bg-red-50 border border-red-100 rounded-xl space-y-3">
-                    <Select
-                      label="Reason for declining"
-                      value={declineReason}
-                      onChange={(e) => setDeclineReason(e.target.value)}
-                      options={[
-                        { label: 'Select reason…', value: '' },
-                        { label: 'Out of area', value: 'out_of_area' },
-                        { label: 'Overloaded', value: 'overloaded' },
-                        { label: 'Lack of skill', value: 'lack_of_skill' },
-                        { label: 'Unavailable', value: 'unavailable' },
-                        { label: 'Safety concern', value: 'safety_concern' },
-                        { label: 'Other', value: 'other' },
-                      ]}
-                    />
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => setShowDecline(false)} className="px-3 py-1.5 text-sm text-gray-600">Cancel</button>
-                      <button
-                        onClick={() => declineMutation.mutate(declineReason)}
-                        disabled={!declineReason || declineMutation.isPending}
-                        className="px-3 py-1.5 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
-                      >
-                        Submit
-                      </button>
-                    </div>
+                  <div className="p-4 bg-purple-50 border border-purple-100 rounded-xl mt-4">
+                    <p className="text-sm font-medium text-purple-800">
+                      ⏳ Waiting for the assigned technician to accept or decline the job.
+                    </p>
                   </div>
                 )}
 

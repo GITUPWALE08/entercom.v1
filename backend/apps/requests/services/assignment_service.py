@@ -165,6 +165,7 @@ class AssignmentService:
             request=request, technician=actor
         ).latest("assigned_at")
         assignment.accepted_at = timezone.now()
+        assignment.response_status = "accepted"
         assignment.save()
 
         correlation_id = str(uuid.uuid4())
@@ -254,6 +255,7 @@ class AssignmentService:
         ).latest("assigned_at")
         assignment.declined_at = timezone.now()
         assignment.decline_reason = reason_code
+        assignment.response_status = "declined"
         assignment.save()
 
         correlation_id = str(uuid.uuid4())
@@ -337,6 +339,7 @@ class AssignmentService:
 
                     assignment.declined_at = timezone.now()
                     assignment.decline_reason = "timeout"
+                    assignment.response_status = "timeout"
                     assignment.save()
 
                     correlation_id = str(uuid.uuid4())
