@@ -1,1 +1,7 @@
-when I tried to assign it's not showing the list of technicians
+I'm still not getting the list of technicians
+here is the render log:
+=> Available at your primary URL https://entercom-v1.onrender.com
+2026-07-21 11:27:11,030 [WARNING] django.request - Not Found: /
+2026-07-21 11:27:26,230 [WARNING] django.request - Unauthorized: /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/
+2026-07-21 11:27:26,230 [WARNING] django.request - Unauthorized: /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/quotes/
+2026-07-21 11:27:26,325 [WARNING] django.request - Unauthorized: /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/timeline/

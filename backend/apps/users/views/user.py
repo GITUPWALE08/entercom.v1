@@ -21,7 +21,7 @@ class UserViewSet(viewsets.ModelViewSet):
         role = self.request.query_params.get('role')
         if role:
             queryset = queryset.filter(
-                role_assignments__role__slug=role,
+                role_assignments__role__slug__iexact=role,
                 role_assignments__is_active=True
             ).distinct()
         return queryset
