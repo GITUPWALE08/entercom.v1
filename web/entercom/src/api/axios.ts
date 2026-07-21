@@ -106,7 +106,7 @@ apiClient.interceptors.response.use(
         error.message = data.message;
       } else if (data.detail) {
         error.message = data.detail;
-      } else if (typeof data === 'object' && Object.keys(data).length > 0) {
+      } else if (typeof data === 'object' && data !== null && Object.keys(data).length > 0) {
           // generic fallback for nested errors without an explicit 'errors' key
           const genericErrors = Object.entries(data)
               .filter(([k]) => k !== 'success')

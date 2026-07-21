@@ -78,13 +78,13 @@ export default function OrderDetail() {
         <div className="mb-6 flex items-center text-sm text-gray-500">
           <Link to="/portal/customer/orders" className="hover:text-ess-purple transition-colors">Orders</Link>
           <span className="mx-2">/</span>
-          <span className="text-gray-900 font-medium">{orderData.request_id.split('-')[0].toUpperCase()}</span>
+          <span className="text-gray-900 font-medium">{orderData.request_id?.split('-')[0].toUpperCase() || 'DIRECT-ORDER'}</span>
         </div>
 
         <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 sm:p-12 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Reference #{orderData.request_id.split('-')[0].toUpperCase()}</h1>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Reference #{orderData.request_id?.split('-')[0].toUpperCase() || orderData.id.split('-')[0].toUpperCase()}</h1>
               <p className="text-gray-500">Placed on {new Date(orderData.created_at).toLocaleDateString()}</p>
             </div>
             <div className="text-left sm:text-right">
@@ -170,7 +170,7 @@ export default function OrderDetail() {
           <div className="bg-gray-50 p-8 sm:p-12 flex flex-col sm:flex-row justify-between items-center gap-6">
              {/* <div className="flex flex-col gap-2">
                <div className="text-sm text-gray-500">
-                 Attached to Request: <Link to={`/portal/customer/requests/${orderData.request_id}`} className="text-ess-purple hover:underline font-medium">{orderData.request_id.split('-')[0].toUpperCase()}</Link>
+                 Attached to Request: <Link to={`/portal/customer/requests/${orderData.request_id}`} className="text-ess-purple hover:underline font-medium">{orderData.request_id?.split('-')[0].toUpperCase() || 'N/A'}</Link>
                </div>
                {orderPayment && (
                  <div className="text-sm text-gray-500">

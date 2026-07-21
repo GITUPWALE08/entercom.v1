@@ -155,7 +155,7 @@ export default function Checkout() {
                       <div className="flex gap-4 items-start">
                         <div className="relative">
                           {item.product.images && item.product.images.length > 0 ? (
-                            <img src={item.product.images[0].image} alt={item.product.name} className="w-12 h-12 rounded bg-white object-cover border border-gray-200" />
+                            <img src={item.product.images?.[0]?.image || 'https://placehold.co/400x300'} alt={item.product.name} className="w-12 h-12 rounded bg-white object-cover border border-gray-200" />
                           ) : (
                             <div className="w-12 h-12 rounded bg-gray-200 flex items-center justify-center text-[10px] text-gray-500">Img</div>
                           )}

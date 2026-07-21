@@ -63,7 +63,7 @@ export default function ProductDetail() {
             {/* Image Gallery Area */}
             <div className="bg-gray-50 aspect-square md:aspect-auto md:h-full p-8 flex items-center justify-center relative border-b md:border-b-0 md:border-r border-gray-100">
               {product.images && product.images.length > 0 ? (
-                <img src={product.images[0].image} alt={product.name} className="w-full max-w-md object-contain mix-blend-multiply" />
+                <img src={product.images?.[0]?.image || 'https://placehold.co/400x300'} alt={product.name} className="w-full max-w-md object-contain mix-blend-multiply" />
               ) : (
                 <div className="text-gray-400 font-medium text-lg tracking-widest uppercase">No Image Available</div>
               )}

@@ -107,6 +107,16 @@ class AuthService:
             )
             raise AuthenticationFailed("Account is inactive")
 
+        if not user.email_verified:
+            log_action(
+                actor=user,
+                action="auth.login_failed",
+                resource_type="user",
+                resource_id=str(user.id),
+                reason="Email not verified",
+            )
+            raise AuthenticationFailed("Email address has not been verified.")
+
         if user.locked_until and user.locked_until > timezone.now():
             log_action(
                 actor=user,

@@ -44,7 +44,8 @@ class VerificationService:
         """
         from apps.requests.permissions.constants import Permission, Role
         from apps.requests.permissions.checks import RBACChecker
-        from django.core.exceptions import PermissionDenied
+        from django.core.exceptions import PermissionDenied, ValidationError
+        from apps.requests.models.assignment import Assignment, AssignmentResponseStatus
 
         request = Request.objects.select_for_update().get(pk=request_id)
 
@@ -56,6 +57,13 @@ class VerificationService:
             resource=request
         ):
             raise PermissionDenied("Missing verification.submit permission.")
+
+        if not Assignment.objects.filter(
+            request=request, 
+            technician=actor, 
+            status=AssignmentResponseStatus.ACCEPTED
+        ).exists():
+            raise ValidationError("You must accept the assignment before submitting verification.")
 
         prev_status = request.status
 

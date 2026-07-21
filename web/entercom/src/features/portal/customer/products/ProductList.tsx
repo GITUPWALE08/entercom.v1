@@ -78,7 +78,7 @@ export default function ProductList() {
               >
                 <div className="aspect-[4/3] bg-gray-50 overflow-hidden relative">
                   {product.images && product.images.length > 0 ? (
-                    <img src={product.images[0].image} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={product.images?.[0]?.image || 'https://placehold.co/400x300'} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-gray-400">No Image</div>
                   )}

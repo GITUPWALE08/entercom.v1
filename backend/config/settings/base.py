@@ -182,7 +182,7 @@ CORS_ALLOWED_ORIGINS = env.list(
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "apps.authentication.authentication.CustomJWTAuthentication",
     ),
     "EXCEPTION_HANDLER": "core.drf_exception_handler.custom_exception_handler",
     "DEFAULT_PERMISSION_CLASSES": ("apps.roles.permissions.FailClosedPermission",),

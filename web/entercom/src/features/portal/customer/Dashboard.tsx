@@ -147,7 +147,7 @@ export default function CustomerDashboard() {
                         <CardContent className="flex items-center space-x-4 p-4">
                           <div className="h-16 w-16 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden">
                             {product.images && product.images.length > 0 ? (
-                              <img src={product.images[0].image} alt={product.name} className="h-full w-full object-cover" />
+                              <img src={product.images?.[0]?.image || 'https://placehold.co/400x300'} alt={product.name} className="h-full w-full object-cover" />
                             ) : (
                               <div className="h-full w-full flex items-center justify-center text-gray-400">img</div>
                             )}

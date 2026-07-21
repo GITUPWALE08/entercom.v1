@@ -42,7 +42,7 @@ export default function Cart() {
             <div key={item.product.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 sm:p-6 flex flex-col sm:flex-row gap-6">
               <div className="w-full sm:w-32 h-32 bg-gray-50 rounded-xl flex items-center justify-center border border-gray-100 shrink-0 overflow-hidden">
                 {item.product.images && item.product.images.length > 0 ? (
-                  <img src={item.product.images[0].image} alt={item.product.name} className="w-full h-full object-cover" />
+                  <img src={item.product.images?.[0]?.image || 'https://placehold.co/400x300'} alt={item.product.name} className="w-full h-full object-cover" />
                 ) : (
                   <ShoppingCart className="w-8 h-8 text-gray-300" />
                 )}

@@ -122,7 +122,11 @@ export default function RequestDetail() {
         submitMutation.mutate();
         break;
       case 'pay_now':
-        if (request.order_id) navigate(`/portal/customer/orders/${request.order_id}`);
+        if (request.order_id && request.order_id !== 'null') {
+          navigate(`/portal/customer/orders/${request.order_id}`);
+        } else {
+          alert('No order has been generated for this payment yet.');
+        }
         break;
       case 'review_quote':
         // Scroll to quote section or handle quote directly
