@@ -1,37 +1,151 @@
-I accepted a job with a technician account, then when I wanted to submit the verification I got this 500 error:
-{"success":false,"message":"Unexpected error"}
-
-
-here is the render log:
-127.0.0.1:53076 - - [21/Jul/2026:14:07:32] "GET /api/v1/requests/?limit=1000" 200 13032
-127.0.0.1:53076 - - [21/Jul/2026:14:07:35] "OPTIONS /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/timeline/" 200 -
-127.0.0.1:53076 - - [21/Jul/2026:14:07:35] "OPTIONS /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/quotes/" 200 -
-127.0.0.1:54554 - - [21/Jul/2026:14:07:35] "OPTIONS /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/" 200 -
-127.0.0.1:54554 - - [21/Jul/2026:14:07:35] "GET /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/timeline/" 200 1085
-127.0.0.1:47304 - - [21/Jul/2026:14:07:35] "GET /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/quotes/" 200 218
-127.0.0.1:53076 - - [21/Jul/2026:14:07:35] "GET /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/" 200 564
-127.0.0.1:47304 - - [21/Jul/2026:14:07:41] "OPTIONS /api/v1/notifications/mark-all-read/" 200 -
-127.0.0.1:47304 - - [21/Jul/2026:14:07:41] "POST /api/v1/notifications/mark-all-read/" 200 20
-127.0.0.1:54554 - - [21/Jul/2026:14:07:42] "GET /api/v1/notifications/unread-count/" 200 18
-127.0.0.1:47304 - - [21/Jul/2026:14:07:42] "GET /api/v1/notifications/?offset=0&limit=20" 200 8934
-127.0.0.1:47304 - - [21/Jul/2026:14:07:42] "GET /api/v1/notifications/unread-count/" 200 18
-127.0.0.1:47304 - - [21/Jul/2026:14:07:46] "GET /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/timeline/" 200 1085
-127.0.0.1:54554 - - [21/Jul/2026:14:07:46] "GET /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/quotes/" 200 218
-127.0.0.1:59804 - - [21/Jul/2026:14:07:46] "GET /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/" 200 564
-127.0.0.1:39032 - - [21/Jul/2026:14:07:52] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:39032 - - [21/Jul/2026:14:07:52] "WSREJECT /ws/requests/" - -
-127.0.0.1:39032 - - [21/Jul/2026:14:07:52] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:39038 - - [21/Jul/2026:14:07:55] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:39038 - - [21/Jul/2026:14:07:55] "WSREJECT /ws/requests/" - -
+ I'm getting this error form the render log, and the requests page is returning 500 error
+ 
+ File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/fields.py", line 1870, in to_representation
+    return method(value)
+           ^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/requests/api/serializers.py", line 67, in get_next_states
+    context = RequestContextBuilder(obj).build()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/requests/services/context_builder.py", line 110, in build
+    provider.build(self.request, context)
+  File "/opt/render/project/src/backend/apps/requests/services/context_builder.py", line 82, in build
+    context.evidence_uploaded = bool(verification.photos)
+                                     ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Verification' object has no attribute 'photos'
+2026-07-21 14:28:16,739 [ERROR] django.request 6143e935-5865-4276-9612-425bd346a3bb Internal Server Error: /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/
 Traceback (most recent call last):
-  File "/opt/render/project/src/backend/apps/requests/api/views.py", line 504, in submit_verification
-    result = VerificationService.submit(request_id=request_pk, actor=request.user, evidence=serializer.validated_data)
-             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/python/Python-3.12.10/lib/python3.12/contextlib.py", line 81, in inner
-    return func(*args, **kwds)
-           ^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/backend/apps/requests/services/verification_service.py", line 66, in submit
-    raise ValidationError("You must accept the assignment before submitting verification.")
-django.core.exceptions.ValidationError: ['You must accept the assignment before submitting verification.']
-2026-07-21 14:08:10,390 [ERROR] apps.requests.api.views 2abd5382-eb5d-40ad-97b3-c8c9aba84add Service error: ['You must accept the assignment before submitting verification.']
-2026-07-21 14:08:10,392 [ERROR] django.request - Internal Server Error: /api/v1/requests/581cb34d-ee84-4591-80f6-fc11bac16f55/verify/
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 577, in thread_handler
+    raise exc_info[1]
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 577, in thread_handler
+    raise exc_info[1]
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 526, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/current_thread_executor.py", line 35, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 581, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 508, in func
+    return context.run(run_child)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 506, in run_child
+    return child()
+           ^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/requests/api/views.py", line 110, in retrieve
+    return success_response("Request retrieved successfully", serializer.data)
+                                                              ^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 571, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 538, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/fields.py", line 1870, in to_representation
+    return method(value)
+           ^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/requests/api/serializers.py", line 67, in get_next_states
+    context = RequestContextBuilder(obj).build()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/requests/services/context_builder.py", line 110, in build
+    provider.build(self.request, context)
+  File "/opt/render/project/src/backend/apps/requests/services/context_builder.py", line 82, in build
+    context.evidence_uploaded = bool(verification.photos)
+                                     ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Verification' object has no attribute 'photos'
+2026-07-21 14:28:17,263 [ERROR] django.request 463cecae-e078-4abb-bb28-5192ec280023 Internal Server Error: /api/v1/requests/
+Traceback (most recent call last):
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 577, in thread_handler
+    raise exc_info[1]
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 42, in inner
+    response = await get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 577, in thread_handler
+    raise exc_info[1]
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/core/handlers/base.py", line 253, in _get_response_async
+    response = await wrapped_callback(
+               ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 526, in __call__
+    ret = await asyncio.shield(exec_coro)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/current_thread_executor.py", line 35, in run
+    result = self.fn(*self.args, **self.kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 581, in thread_handler
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 508, in func
+    return context.run(run_child)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 506, in run_child
+    return child()
+           ^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/views/decorators/csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/viewsets.py", line 124, in view
+    return self.dispatch(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 509, in dispatch
+    response = self.handle_exception(exc)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 469, in handle_exception
+    self.raise_uncaught_exception(exc)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 480, in raise_uncaught_exception
+    raise exc
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/requests/api/views.py", line 100, in list
+    return self.get_paginated_response(serializer.data, "Requests retrieved successfully")
+                                       ^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 795, in data
+    ret = super().data
+          ^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 249, in data
+    self._data = self.to_representation(self.instance)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 714, in to_representation
+    self.child.to_representation(item) for item in iterable
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/serializers.py", line 538, in to_representation
+    ret[field.field_name] = field.to_representation(attribute)
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/fields.py", line 1870, in to_representation
+    return method(value)
+           ^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/requests/api/serializers.py", line 67, in get_next_states
+    context = RequestContextBuilder(obj).build()
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/requests/services/context_builder.py", line 110, in build
+    provider.build(self.request, context)
+  File "/opt/render/project/src/backend/apps/requests/services/context_builder.py", line 82, in build
+    context.evidence_uploaded = bool(verification.photos)
+                                     ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'Verification' object has no attribute 'photos'

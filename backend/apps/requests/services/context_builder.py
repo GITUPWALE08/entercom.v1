@@ -79,7 +79,7 @@ class VerificationContextProvider:
             from apps.requests.models.verification import Verification
             verification = Verification.objects.filter(request=request).order_by('-created_at').first()
             if verification:
-                context.evidence_uploaded = bool(verification.photos)
+                context.evidence_uploaded = verification.evidence.exists()
                 context.qa_pass = verification.status == 'approved'
                 context.qa_fail = verification.status == 'rejected'
         except ImportError:
