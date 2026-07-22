@@ -212,9 +212,9 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </header>
 
         {/* Hero */}
-        <div className="block">
+        {/* <div className="block">
            <HeroSection />
-        </div>
+        </div> */}
 
         {/* Content */}
         <main className="flex-grow">
