@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Phone, Mail, ArrowRight, FacebookIcon, InstagramIcon} from 'lucide-react';
 import logo from '../assets/logo.png';
+
 import { useAuthStore } from '../store/authStore';
 import { useLogout } from '../hooks/useLogout';
 import HeroSection from './hero';
@@ -186,7 +187,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </Link>
                   <Link 
                     to="/register"
-                    className="text-sm font-bold text-ess-navy hover:text-ess-purple transition-colors"
+                    className="block w-full bg-gray-100 text-ess-navy text-center py-4 rounded-xl font-bold text-lg"
                   >
                     Sign Up
                   </Link>
