@@ -43,7 +43,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="flex flex-row min-h-screen font-sans w-full">
+    <div className="flex flex-row min-h-screen font-sans w-screen">
       <div className="flex-1 flex flex-col min-h-screen font-sans relative">
         {/* Top Bar - Hidden on Mobile to save space */}
         <div className="bg-ess-navy text-white text-xs py-2 px-4 hidden md:flex justify-between items-center">
