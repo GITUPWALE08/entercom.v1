@@ -56,8 +56,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </div>
 
         {/* Main Navbar */}
-        <header className={`w-full sticky top-0 z-50 transition-all duration-100 ${isMenuOpen ? 'bg-white' : 'bg-white/95 backdrop-blur-md shadow-sm'}`}>
-          <div className="container mx-0 px-4 h-16 md:h-20 flex justify-between items-center">
+        <header className={`sticky top-0 z-50 transition-all duration-100 ${isMenuOpen ? 'bg-white' : 'bg-white/95 backdrop-blur-md shadow-sm'}`}>
+          <div className="w-full px-4 h-16 md:h-20 flex justify-between items-center">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3 group">
                 {/* Image Logo */}
