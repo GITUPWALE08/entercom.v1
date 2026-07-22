@@ -1,2 +1,25 @@
-1. in the main nav bar for desktop(the header), the logo div and the navlink div to have zero margin to the left and right respectively with px-4
-2. the overall size of the page(like text and images) looks small increase by 20% 
+changing the overall size of the page(like text and images) by 20% increase introduced a bug to the mobile view, return only the mobile pages to the initial size before increasing by 20%, such that the mobile 
+if you have any question about this ask, do not just blindly implement 
+
+
+
+-> also there is a bug
+
+requests/?limit=1000	(canceled)	xhr	index-DiN0Y-Ao.js:15	0.0 kB	9.97 s
+requests/	Finished	websocket	index-DiN0Y-Ao.js:21	0.0 kB	269 ms
+requests/	Finished	websocket	index-DiN0Y-Ao.js:21	0.0 kB	772 ms
+requests/	Finished	websocket	index-DiN0Y-Ao.js:21	0.0 kB	446 ms
+requests/	Finished	websocket	index-DiN0Y-Ao.js:21	0.0 kB	747 ms
+
+127.0.0.1:57782 - - [22/Jul/2026:12:32:45] "WSREJECT /ws/requests/" - -
+127.0.0.1:57782 - - [22/Jul/2026:12:32:45] "WSDISCONNECT /ws/requests/" - -
+127.0.0.1:35788 - - [22/Jul/2026:12:33:11] "GET /api/v1/requests/?limit=1000" 200 27208
+127.0.0.1:40690 - - [22/Jul/2026:12:33:18] "WSCONNECTING /ws/requests/" - -
+127.0.0.1:40690 - - [22/Jul/2026:12:33:18] "WSREJECT /ws/requests/" - -
+127.0.0.1:40690 - - [22/Jul/2026:12:33:18] "WSDISCONNECT /ws/requests/" - -
+127.0.0.1:35788 - - [22/Jul/2026:12:33:23] "GET /api/v1/requests/?limit=1000" 200 27208
+127.0.0.1:35788 - - [22/Jul/2026:12:33:26] "GET /api/v1/payments/" 200 2355
+127.0.0.1:35788 - - [22/Jul/2026:12:33:53] "GET /api/v1/requests/?limit=1000" 401 183
+127.0.0.1:59018 - - [22/Jul/2026:12:33:55] "WSCONNECTING /ws/requests/" - -
+2026-07-22 12:33:57,912 [INFO] forensic.audit ff22fed6-7b2b-4afb-86ea-6523866165fd AUDIT_EVENT:auth.token_refresh
+2026-07-22 12:34:03,889 [INFO] forensic.audit b1269e93-ddfc-490a-8f86-196529a20507 AUDIT_EVENT:auth.login_success

@@ -142,6 +142,15 @@ function disconnectWs() {
     }
 }
 
+if (typeof window !== 'undefined') {
+    window.addEventListener('token_refreshed', () => {
+        disconnectWs();
+        if (subscribers > 0) {
+            connectWs();
+        }
+    });
+}
+
 export function useWebsocket(channel: 'system' | 'requests' = 'requests') {
     const queryClient = useQueryClient();
     const addToast = useToastStore(state => state.addToast);

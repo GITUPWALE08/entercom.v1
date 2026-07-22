@@ -9,7 +9,6 @@ interface UseChatWebsocketProps {
 }
 
 export function useChatWebsocket({ conversationId, onMessageReceived, onReadReceipt }: UseChatWebsocketProps) {
-  const token = localStorage.getItem('access_token');
   const queryClient = useQueryClient();
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -17,6 +16,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
   const maxReconnectAttempts = 5;
 
   const connect = useCallback(() => {
+    const token = localStorage.getItem('access_token');
     if (!token || !conversationId) return;
 
     // Use wss:// in production, ws:// in dev based on your environment
@@ -95,11 +95,19 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     ws.current.onerror = (error) => {
       console.error('Chat websocket error:', error);
     };
-  }, [conversationId, token, queryClient, onMessageReceived, onReadReceipt]);
+  }, [conversationId, queryClient, onMessageReceived, onReadReceipt]);
 
   useEffect(() => {
     connect();
+
+    const handleTokenRefreshed = () => {
+      if (ws.current) ws.current.close();
+      connect();
+    };
+    window.addEventListener('token_refreshed', handleTokenRefreshed);
+
     return () => {
+      window.removeEventListener('token_refreshed', handleTokenRefreshed);
       if (ws.current) {
         ws.current.close();
       }

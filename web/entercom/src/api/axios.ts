@@ -78,6 +78,8 @@ apiClient.interceptors.response.use(
         apiClient.defaults.headers.common.Authorization = `Bearer ${data.access}`;
         originalRequest.headers.Authorization = `Bearer ${data.access}`;
         
+        window.dispatchEvent(new CustomEvent('token_refreshed', { detail: data.access }));
+
         processQueue(null, data.access);
         return apiClient(originalRequest);
       } catch (refreshError) {
