@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChatConversation, chatApi } from '../../../api/chat';
+import type { ChatConversation } from '../../../api/chat';
+import { chatApi } from '../../../api/chat';
 import { useAuthStore } from '../../../store/authStore';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 

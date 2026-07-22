@@ -210,8 +210,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           </div>
         </header>
 
-        {/* Mobile Hero */}
-        <div className="block lg:hidden">
+        {/* Hero */}
+        <div className="block">
            <HeroSection />
         </div>
 
@@ -273,10 +273,6 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         </footer>
       </div>
       
-      {/* Desktop Hero */}
-      <div className="hidden lg:flex lg:flex-1 lg:min-w-[35vw] lg:max-w-[55vw]">
-        <HeroSection />
-      </div>
     </div>
   );
 };

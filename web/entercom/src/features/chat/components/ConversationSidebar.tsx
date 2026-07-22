@@ -1,5 +1,4 @@
-import React from 'react';
-import { ChatConversation } from '../../../api/chat';
+import type { ChatConversation } from '../../../api/chat';
 import { Link } from 'react-router-dom';
 
 interface ConversationSidebarProps {

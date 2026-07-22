@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
+import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { chatApi, ChatMessage } from '../../../api/chat';
+import { chatApi } from '../../../api/chat';
+import type { ChatMessage } from '../../../api/chat';
 import { useChatWebsocket } from '../hooks/useChatWebsocket';
 import { PageContainer } from '../../../shared/components/PageContainer';
 import { ConversationSidebar } from '../components/ConversationSidebar';
 import { ConversationHeader } from '../components/ConversationHeader';
 import { MessageList } from '../components/MessageList';
 import { MessageComposer } from '../components/MessageComposer';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 export default function StaffInboxPage() {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const { data: conversations = [], isLoading: isLoadingList } = useQuery({
+  const { data: conversations = [] } = useQuery({
     queryKey: ['chat'],
     queryFn: chatApi.list,
     refetchInterval: 30000, // Background polling for new conversations
@@ -35,14 +35,14 @@ export default function StaffInboxPage() {
   // WebSocket hook ensures messages list updates in real-time.
   const { markRead } = useChatWebsocket({
     conversationId: id || '',
-    onMessageReceived: (msg: ChatMessage) => {
+    onMessageReceived: (_msg: ChatMessage) => {
       // Re-fetch conversation list to update last message & unread count instantly
       queryClient.invalidateQueries({ queryKey: ['chat'] });
     }
   });
 
   // Mark as read whenever we view a new conversation
-  React.useEffect(() => {
+  useEffect(() => {
     if (id) {
         markRead();
         // Optimistically clear unread count in sidebar
@@ -55,7 +55,7 @@ export default function StaffInboxPage() {
 
   const sendMessageMutation = useMutation({
     mutationFn: (body: string) => chatApi.sendMessage(id!, body),
-    onSuccess: (newMsg) => {
+    onSuccess: () => {
       // Invalidate just in case, but websocket should have already handled appending.
       queryClient.invalidateQueries({ queryKey: ['chat', id, 'messages'] });
       queryClient.invalidateQueries({ queryKey: ['chat'] });
@@ -68,12 +68,11 @@ export default function StaffInboxPage() {
 
   const handleAssign = () => {
     // Basic assignment logic for MVP - staff assigns self
-    const me = queryClient.getQueryData<any>(['auth', 'me']); // Adjust based on auth store
     if (window.confirm('Assign yourself to this conversation?')) {
         chatApi.assignStaff(id!, 'self').then(() => {
             queryClient.invalidateQueries({ queryKey: ['chat', id] });
             queryClient.invalidateQueries({ queryKey: ['chat'] });
-        }).catch(err => {
+        }).catch(_err => {
             alert('Failed to assign staff.');
         });
     }

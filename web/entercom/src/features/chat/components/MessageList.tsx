@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { ChatMessage } from '../../../api/chat';
+import { useEffect, useRef } from 'react';
+import type { ChatMessage } from '../../../api/chat';
 import { useAuthStore } from '../../../store/authStore';
 
 interface MessageListProps {

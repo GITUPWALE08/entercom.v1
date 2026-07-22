@@ -1,4 +1,4 @@
-import axiosInstance from './axiosConfig';
+import { apiClient as axiosInstance } from './axios';
 
 export interface ChatMessage {
   id: string;

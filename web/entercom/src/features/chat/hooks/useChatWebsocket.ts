@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { useAuthStore } from '../../../store/authStore';
-import { ChatMessage } from '../../../api/chat';
+import type { ChatMessage } from '../../../api/chat';
 
 interface UseChatWebsocketProps {
   conversationId: string;
@@ -10,7 +9,7 @@ interface UseChatWebsocketProps {
 }
 
 export function useChatWebsocket({ conversationId, onMessageReceived, onReadReceipt }: UseChatWebsocketProps) {
-  const { token } = useAuthStore();
+  const token = localStorage.getItem('access_token');
   const queryClient = useQueryClient();
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
