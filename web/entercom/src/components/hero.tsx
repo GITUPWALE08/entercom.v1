@@ -1,5 +1,5 @@
 import { ArrowRight, ShieldCheck, Activity } from 'lucide-react';
-import hero_image from '../assets/hero-image.jpg';
+import hero_image from '../assets/hero_image.png';
 const HeroSection: React.FC = () => {
   return (
     <section className="
