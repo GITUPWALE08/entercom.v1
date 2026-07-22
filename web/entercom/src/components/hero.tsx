@@ -1,5 +1,5 @@
 import { ArrowRight, ShieldCheck, Activity } from 'lucide-react';
-import hero_image from '../assets/hero_image.png';
+import hero_image from '../assets/hero-image.jpg';
 const HeroSection: React.FC = () => {
   return (
     <section className="
@@ -86,7 +86,7 @@ const HeroSection: React.FC = () => {
           {/* On Desktop, we translate it slightly right to make it look like it's bleeding off-screen */}
           <div className="relative z-10 w-full max-w-sm lg:max-w-none lg:w-[140%] lg:-right-16 transition-transform duration-700 hover:scale-105">
              <img 
-                src={hero_image}
+                src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2070&auto=format&fit=crop" 
                 alt="3D Technology Abstract" 
                 className="w-full h-auto object-cover opacity-90 drop-shadow-2xl mix-blend-screen"
              />
