@@ -136,7 +136,6 @@ export default function Settings() {
               </section>
 
               <section className="pt-10 border-t border-gray-100">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Actions</h3>
                 <button 
                   onClick={logout}
                   className="px-6 py-3 bg-red-50 text-red-600 font-medium rounded-xl hover:bg-red-100 transition-colors shadow-sm"

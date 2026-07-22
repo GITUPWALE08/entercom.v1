@@ -66,6 +66,7 @@ const StaffOrderList = lazy(() => import('../features/portal/staff/orders/StaffO
 const StaffOrderDetail = lazy(() => import('../features/portal/staff/orders/StaffOrderDetail'));
 const StaffPaymentList = lazy(() => import('../features/portal/staff/payments/StaffPaymentList'));
 const StaffPaymentDetail = lazy(() => import('../features/portal/staff/payments/StaffPaymentDetail'));
+const StaffInboxPage = lazy(() => import('../features/chat/pages/StaffInboxPage'));
 
 export const router = createBrowserRouter([
   {
@@ -143,6 +144,8 @@ export const router = createBrowserRouter([
               { path: 'orders/:id', element: <Suspense fallback={<LoadingScreen/>}><StaffOrderDetail /></Suspense> },
               { path: 'payments', element: <Suspense fallback={<LoadingScreen/>}><StaffPaymentList /></Suspense> },
               { path: 'payments/:id', element: <Suspense fallback={<LoadingScreen/>}><StaffPaymentDetail /></Suspense> },
+              { path: 'inbox', element: <Suspense fallback={<LoadingScreen/>}><StaffInboxPage /></Suspense> },
+              { path: 'inbox/:id', element: <Suspense fallback={<LoadingScreen/>}><StaffInboxPage /></Suspense> },
               { path: 'profile', element: <Suspense fallback={<LoadingScreen/>}><Profile /></Suspense> },
               { path: 'settings', element: <Suspense fallback={<LoadingScreen/>}><Settings /></Suspense> },
             ],

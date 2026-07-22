@@ -127,7 +127,8 @@ export function PortalLayout() {
             <div className="relative">
               <button 
                 onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
+                // className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
+                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-ess-purple transition-colors"
               >
                 <div className="flex items-center truncate">
                   <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-ess-purple font-semibold group-hover:bg-purple-100 flex-shrink-0">
