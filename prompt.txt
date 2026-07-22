@@ -1,11 +1,291 @@
-src/features/portal/staff/requests/StaffRequestDetail.tsx(33,10): error TS6133: 'showDecline' is declared but its value is never read.
-15:35:24.834 
-src/features/portal/staff/requests/StaffRequestDetail.tsx(34,10): error TS6133: 'declineReason' is declared but its value is never read.
-15:35:24.835 
-src/features/portal/staff/requests/StaffRequestDetail.tsx(34,25): error TS6133: 'setDeclineReason' is declared but its value is never read.
-15:35:24.836 
-src/features/portal/staff/requests/StaffRequestDetail.tsx(94,9): error TS6133: 'acceptMutation' is declared but its value is never read.
-15:35:24.836 
-src/features/portal/staff/requests/StaffRequestDetail.tsx(99,9): error TS6133: 'declineMutation' is declared but its value is never read.
-15:35:25.500 
-Error: Command "npm run build" exited with 2
+# Entercom — Phase 7 Support Chat System (Production-Safe MVP)
+
+You are a Senior Django + React Real-Time Systems Architect implementing **Phase 7: Support Chat System** for the Entercom platform.
+
+IMPORTANT CONTEXT:
+
+* The platform is already deployed in production with real users.
+* Phases 1–6 are implemented (Auth, RBAC, Requests, Bookings, Payments, Notifications, Celery, Redis, Channels).
+* We must avoid architectural drift and avoid introducing unnecessary complexity.
+* Existing request workflows, payment flows, and notification infrastructure are authoritative and must not be broken.
+
+GOAL:
+Implement a **production-safe MVP support chat system** that allows customers, staff, managers, and technicians to communicate in real time about requests, bookings, payments, and general support issues.
+
+This is NOT a social chat app. It is an operational support messaging system.
+
+==================================================
+PHASE 7 MVP SCOPE (ONLY THESE FEATURES)
+=======================================
+
+Implement exactly:
+
+1. Conversation creation
+2. Conversation participants
+3. Message sending
+4. Message retrieval (paginated)
+5. Real-time message delivery via WebSockets
+6. Read receipts (conversation-level, not per-message reactions)
+7. Unread count
+8. Request-linked conversations
+9. Staff assignment to a conversation
+10. Audit logging for privileged actions
+
+DO NOT implement:
+
+* Voice/video calls
+* Typing indicators
+* Emoji reactions
+* File attachments (defer)
+* AI auto-replies (Phase 8)
+* Push notifications beyond existing notification infrastructure
+* WhatsApp integration
+* Multi-tenant organizations
+* End-to-end encryption
+
+==================================================
+ARCHITECTURE CONSTRAINTS
+========================
+
+Reuse existing infrastructure:
+
+* Django REST Framework
+* Django Channels
+* Redis (Upstash)
+* JWT authentication
+* Existing role system
+* Existing audit system
+* Existing notification orchestrator
+
+Do NOT create a separate microservice. Keep it inside the modular monolith.
+
+==================================================
+BACKEND IMPLEMENTATION
+======================
+
+Create app structure:
+apps/chat/
+models.py
+serializers.py
+services.py
+permissions.py
+consumers.py
+routing.py
+views.py
+urls.py
+tests/
+
+### Data Model
+
+Implement these models only:
+
+#### Conversation
+
+Fields:
+
+* id (UUID)
+* public_id
+* subject
+* status (open, resolved, closed)
+* conversation_type (support, request, booking, payment)
+* request (nullable FK)
+* booking (nullable FK)
+* payment (nullable FK)
+* created_by
+* assigned_staff (nullable FK)
+* created_at
+* updated_at
+* resolved_at (nullable)
+
+#### ConversationParticipant
+
+Fields:
+
+* conversation
+* user
+* joined_at
+* last_read_at
+* is_active
+
+#### Message
+
+Fields:
+
+* id (UUID)
+* conversation
+* sender
+* body
+* message_type (text, system)
+* created_at
+* edited_at (nullable)
+* is_deleted
+
+No attachments in MVP.
+
+==================================================
+RBAC RULES
+==========
+
+Customer:
+
+* Can create support conversations.
+* Can view only conversations they participate in.
+* Can send messages only in their conversations.
+* Cannot assign staff or close conversations.
+
+Technician:
+
+* Can view conversations linked to requests assigned to them.
+* Can send messages in those conversations.
+* Cannot view unrelated customer conversations.
+
+Staff:
+
+* Can view all support conversations.
+* Can assign themselves.
+* Can resolve conversations.
+* Can add participants.
+
+Manager:
+
+* Full chat administrative access.
+
+Superadmin:
+
+* Full access.
+
+==================================================
+API ENDPOINTS
+=============
+
+Implement these endpoints:
+
+POST   /api/v1/chat/conversations/
+GET    /api/v1/chat/conversations/
+GET    /api/v1/chat/conversations/{id}/
+POST   /api/v1/chat/conversations/{id}/messages/
+GET    /api/v1/chat/conversations/{id}/messages/
+POST   /api/v1/chat/conversations/{id}/read/
+POST   /api/v1/chat/conversations/{id}/assign/
+POST   /api/v1/chat/conversations/{id}/resolve/
+
+Requirements:
+
+* Cursor pagination on messages.
+* Object-level permissions enforced server-side.
+* Validation prevents messaging closed conversations.
+
+==================================================
+WEBSOCKET IMPLEMENTATION
+========================
+
+Use Django Channels with JWT authentication.
+
+Route:
+/ws/chat/{conversation_id}/
+
+Requirements:
+
+* Authenticate using JWT token.
+* Verify user is a participant before joining group.
+* Reject unauthorized connections with close code 4403.
+* Broadcast only new messages and read events.
+* No global chat room.
+* One Redis group per conversation.
+
+Implement bounded reconnect strategy on the frontend (max 5 attempts, exponential backoff).
+
+==================================================
+NOTIFICATION INTEGRATION
+========================
+
+When a new message is sent:
+
+* Trigger existing DispatchOrchestrator event: support_message_received
+* Notify all participants except sender.
+* Use existing notification channels (in-app first; email optional).
+
+Do NOT send email for every message by default. Only create the event hook.
+
+==================================================
+FRONTEND IMPLEMENTATION
+=======================
+
+Create:
+web/entercom/src/features/chat/
+
+Required screens:
+
+* ConversationListPage
+* ConversationDetailPage
+* NewConversationModal
+* StaffInboxPage
+
+Components:
+
+* ConversationSidebar
+* MessageList
+* MessageComposer
+* UnreadBadge
+* ConversationHeader
+* EmptyState
+
+State management:
+
+* React Query for server state.
+* WebSocket events update query cache directly.
+* Optimistic send with rollback on failure.
+
+==================================================
+PRODUCTION SAFETY REQUIREMENTS
+==============================
+
+Implement these guards:
+
+1. Prevent duplicate message sends on double-click.
+2. Prevent sending empty messages.
+3. Prevent sending messages longer than 5000 characters.
+4. Rate limit message creation (e.g., 20/min per user).
+5. Soft-delete messages instead of hard delete.
+6. Audit staff assignment and resolution actions.
+7. Ensure conversation closure is idempotent.
+
+==================================================
+TESTING REQUIREMENTS
+====================
+
+Add backend tests for:
+
+* Participant permission enforcement
+* Unauthorized websocket rejection
+* Message pagination
+* Read receipt updates
+* Assignment permissions
+* Conversation resolution
+* Rate limiting
+
+Add frontend tests for:
+
+* Optimistic message rendering
+* Cache updates after websocket events
+* Reconnect backoff behavior
+* Unread badge synchronization
+* Error recovery when websocket disconnects
+
+==================================================
+DELIVERABLE FORMAT
+==================
+
+Return implementation in this order:
+
+1. Architecture summary
+2. Model definitions
+3. Permission matrix
+4. API contracts
+5. WebSocket event schema
+6. Service layer responsibilities
+7. Frontend state flow
+8. Test matrix
+9. Production rollout checklist
+
+Do not skip tests. Do not add non-MVP features. Do not redesign existing domains.

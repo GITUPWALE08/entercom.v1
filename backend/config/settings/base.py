@@ -37,7 +37,7 @@ LOCAL_APPS = [
     "apps.bookings",
     "apps.notification",
 
-    #"apps.chat",
+    "apps.chat",
     #"apps.ai_support",
     "apps.products",
     "apps.orders",

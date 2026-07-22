@@ -13,7 +13,7 @@ urlpatterns = [
     path("api/v1/requests/", include("apps.requests.api.urls")),
     path("api/", include("apps.bookings.api.urls")),
     path("api/v1/notifications/", include("apps.notification.urls")),
-    #path("api/v1/chat/", include("apps.chat.urls")),
+    path("api/v1/chat/", include("apps.chat.urls")),
     #path("api/v1/ai-support/", include("apps.ai_support.urls")),
     path("api/v1/", include("apps.products.api.urls")),
     path("api/v1/", include("apps.orders.api.urls")),
