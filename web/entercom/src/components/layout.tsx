@@ -5,7 +5,7 @@ import logo from '../assets/logo.png';
 
 import { useAuthStore } from '../store/authStore';
 import { useLogout } from '../hooks/useLogout';
-import HeroSection from './hero';
+// import HeroSection from './hero';
 
 interface LayoutProps {
   children: React.ReactNode;
