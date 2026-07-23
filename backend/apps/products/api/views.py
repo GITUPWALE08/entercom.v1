@@ -9,6 +9,9 @@ from apps.products.services.product_service import ProductService
 from apps.products.services.category_service import CategoryService
 from apps.products.services.inventory_service import InventoryService
 from apps.products.models import Product, ProductCategory
+from apps.products.domain.exceptions import DomainException
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import IntegrityError
 from apps.products.permissions import ProductPermissionChecker
 from apps.common.permissions import Actor, Role
 from .serializers import (
@@ -106,19 +109,24 @@ class ProductListView(APIView):
         serializer.is_valid(raise_exception=True)
         
         data = serializer.validated_data
-        product = ProductService.create_product(
-            actor=actor,
-            correlation_id=str(uuid.uuid4()),
-            category_id=data['category'],
-            name=data['name'],
-            unit_price=data['price'],
-            quantity_available=data.get('quantity_available', 0),
-            low_stock_threshold=data.get('low_stock_threshold', 0),
-            sku=data['sku'],
-            description=data.get('description'),
-            attributes=data.get('attributes')
-        )
-        return Response(ProductSerializer(product, context={'request': request}).data, status=status.HTTP_201_CREATED)
+        try:
+            product = ProductService.create_product(
+                actor=actor,
+                correlation_id=str(uuid.uuid4()),
+                category_id=data['category'],
+                name=data['name'],
+                unit_price=data['price'],
+                quantity_available=data.get('quantity_available', 0),
+                low_stock_threshold=data.get('low_stock_threshold', 0),
+                sku=data['sku'],
+                description=data.get('description'),
+                attributes=data.get('attributes')
+            )
+            return Response(ProductSerializer(product, context={'request': request}).data, status=status.HTTP_201_CREATED)
+        except DjangoValidationError as e:
+            return error_response(e.message if hasattr(e, 'message') else str(e))
+        except IntegrityError:
+            return error_response("A product with this SKU already exists.")
 
 class ProductDetailView(APIView):
     permission_classes = [IsAuthenticated]

@@ -133,7 +133,7 @@ export default function StaffProductDetail() {
                     label="Category"
                     value={formData.category}
                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, category: e.target.value })}
-                    options={[{ value: '', label: 'Select a category' }, ...(ensureArray(categories).map((c: any) => ({ value: c.id, label: c.name })) || [])]}
+                    options={[...(ensureArray(categories).map((c: any) => ({ value: c.id, label: c.name })) || [])]}
                     required
                   />
                   {!isNew && (
