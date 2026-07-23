@@ -62,7 +62,7 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
                   chatApi.transfer(conversation.id, staffId, reason).then(() => {
                       queryClient.invalidateQueries({ queryKey: ['chat', conversation.id] });
                       queryClient.invalidateQueries({ queryKey: ['chat'] });
-                  }).catch(err => {
+                  }).catch(() => {
                       alert('Failed to transfer conversation.');
                   });
                 }

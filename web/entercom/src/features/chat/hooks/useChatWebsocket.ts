@@ -49,6 +49,8 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
             created_at: data.created_at,
             edited_at: null,
             is_deleted: false,
+            delivered_at: null,
+            read_at: null,
           };
           
           // Update React Query Cache

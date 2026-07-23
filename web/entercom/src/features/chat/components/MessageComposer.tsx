@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { useAuth } from '../../../hooks/useAuth';
+import { useAuthStore } from '../../../store/authStore';
 
 interface MessageComposerProps {
   onSend: (body: string, type: 'text' | 'internal_note', files: File[]) => Promise<void>;
@@ -7,7 +7,7 @@ interface MessageComposerProps {
 }
 
 export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
-  const { user } = useAuth();
+  const { user } = useAuthStore();
   const [text, setText] = useState('');
   const [isInternal, setIsInternal] = useState(false);
   const [files, setFiles] = useState<File[]>([]);

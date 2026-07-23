@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PageContainer } from '../../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
-import { Input, TextArea, Select } from '../../../../shared/components/ui';
+import { Input, TextArea } from '../../../../shared/components/ui';
 import { useAuthStore } from '../../../../store/authStore';
-import { toast } from 'react-hot-toast';
+import { toast } from '../../../../shared/components/ui/toastStore';
 import { apiClient } from '../../../../api/axios';
 
 export default function ApplyTechnician() {
