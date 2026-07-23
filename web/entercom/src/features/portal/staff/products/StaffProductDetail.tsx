@@ -20,6 +20,7 @@ export default function StaffProductDetail() {
     sku: '',
     category: '',
     description: '',
+    status: 'active',
   });
 
   const { data: categories } = useQuery({
@@ -41,6 +42,7 @@ export default function StaffProductDetail() {
         sku: product.sku || '',
         category: product.category || '',
         description: product.description || '',
+        status: product.status || 'active',
       });
     }
   }, [product, isNew]);
@@ -134,6 +136,18 @@ export default function StaffProductDetail() {
                     options={[{ value: '', label: 'Select a category' }, ...(ensureArray(categories).map((c: any) => ({ value: c.id, label: c.name })) || [])]}
                     required
                   />
+                  {!isNew && (
+                    <Select
+                      label="Status"
+                      value={formData.status}
+                      onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setFormData({ ...formData, status: e.target.value })}
+                      options={[
+                        { value: 'active', label: 'Active' },
+                        { value: 'inactive', label: 'Inactive' }
+                      ]}
+                      required
+                    />
+                  )}
                 </div>
 
                 <TextArea 

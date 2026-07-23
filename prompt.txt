@@ -1,25 +1,258 @@
-changing the overall size of the page(like text and images) by 20% increase introduced a bug to the mobile view, return only the mobile pages to the initial size before increasing by 20%, such that the mobile 
-if you have any question about this ask, do not just blindly implement 
+You are a Senior Full-Stack Architect working on the Entercom production platform.
 
+CONTEXT:
 
+* Backend: Django + DRF + Channels + Celery
+* Frontend: React + TypeScript + Vite + React Query + Zustand
+* Environment: Production is already live with real users
+* Goal: Implement the remaining operational actions safely without breaking existing production workflows.
 
--> also there is a bug
+CRITICAL RULES:
 
-requests/?limit=1000	(canceled)	xhr	index-DiN0Y-Ao.js:15	0.0 kB	9.97 s
-requests/	Finished	websocket	index-DiN0Y-Ao.js:21	0.0 kB	269 ms
-requests/	Finished	websocket	index-DiN0Y-Ao.js:21	0.0 kB	772 ms
-requests/	Finished	websocket	index-DiN0Y-Ao.js:21	0.0 kB	446 ms
-requests/	Finished	websocket	index-DiN0Y-Ao.js:21	0.0 kB	747 ms
+1. DO NOT redesign the architecture.
+2. DO NOT introduce new business rules unless explicitly requested.
+3. DO NOT remove existing APIs.
+4. DO NOT break current customer workflows.
+5. Every change must be backward-compatible.
+6. Add migrations only when necessary.
+7. Add tests for every backend change.
+8. Prefer minimal, surgical modifications.
 
-127.0.0.1:57782 - - [22/Jul/2026:12:32:45] "WSREJECT /ws/requests/" - -
-127.0.0.1:57782 - - [22/Jul/2026:12:32:45] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:35788 - - [22/Jul/2026:12:33:11] "GET /api/v1/requests/?limit=1000" 200 27208
-127.0.0.1:40690 - - [22/Jul/2026:12:33:18] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:40690 - - [22/Jul/2026:12:33:18] "WSREJECT /ws/requests/" - -
-127.0.0.1:40690 - - [22/Jul/2026:12:33:18] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:35788 - - [22/Jul/2026:12:33:23] "GET /api/v1/requests/?limit=1000" 200 27208
-127.0.0.1:35788 - - [22/Jul/2026:12:33:26] "GET /api/v1/payments/" 200 2355
-127.0.0.1:35788 - - [22/Jul/2026:12:33:53] "GET /api/v1/requests/?limit=1000" 401 183
-127.0.0.1:59018 - - [22/Jul/2026:12:33:55] "WSCONNECTING /ws/requests/" - -
-2026-07-22 12:33:57,912 [INFO] forensic.audit ff22fed6-7b2b-4afb-86ea-6523866165fd AUDIT_EVENT:auth.token_refresh
-2026-07-22 12:34:03,889 [INFO] forensic.audit b1269e93-ddfc-490a-8f86-196529a20507 AUDIT_EVENT:auth.login_success
+Backend:
+
+* Audit every customer-facing request list endpoint.
+* Ensure requests are ordered by created_at descending.
+* Apply ordering in:
+
+  * RequestViewSet customer queryset
+  * dashboard recent requests endpoint
+  * any paginated customer request APIs
+
+Frontend:
+
+* Remove any client-side sorting that reverses backend ordering incorrectly.
+
+Acceptance Criteria:
+
+* A newly created request appears at the top of the customer request page immediately after refresh.
+
+Goal:
+Determine why manager request totals differ from staff totals.
+
+Tasks:
+
+* Compare the exact querysets used by manager and staff request endpoints.
+* Identify any status filters, soft-delete filters, role-based visibility filters, or pagination count inconsistencies.
+* Produce a short diagnostic report in code comments or a markdown note.
+* Fix the mismatch if it is unintended.
+
+Constraints:
+
+* If there is an intentional business rule causing the difference, document it clearly instead of changing behavior.
+
+Acceptance Criteria:
+
+* Manager and Staff see the same total request count when they are supposed to have the same visibility scope.
+
+Frontend:
+Make the dashboard KPI cards navigable.
+
+Cards:
+
+* Requests -> /portal/manager/requests
+* Alerts -> /portal/manager/alerts
+* Payments -> /portal/manager/payments
+* Inventory -> /portal/manager/inventory
+* e.t.c.
+
+Requirements:
+
+* Entire card should be clickable.
+* Preserve hover/focus accessibility.
+* Support keyboard navigation.
+* Maintain mobile responsiveness.
+
+Acceptance Criteria:
+
+* Clicking anywhere on a card navigates to the correct page.
+
+Frontend:
+Implement a persistent sidebar system.
+
+States:
+
+* expanded (280px)
+* collapsed (72px)
+* mobile overlay
+
+Requirements:
+
+* Persist state in localStorage.
+* Restore state on reload.
+* Collapse automatically on small screens.
+* Do not break existing routing.
+
+Acceptance Criteria:
+
+* User can toggle sidebar width and the preference persists after refresh.
+
+Backend:
+Grant STAFF role the ability to:
+
+* update stock quantity
+* mark product unavailable/available
+* adjust inventory counts
+
+Do NOT allow STAFF to:
+
+* delete products
+* permanently remove inventory records
+* change protected catalog fields unless already permitted
+
+Tasks:
+
+* Audit Product/Inventory permissions.
+* Update DRF permission checks.
+* Ensure audit logging captures inventory edits.
+
+Frontend:
+
+* Expose edit controls only for authorized roles.
+
+Acceptance Criteria:
+
+* Staff can update inventory levels successfully.
+* Unauthorized actions return 403.
+
+Frontend:
+Redesign the role assignment page for desktop and mobile.
+
+Requirements:
+
+* Display current role clearly with badges.
+* Show user name, email, and role.
+* Use responsive card layout on mobile.
+* Replace cramped tables on small screens.
+* Provide a clear Change Role action.
+* Show loading and success states.
+
+Backend:
+
+* Verify role update endpoint returns the updated user object.
+* Ensure role changes invalidate sessions as already implemented.
+
+Acceptance Criteria:
+
+* Role assignment works on a 390px mobile viewport without horizontal scrolling.
+
+IMPORTANT:
+Implement the APPROVED onboarding architecture:
+
+Flow:
+User Account -> Technician Application -> Manager Review -> Approval -> Role Upgrade
+
+Check the file Entercom_Technician_Installer_Application_Form_Final.html for full form detail for this
+
+Backend:
+Create a dedicated Technician Application domain.
+
+Required entities:
+
+* TechnicianApplication
+* TechnicianExperience
+* TechnicianCertification
+* TechnicianReference
+* TechnicianDocument
+* ManagerAssessment
+
+Required application statuses:
+
+* draft
+* submitted
+* under_review
+* interview
+* assessment
+* approved
+* waiting_list
+* declined
+
+Requirements:
+
+* Application belongs to an existing User.
+* Approval automatically upgrades the user role to TECHNICIAN.
+* All approval actions must be audited.
+* Required documents must be uploaded before approval.
+
+Required document types:
+
+* government_id
+* passport_photo
+* proof_of_address
+* certification
+* portfolio
+
+Frontend:
+Create:
+
+* /portal/apply/technician
+* application wizard
+* document upload UI
+* application status page
+* manager review queue
+* manager assessment form
+
+Manager actions:
+
+* move to review
+* schedule interview
+* record assessment
+* approve
+* waitlist
+* decline
+
+Notifications:
+Trigger existing notification infrastructure for:
+
+* application submitted
+* interview scheduled
+* approved
+* waitlisted
+* declined
+
+Acceptance Criteria:
+
+* A customer can submit an application.
+* A manager can approve it.
+* The user role becomes TECHNICIAN immediately after approval.
+* The technician portal becomes accessible after approval.
+
+Before finishing, run a code audit for these previously identified production killers:
+
+* null navigation routes (/null)
+* unsafe optional chaining
+* Object.keys(null)
+* duplicate payment processing
+* stale websocket retries
+* orphaned assignments
+* expired token refresh loops
+
+For each issue:
+
+* verify current status
+* fix if unresolved
+* document the result
+
+Return a structured implementation report containing:
+
+1. Files created
+2. Files modified
+3. Database migrations generated
+4. API endpoints added
+5. Permission changes
+6. Frontend routes added
+7. Tests added
+8. Production risks remaining
+9. Manual QA checklist
+
+Do not stop after one action.
+Execute ALL actions sequentially and preserve production stability throughout the implementation.

@@ -143,16 +143,30 @@ export default function UserList() {
                     ) : (
                       <div className="p-4 bg-purple-50 rounded-xl border border-purple-100 space-y-4">
                         <h4 className="text-sm font-semibold text-ess-purple">Assign Role</h4>
-                        <select 
-                          value={selectedRole}
-                          onChange={(e) => setSelectedRole(e.target.value)}
-                          className="w-full text-sm rounded-lg border-purple-200 focus:ring-ess-purple focus:border-ess-purple p-2.5"
-                        >
-                          <option value="">Select a role...</option>
+                        <div className="space-y-2 max-h-[250px] overflow-y-auto pr-2 custom-scrollbar">
                           {roles?.filter(r => !activeRoles(selectedUser).some(a => a.role.slug === r.slug)).map(role => (
-                            <option key={role.id} value={role.slug}>{role.name}</option>
+                            <label key={role.id} className={`flex items-start p-3 border rounded-lg cursor-pointer transition-colors ${selectedRole === role.slug ? 'border-ess-purple bg-purple-50 ring-1 ring-ess-purple' : 'border-gray-200 hover:bg-white bg-white/50'}`}>
+                              <input 
+                                type="radio" 
+                                name="roleSelection" 
+                                value={role.slug} 
+                                checked={selectedRole === role.slug}
+                                onChange={(e) => setSelectedRole(e.target.value)}
+                                className="sr-only"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <span className="block text-sm font-semibold text-gray-900">{role.name}</span>
+                                {role.description && <span className="block text-xs text-gray-500 mt-1 line-clamp-2">{role.description}</span>}
+                              </div>
+                              <div className={`mt-0.5 ml-3 w-4 h-4 rounded-full border flex items-center justify-center flex-shrink-0 ${selectedRole === role.slug ? 'border-ess-purple bg-white' : 'border-gray-300 bg-white'}`}>
+                                {selectedRole === role.slug && <div className="w-2 h-2 rounded-full bg-ess-purple" />}
+                              </div>
+                            </label>
                           ))}
-                        </select>
+                          {roles?.filter(r => !activeRoles(selectedUser).some(a => a.role.slug === r.slug)).length === 0 && (
+                            <p className="text-sm text-gray-500 p-3 text-center bg-white rounded-lg border border-dashed border-gray-200">No additional roles available to assign.</p>
+                          )}
+                        </div>
                         <div className="flex gap-2">
                           <button 
                             onClick={() => setIsAssigning(false)}

@@ -1,9 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useLogout } from '../hooks/useLogout';
 import { useWebsocket } from '../hooks/useWebsocket';
-import { Menu, X, Settings as SettingsIcon, ChevronDown, ChevronUp } from 'lucide-react';
+import { Menu, X, Settings as SettingsIcon, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { NotificationCenter } from '../components/NotificationCenter';
 
@@ -13,6 +13,20 @@ export function PortalLayout() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('sidebar_expanded');
+      return saved !== null ? saved === 'true' : true;
+    }
+    return true;
+  });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('sidebar_expanded', String(isSidebarExpanded));
+    }
+  }, [isSidebarExpanded]);
 
   // Initialize global real-time connection
   useWebsocket('requests');
@@ -25,11 +39,12 @@ export function PortalLayout() {
     { name: 'Cart', href: '/portal/customer/cart' },
     { name: 'Orders', href: '/portal/customer/orders' },
     { name: 'Payments', href: '/portal/customer/payments' },
+    { name: 'Apply Technician', href: '/portal/customer/apply-technician' },
   ];
 
   const staffNavigation = [
-    { name: 'Back-Office Dashboard', href: '/portal/staff' },
-    { name: 'Technician Dashboard', href: '/portal/staff/technician' },
+    { name: 'Dashboard', href: '/portal/staff' },
+    // { name: 'Technician Dashboard', href: '/portal/staff/technician' },
     { name: 'Requests', href: '/portal/staff/requests' },
     { name: 'Bookings', href: '/portal/staff/bookings' },
     { name: 'Inventory', href: '/portal/staff/inventory' },
@@ -46,7 +61,7 @@ export function PortalLayout() {
 
   const managerNavigation = [
     { name: 'Dashboard', href: '/portal/manager' },
-    { name: 'Escalations', href: '/portal/manager/requests' },
+    { name: 'Requests & Escalations', href: '/portal/manager/requests' },
     { name: 'Bookings', href: '/portal/staff/bookings' },
     { name: 'Technicians', href: '/portal/manager/technicians' },
     { name: 'Inventory', href: '/portal/manager/inventory' },
@@ -89,57 +104,71 @@ export function PortalLayout() {
   return (
     <div className="flex h-screen w-screen bg-[#F3F4F6] font-sans overflow-hidden text-gray-900">
       {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0 bg-white border-r border-gray-200 hidden md:flex flex-col">
-        <div className="h-16 flex items-center px-6 border-b border-gray-100">
-          <div className="w-8 h-8 bg-ess-purple rounded-md flex items-center justify-center text-white font-bold text-sm tracking-wide shadow-sm">
-            {/* Image Logo */}
-              <div className="group-hover:scale-105 transition-transform duration-100">
-                <img 
-                  src={logo} 
-                  alt="ESS Logo" 
-                  className="w-10 h-10 md:w-12 md:h-12 object-contain" 
-                />
-              </div>
+      <aside className={`flex-shrink-0 bg-white border-r border-gray-200 hidden md:flex flex-col transition-all duration-300 ease-in-out ${isSidebarExpanded ? 'w-[280px]' : 'w-[72px]'}`}>
+        <div className="h-16 flex items-center justify-between px-4 border-b border-gray-100">
+          <div className="flex items-center">
+            <div className="w-8 h-8 bg-ess-purple rounded-md flex items-center justify-center text-white font-bold text-sm tracking-wide shadow-sm flex-shrink-0">
+              {/* Image Logo */}
+                <div className="group-hover:scale-105 transition-transform duration-100 flex items-center justify-center w-full h-full">
+                  <img 
+                    src={logo} 
+                    alt="ESS Logo" 
+                    className="w-10 h-10 md:w-12 md:h-12 object-contain" 
+                  />
+                </div>
+            </div>
+            {isSidebarExpanded && <span className="ml-3 font-semibold text-gray-900 tracking-tight whitespace-nowrap overflow-hidden">Portal</span>}
           </div>
-          <span className="ml-3 font-semibold text-gray-900 tracking-tight">Portal</span>
+          <button onClick={() => setIsSidebarExpanded(!isSidebarExpanded)} className="text-gray-400 hover:text-gray-600 focus:outline-none p-1 rounded-md hover:bg-gray-100">
+            {isSidebarExpanded ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+          </button>
         </div>
         
-        <div className="flex-1 overflow-y-auto py-6 px-4">
+        <div className="flex-1 overflow-y-auto py-6 px-3">
           <nav className="space-y-1">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
+                title={!isSidebarExpanded ? item.name : undefined}
                 className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ${
                   isActive(item.href)
                     ? 'bg-gray-50 text-ess-purple'
                     : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                }`}
+                } ${!isSidebarExpanded ? 'justify-center' : ''}`}
               >
-                {item.name}
+                {!isSidebarExpanded ? (
+                  <span className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 text-gray-500 font-bold text-xs uppercase flex-shrink-0">
+                    {item.name.substring(0, 1)}
+                  </span>
+                ) : (
+                  <span className="truncate">{item.name}</span>
+                )}
               </Link>
             ))}
           </nav>
         </div>
 
-        <div className="p-4 border-t border-gray-100">
-          <div className="flex flex-col gap-2">
+        <div className={`p-4 border-t border-gray-100 ${!isSidebarExpanded ? 'flex flex-col items-center' : ''}`}>
+          <div className={`flex flex-col gap-2 ${!isSidebarExpanded ? 'w-full' : ''}`}>
             <div className="relative">
               <button 
-                onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                // className="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors group"
-                className="w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-ess-purple transition-colors"
+                onClick={() => setIsSidebarExpanded(true)}
+                className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-ess-purple transition-colors ${!isSidebarExpanded ? 'justify-center !px-0' : ''}`}
+                title={!isSidebarExpanded ? 'Account' : undefined}
               >
                 <div className="flex items-center truncate">
                   <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-ess-purple font-semibold group-hover:bg-purple-100 flex-shrink-0">
                     {user?.first_name?.charAt(0) || user?.email?.charAt(0)}
                   </div>
-                  <div className="ml-3 truncate text-left">
-                    <p className="text-sm font-medium text-gray-900 truncate">{user?.first_name} {user?.last_name}</p>
-                    <p className="text-xs text-gray-500 truncate">Account</p>
-                  </div>
+                  {isSidebarExpanded && (
+                    <div className="ml-3 truncate text-left">
+                      <p className="text-sm font-medium text-gray-900 truncate">{user?.first_name} {user?.last_name}</p>
+                      <p className="text-xs text-gray-500 truncate">Account</p>
+                    </div>
+                  )}
                 </div>
-                {isAccountMenuOpen ? <ChevronUp size={16} className="text-gray-500" /> : <ChevronDown size={16} className="text-gray-500" />}
+                {isSidebarExpanded && (isAccountMenuOpen ? <ChevronUp size={16} className="text-gray-500" /> : <ChevronDown size={16} className="text-gray-500" />)}
               </button>
               
               {isAccountMenuOpen && (
@@ -161,12 +190,22 @@ export function PortalLayout() {
                 </div>
               )}
             </div>
-            <button 
-              onClick={(e) => { e.preventDefault(); logout(); }}
-              className="w-full flex items-center justify-center px-4 py-2 mt-1 border border-red-200 text-sm font-medium rounded-lg text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
-            >
-              Sign out
-            </button>
+            {isSidebarExpanded ? (
+              <button 
+                onClick={(e) => { e.preventDefault(); logout(); }}
+                className="w-full flex items-center justify-center px-4 py-2 mt-1 border border-red-200 text-sm font-medium rounded-lg text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+              >
+                Sign out
+              </button>
+            ) : (
+              <button 
+                onClick={(e) => { e.preventDefault(); logout(); }}
+                className="w-full flex items-center justify-center py-2 mt-1 border border-red-200 text-sm font-bold rounded-lg text-red-600 bg-red-50 hover:bg-red-100 transition-colors"
+                title="Sign out"
+              >
+                <X size={16} />
+              </button>
+            )}
           </div>
         </div>
       </aside>

@@ -58,6 +58,9 @@ class ConversationViewSet(viewsets.ModelViewSet):
         
         if request.method == 'GET':
             messages = conversation.messages.select_related('sender').all()
+            if request.user.role not in ['admin', 'manager', 'staff']:
+                messages = messages.exclude(message_type='internal_note')
+                
             page = self.paginate_queryset(messages)
             if page is not None:
                 serializer = MessageSerializer(page, many=True)
@@ -67,12 +70,35 @@ class ConversationViewSet(viewsets.ModelViewSet):
             
         elif request.method == 'POST':
             body = request.data.get('body')
-            if not body or len(body.strip()) == 0:
-                return Response({'error': 'Message body cannot be empty'}, status=status.HTTP_400_BAD_REQUEST)
-            if len(body) > 5000:
+            message_type = request.data.get('message_type', 'text')
+            
+            if not body and not request.FILES:
+                return Response({'error': 'Message body or attachments cannot be empty'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            if body and len(body) > 5000:
                 return Response({'error': 'Message too long'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            message = ChatService.send_message(conversation, request.user, body)
+            if message_type == 'internal_note' and request.user.role not in ['admin', 'manager', 'staff']:
+                return Response({'error': 'Unauthorized to send internal notes'}, status=status.HTTP_403_FORBIDDEN)
+                
+            files = request.FILES.getlist('attachments')
+            
+            # Validation for files
+            ALLOWED_MIME_TYPES = [
+                'image/jpeg', 'image/png', 'image/webp',
+                'application/pdf', 'application/msword', 
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'text/plain'
+            ]
+            MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
+            
+            for file in files:
+                if file.content_type not in ALLOWED_MIME_TYPES:
+                    return Response({'error': f'Invalid file type: {file.content_type}'}, status=status.HTTP_400_BAD_REQUEST)
+                if file.size > MAX_FILE_SIZE:
+                    return Response({'error': f'File too large: {file.name}'}, status=status.HTTP_400_BAD_REQUEST)
+                
+            message = ChatService.send_message(conversation, request.user, body or "", message_type, files)
             serializer = MessageSerializer(message)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -107,3 +133,43 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation = self.get_object()
         ChatService.resolve_conversation(conversation, request.user)
         return Response({'status': 'resolved'})
+
+    @action(detail=False, methods=['get'])
+    def search(self, request):
+        query = request.query_params.get('q', '')
+        if not query:
+            return Response([])
+            
+        qs = self.get_queryset()
+        
+        # Search by public_id, subject, or message body
+        conversations = qs.filter(
+            Q(public_id__icontains=query) |
+            Q(subject__icontains=query) |
+            Q(messages__body__icontains=query)
+        ).distinct()
+        
+        page = self.paginate_queryset(conversations)
+        if page is not None:
+            serializer = ConversationListSerializer(page, many=True, context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        serializer = ConversationListSerializer(conversations, many=True, context={'request': request})
+        return Response(serializer.data)
+
+    @action(detail=True, methods=['post'])
+    def transfer(self, request, pk=None):
+        if request.user.role not in ['admin', 'manager', 'staff']:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+            
+        conversation = self.get_object()
+        staff_id = request.data.get('staff_id')
+        reason = request.data.get('reason', '')
+        
+        from apps.users.models import User
+        try:
+            new_staff = User.objects.get(id=staff_id)
+        except User.DoesNotExist:
+            return Response({'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND)
+            
+        ChatService.transfer_conversation(conversation, new_staff, request.user, reason)
+        return Response({'status': 'transferred'})

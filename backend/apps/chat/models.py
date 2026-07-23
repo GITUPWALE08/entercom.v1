@@ -16,6 +16,7 @@ class ConversationType(models.TextChoices):
 class MessageType(models.TextChoices):
     TEXT = 'text', 'Text'
     SYSTEM = 'system', 'System'
+    INTERNAL_NOTE = 'internal_note', 'Internal Note'
 
 class Conversation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -70,7 +71,27 @@ class Message(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     edited_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+    read_at = models.DateTimeField(null=True, blank=True)
     is_deleted = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['created_at']
+
+class Attachment(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='attachments')
+    file = models.FileField(upload_to='chat_attachments/%Y/%m/%d/')
+    file_name = models.CharField(max_length=255)
+    file_type = models.CharField(max_length=100)
+    file_size = models.PositiveIntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+class ConversationTransfer(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='transfers')
+    previous_staff = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_from')
+    new_staff = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_to')
+    transferred_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='transfers_initiated')
+    reason = models.TextField(blank=True)
+    transferred_at = models.DateTimeField(auto_now_add=True)

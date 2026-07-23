@@ -13,10 +13,11 @@ import { useParams } from 'react-router-dom';
 export default function StaffInboxPage() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const { data: conversations = [] } = useQuery({
-    queryKey: ['chat'],
-    queryFn: chatApi.list,
+    queryKey: ['chat', searchQuery],
+    queryFn: () => searchQuery ? chatApi.search(searchQuery) : chatApi.list(),
     refetchInterval: 30000, // Background polling for new conversations
   });
 
@@ -46,15 +47,16 @@ export default function StaffInboxPage() {
     if (id) {
         markRead();
         // Optimistically clear unread count in sidebar
-        queryClient.setQueryData(['chat'], (oldList: any) => {
+        queryClient.setQueryData(['chat', searchQuery], (oldList: any) => {
             if (!oldList) return oldList;
             return oldList.map((c: any) => c.id === id ? { ...c, unread_count: 0 } : c);
         });
     }
-  }, [id, markRead, queryClient]);
+  }, [id, markRead, queryClient, searchQuery]);
 
   const sendMessageMutation = useMutation({
-    mutationFn: (body: string) => chatApi.sendMessage(id!, body),
+    mutationFn: (args: { body: string, messageType: 'text' | 'internal_note', files: File[] }) => 
+      chatApi.sendMessage(id!, args.body, args.messageType, args.files),
     onSuccess: () => {
       // Invalidate just in case, but websocket should have already handled appending.
       queryClient.invalidateQueries({ queryKey: ['chat', id, 'messages'] });
@@ -62,8 +64,8 @@ export default function StaffInboxPage() {
     },
   });
 
-  const handleSend = async (body: string) => {
-    await sendMessageMutation.mutateAsync(body);
+  const handleSend = async (body: string, messageType: 'text' | 'internal_note', files: File[]) => {
+    await sendMessageMutation.mutateAsync({ body, messageType, files });
   };
 
   const handleAssign = () => {
@@ -88,6 +90,8 @@ export default function StaffInboxPage() {
           conversations={conversations} 
           activeId={id} 
           basePath="/portal/staff/inbox" 
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
         />
         
         <div className="flex-1 flex flex-col h-full bg-gray-50/30">

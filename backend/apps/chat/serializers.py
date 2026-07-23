@@ -2,6 +2,13 @@ from rest_framework import serializers
 from .models import Conversation, ConversationParticipant, Message
 from apps.users.serializers.user import UserListSerializer
 
+class AttachmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        from .models import Attachment
+        model = Attachment
+        fields = ['id', 'message', 'file', 'file_name', 'file_type', 'file_size', 'created_at']
+        read_only_fields = fields
+
 class ConversationParticipantSerializer(serializers.ModelSerializer):
     user = UserListSerializer(read_only=True)
 
@@ -13,11 +20,16 @@ class ConversationParticipantSerializer(serializers.ModelSerializer):
 
 class MessageSerializer(serializers.ModelSerializer):
     sender = UserListSerializer(read_only=True)
+    attachments = serializers.SerializerMethodField()
 
     class Meta:
         model = Message
-        fields = ['id', 'conversation', 'sender', 'body', 'message_type', 'created_at', 'edited_at', 'is_deleted']
-        read_only_fields = ['id', 'conversation', 'sender', 'created_at', 'edited_at', 'is_deleted']
+        fields = ['id', 'conversation', 'sender', 'body', 'message_type', 'created_at', 'edited_at', 'delivered_at', 'read_at', 'is_deleted', 'attachments']
+        read_only_fields = ['id', 'conversation', 'sender', 'created_at', 'edited_at', 'delivered_at', 'read_at', 'is_deleted', 'attachments']
+
+    def get_attachments(self, obj):
+        from .models import Attachment
+        return AttachmentSerializer(obj.attachments.all(), many=True).data
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

@@ -39,16 +39,16 @@ class RequestService:
         Ref: docs/architecture/request/request-domain.md (Section 6.2 Ownership Matrix)
         """
         if not hasattr(user, "role"):
-            return Request.objects.filter(customer=user)
+            return Request.objects.filter(customer=user).order_by('-created_at')
 
         role = user.role.upper()
             
         if role in ["STAFF", "MANAGER", "SUPER_ADMIN"]:
-            return Request.objects.all()
+            return Request.objects.all().order_by('-created_at')
         elif role == "TECHNICIAN":
-            return Request.objects.filter(Q(assigned_technician=user) | Q(assignments__technician=user)).distinct()
+            return Request.objects.filter(Q(assigned_technician=user) | Q(assignments__technician=user)).distinct().order_by('-created_at')
         else:
-            return Request.objects.filter(customer=user)
+            return Request.objects.filter(customer=user).order_by('-created_at')
 
     @staticmethod
     def get_request_by_id(request_id: Any) -> Request:

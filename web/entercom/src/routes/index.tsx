@@ -36,6 +36,7 @@ const PaymentList = lazy(() => import('../features/portal/customer/payments/Paym
 const CustomerPaymentDetail = lazy(() => import('../features/portal/customer/payments/CustomerPaymentDetail'));
 const Profile = lazy(() => import('../features/portal/customer/profile/Profile'));
 const Settings = lazy(() => import('../features/portal/customer/profile/Settings'));
+const ApplyTechnician = lazy(() => import('../features/portal/customer/technician/ApplyTechnician'));
 
 const StaffDashboard = lazy(() => import('../features/portal/staff/Dashboard'));
 const TechnicianDashboard = lazy(() => import('../features/portal/staff/TechnicianDashboard'));
@@ -121,6 +122,7 @@ export const router = createBrowserRouter([
               { path: 'payments/:id', element: <Suspense fallback={<LoadingScreen/>}><CustomerPaymentDetail /></Suspense> },
               { path: 'profile', element: <Suspense fallback={<LoadingScreen/>}><Profile /></Suspense> },
               { path: 'settings', element: <Suspense fallback={<LoadingScreen/>}><Settings /></Suspense> },
+              { path: 'apply-technician', element: <Suspense fallback={<LoadingScreen/>}><ApplyTechnician /></Suspense> },
             ],
           },
           // Staff Portal

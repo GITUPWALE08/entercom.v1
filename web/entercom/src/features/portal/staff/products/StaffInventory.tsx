@@ -1,4 +1,5 @@
 import { ensureArray } from '../../../../utils/arrays';
+import { useAuthStore } from '../../../../store/authStore';
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsApi } from '../../../../api/products';
@@ -10,6 +11,9 @@ import { DataTable, Input, Select, Pagination } from '../../../../shared/compone
 
 export default function StaffInventory() {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
+  const canManageThreshold = user?.role?.toLowerCase() === 'manager' || user?.role?.toLowerCase() === 'super_admin';
+  
   const [selectedProduct, setSelectedProduct] = useState<ProductItem | null>(null);
   const [adjustmentAmount, setAdjustmentAmount] = useState('');
   const [adjustmentReason, setAdjustmentReason] = useState('');
@@ -180,12 +184,14 @@ export default function StaffInventory() {
                     className: 'text-right',
                     accessor: (prod) => (
                       <div>
-                        <button 
-                          onClick={() => setSelectedForThreshold(prod)}
-                          className="text-ess-purple hover:underline text-sm font-medium mr-4"
-                        >
-                          Set Threshold
-                        </button>
+                        {canManageThreshold && (
+                          <button 
+                            onClick={() => setSelectedForThreshold(prod)}
+                            className="text-ess-purple hover:underline text-sm font-medium mr-4"
+                          >
+                            Set Threshold
+                          </button>
+                        )}
                         <button 
                           onClick={() => setSelectedProduct(prod)}
                           className="text-ess-purple hover:underline text-sm font-medium"

@@ -92,7 +92,7 @@ class ProductService:
                     order_index=idx
                 )
 
-        allowed_fields = ['name', 'description', 'attributes', 'unit_price']
+        allowed_fields = ['name', 'description', 'attributes', 'unit_price', 'status']
         for field in allowed_fields:
             if field in changed_fields:
                 setattr(product, field, changed_fields[field])

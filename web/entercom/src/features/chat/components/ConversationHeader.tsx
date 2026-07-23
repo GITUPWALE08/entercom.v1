@@ -53,6 +53,25 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
             Assign Staff
           </button>
         )}
+        {isStaff && conversation.assigned_staff && !isClosed && !isResolved && (
+          <button 
+            onClick={() => {
+                const staffId = window.prompt("Enter new Staff ID to transfer to:");
+                if (staffId) {
+                  const reason = window.prompt("Enter reason for transfer:") || '';
+                  chatApi.transfer(conversation.id, staffId, reason).then(() => {
+                      queryClient.invalidateQueries({ queryKey: ['chat', conversation.id] });
+                      queryClient.invalidateQueries({ queryKey: ['chat'] });
+                  }).catch(err => {
+                      alert('Failed to transfer conversation.');
+                  });
+                }
+            }}
+            className="px-3 py-1.5 text-sm font-medium bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            Transfer
+          </button>
+        )}
         
         {isStaff && !isClosed && !isResolved && (
           <button 

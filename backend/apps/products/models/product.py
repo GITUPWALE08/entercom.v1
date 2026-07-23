@@ -5,6 +5,7 @@ from .category import ProductCategory
 
 class ProductStatus(models.TextChoices):
     ACTIVE = "active", _("Active")
+    INACTIVE = "inactive", _("Inactive")
     ARCHIVED = "archived", _("Archived")
 
 class Product(models.Model):

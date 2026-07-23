@@ -1,5 +1,5 @@
 import { ensureArray } from '../../../utils/arrays';
-
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { requestsApi } from '../../../api/requests';
 import { productsApi } from '../../../api/products';
@@ -51,11 +51,21 @@ export default function ManagerDashboard() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <MetricCard title="Escalated" value={ensureArray(escalatedRequests).length} />
-          <MetricCard title="Open Requests" value={ensureArray(openRequests).length} />
-          <MetricCard title="Inventory Alerts" value={ensureArray(inventoryAlerts).length} />
-          <MetricCard title="Pending Orders" value={ensureArray(pendingOrders).length} />
-          <MetricCard title="Pending Payments" value={ensureArray(pendingPayments).length} />
+          <Link to="/portal/manager/requests?filter=escalated" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Escalated" value={ensureArray(escalatedRequests).length} />
+          </Link>
+          <Link to="/portal/manager/requests" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Open Requests" value={ensureArray(openRequests).length} />
+          </Link>
+          <Link to="/portal/manager/inventory?filter=alerts" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Inventory Alerts" value={ensureArray(inventoryAlerts).length} />
+          </Link>
+          <Link to="/portal/manager/orders?filter=pending" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Pending Orders" value={ensureArray(pendingOrders).length} />
+          </Link>
+          <Link to="/portal/manager/payments?filter=pending" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Pending Payments" value={ensureArray(pendingPayments).length} />
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -71,13 +81,13 @@ export default function ManagerDashboard() {
                 </div>
               ) : ensureArray(escalatedRequests).length > 0 ? (
                 escalatedRequests.slice(0, 5).map(req => (
-                  <div key={req.id} className="p-6">
+                  <Link key={req.id} to={`/portal/manager/requests/${req.id}`} className="block p-6 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <span className="font-semibold text-gray-900">{req.public_id || req.id.split('-')[0].toUpperCase()}</span>
                       <StatusBadge status={req.status} />
                     </div>
                     <p className="text-sm text-gray-500 line-clamp-1">{req.description}</p>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <div className="p-6">
@@ -99,7 +109,7 @@ export default function ManagerDashboard() {
                 </div>
               ) : ensureArray(inventoryAlerts).length > 0 ? (
                 inventoryAlerts.slice(0, 5).map(prod => (
-                  <div key={prod.id} className="p-6">
+                  <Link key={prod.id} to={`/portal/manager/products/${prod.id}`} className="block p-6 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <span className="font-semibold text-gray-900">{prod.name}</span>
                       <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
@@ -107,7 +117,7 @@ export default function ManagerDashboard() {
                       </span>
                     </div>
                     <p className="text-sm text-gray-500">Threshold: {prod.low_stock_threshold || 10}</p>
-                  </div>
+                  </Link>
                 ))
               ) : (
                 <div className="p-6">

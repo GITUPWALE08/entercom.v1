@@ -82,6 +82,7 @@ class ProductUpdateSerializer(serializers.Serializer):
     price = serializers.DecimalField(required=False, max_digits=10, decimal_places=2)
     quantity_available = serializers.IntegerField(required=False)
     low_stock_threshold = serializers.IntegerField(required=False)
+    status = serializers.CharField(required=False)
     attributes = serializers.JSONField(required=False, allow_null=True)
 
 class InventoryAdjustmentSerializer(serializers.Serializer):
