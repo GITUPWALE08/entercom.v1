@@ -22,8 +22,9 @@ class TechnicianApplicationViewSet(viewsets.ModelViewSet):
         
         app = TechnicianOnboardingService.submit_application(
             user=request.user,
-            skills=serializer.validated_data['skills'],
+            skills=serializer.validated_data.get('skills', []),
             document_urls=serializer.validated_data.get('document_urls', []),
+            form_data=serializer.validated_data.get('form_data', {}),
             notes=serializer.validated_data.get('notes', '')
         )
         

@@ -94,6 +94,14 @@ export function PortalLayout() {
     ? technicianNavigation
     : customerNavigation;
 
+  const getPortalPath = (role: string) => {
+    if (role === 'admin' || role === 'super_admin') return 'admin';
+    if (role === 'manager') return 'manager';
+    if (role === 'staff' || role === 'technician') return 'staff';
+    return 'customer';
+  };
+  const portalPath = getPortalPath(userRole);
+
   const isActive = (path: string) => {
     const basePaths = ['/portal/customer', '/portal/staff', '/portal/manager', '/portal/admin'];
     if (basePaths.includes(path) && location.pathname === path) return true;
@@ -174,14 +182,14 @@ export function PortalLayout() {
               {isAccountMenuOpen && (
                 <div className="absolute bottom-full left-0 w-full mb-1 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden py-1 z-10">
                   <Link 
-                    to={`/portal/${userRole === 'customer' ? 'customer' : 'staff'}/profile`} 
+                    to={`/portal/${portalPath}/profile`} 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-ess-purple transition-colors"
                     onClick={() => setIsAccountMenuOpen(false)}
                   >
                     Profile
                   </Link>
                   <Link 
-                    to={`/portal/${userRole === 'customer' ? 'customer' : 'staff'}/settings`} 
+                    to={`/portal/${portalPath}/settings`} 
                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-ess-purple transition-colors"
                     onClick={() => setIsAccountMenuOpen(false)}
                   >
@@ -307,14 +315,14 @@ export function PortalLayout() {
             </div>
             <div className="space-y-1 mb-3">
               <Link 
-                to={`/portal/${userRole === 'customer' ? 'customer' : 'staff'}/profile`}
+                to={`/portal/${portalPath}/profile`}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-ess-purple rounded-lg transition-colors"
               >
                 Profile
               </Link>
               <Link 
-                to={`/portal/${userRole === 'customer' ? 'customer' : 'staff'}/settings`}
+                to={`/portal/${portalPath}/settings`}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="block px-4 py-2 text-sm font-medium text-gray-700 hover:bg-purple-50 hover:text-ess-purple rounded-lg transition-colors"
               >

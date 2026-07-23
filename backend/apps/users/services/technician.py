@@ -9,7 +9,7 @@ import uuid
 class TechnicianOnboardingService:
     @staticmethod
     @transaction.atomic
-    def submit_application(user, skills, document_urls, notes=""):
+    def submit_application(user, skills, document_urls, form_data=None, notes=""):
         if TechnicianApplication.objects.filter(user=user, status__in=[TechnicianApplicationStatus.PENDING, TechnicianApplicationStatus.UNDER_REVIEW]).exists():
             raise ValidationError("You already have an active application.")
         
@@ -18,6 +18,7 @@ class TechnicianOnboardingService:
             defaults={
                 "skills": skills,
                 "document_urls": document_urls,
+                "form_data": form_data or {},
                 "notes": notes,
                 "status": TechnicianApplicationStatus.PENDING
             }

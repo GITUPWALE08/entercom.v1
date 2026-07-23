@@ -108,6 +108,7 @@ class TechnicianApplication(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="technician_application")
     skills = models.JSONField(default=list)
+    form_data = models.JSONField(default=dict, blank=True)
     status = models.CharField(max_length=20, choices=TechnicianApplicationStatus.choices, default=TechnicianApplicationStatus.PENDING)
     document_urls = models.JSONField(default=list)
     notes = models.TextField(blank=True, default="")

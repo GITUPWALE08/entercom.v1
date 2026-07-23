@@ -8,12 +8,13 @@ class TechnicianApplicationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TechnicianApplication
-        fields = ['id', 'user_email', 'first_name', 'last_name', 'skills', 'status', 'document_urls', 'notes', 'created_at', 'updated_at']
+        fields = ['id', 'user_email', 'first_name', 'last_name', 'skills', 'form_data', 'status', 'document_urls', 'notes', 'created_at', 'updated_at']
         read_only_fields = ['id', 'status', 'created_at', 'updated_at']
 
 class TechnicianApplicationCreateSerializer(serializers.Serializer):
-    skills = serializers.ListField(child=serializers.CharField())
+    skills = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     document_urls = serializers.ListField(child=serializers.URLField(), required=False, default=list)
+    form_data = serializers.JSONField(required=False, default=dict)
     notes = serializers.CharField(required=False, allow_blank=True, default="")
 
 class TechnicianApplicationDecideSerializer(serializers.Serializer):
