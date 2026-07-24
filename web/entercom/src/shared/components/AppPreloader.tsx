@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import logo from '../assets/logo.png';
 
 export function AppPreloader({ message = 'Initializing...' }: { message?: string }) {
