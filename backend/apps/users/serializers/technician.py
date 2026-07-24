@@ -13,7 +13,7 @@ class TechnicianApplicationSerializer(serializers.ModelSerializer):
 
 class TechnicianApplicationCreateSerializer(serializers.Serializer):
     skills = serializers.ListField(child=serializers.CharField(), required=False, default=list)
-    document_urls = serializers.ListField(child=serializers.URLField(), required=False, default=list)
+    document_urls = serializers.ListField(child=serializers.CharField(), required=False, default=list)
     form_data = serializers.JSONField(required=False, default=dict)
     notes = serializers.CharField(required=False, allow_blank=True, default="")
 

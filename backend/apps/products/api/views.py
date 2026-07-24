@@ -9,7 +9,6 @@ from apps.products.services.product_service import ProductService
 from apps.products.services.category_service import CategoryService
 from apps.products.services.inventory_service import InventoryService
 from apps.products.models import Product, ProductCategory
-from apps.products.domain.exceptions import DomainException
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import IntegrityError
 from apps.products.permissions import ProductPermissionChecker

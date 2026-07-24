@@ -161,7 +161,10 @@ export function PortalLayout() {
           <div className={`flex flex-col gap-2 ${!isSidebarExpanded ? 'w-full' : ''}`}>
             <div className="relative">
               <button 
-                onClick={() => setIsSidebarExpanded(true)}
+                onClick={() => {
+                  if (!isSidebarExpanded) setIsSidebarExpanded(true);
+                  setIsAccountMenuOpen(!isAccountMenuOpen);
+                }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm text-gray-700 hover:bg-gray-50 hover:text-ess-purple transition-colors ${!isSidebarExpanded ? 'justify-center !px-0' : ''}`}
                 title={!isSidebarExpanded ? 'Account' : undefined}
               >
