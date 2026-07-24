@@ -1,6 +1,7 @@
 import { Link, Navigate } from 'react-router-dom';
 import { Eye, Lock, ChevronRight, CheckCircle2, Server, HomeIcon } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
+import heroImage from '../assets/hero-security.jpg';
 
 const Home = () => {
    const { user, isAuthenticated } = useAuthStore();
@@ -50,33 +51,35 @@ const Home = () => {
   ]
   return (
     <div className="bg-white">
-      {/* Hero Section - Split Layout on Desktop */}
+      {/* Hero Section - Split Layout */}
       <section className="relative bg-slate-900 overflow-hidden">
-        {/* Background Gradients (Subtle Tech Vibe) */}
-        <div className="absolute top-0 right-0 w-[50%] h-full bg-gradient-to-l from-ess-purple/20 to-transparent pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-[50%] h-full bg-gradient-to-t from-ess-navy/50 to-transparent pointer-events-none"></div>
+        {/* Subtle Decorative Background */}
+        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-ess-purple/30 via-slate-900 to-slate-900 pointer-events-none"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
+
+        {/* Gradient positioned behind left content */}
+        <div className="absolute top-0 left-0 w-full md:w-[60%] lg:w-[50%] h-full bg-gradient-to-r from-ess-purple/20 to-transparent blur-3xl pointer-events-none"></div>
 
         <div className="container mx-auto px-6 py-16 md:py-24 lg:py-32 relative z-10">
-          <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
+          <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24">
             
             {/* Left Content (Text) */}
-            <div className="lg:w-1/2 text-center lg:text-left">
-              <span className="inline-block bg-ess-purple/20 border border-ess-purple/30 text-ess-purple text-[10px] md:text-xs font-bold px-3 py-1 rounded-full mb-6 tracking-wider uppercase">
+            <div className="w-full md:w-1/2 text-center md:text-left relative z-20">
+              <span className="inline-block bg-ess-purple/20 border border-ess-purple/30 text-ess-purple text-[10px] md:text-xs font-bold px-3 py-1 rounded-full mb-8 tracking-wider uppercase">
                 Entercom Security Systems
               </span>
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-[1.1] mb-6">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-[1.15] mb-8">
                 Build. Connect. <br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Protect.</span>
               </h1>
-              <p className="text-lg md:text-xl text-gray-400 mb-8 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto md:mx-0 leading-relaxed">
                 Entercom Security helps homes and small businesses protect their properties with
                 professionally installed camera systems, sensors, and smart security solutions—
                 designed for real-world reliability, not complexity.
-
               </p>
               
               {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              <div className="flex flex-col sm:flex-row gap-5 justify-center md:justify-start">
                 <Link to="/contact" className="w-full sm:w-auto text-center bg-ess-purple hover:bg-ess-darkPurple text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-purple-900/50 flex items-center justify-center gap-2 hover:scale-105">
                   Get a Free Quote <ChevronRight size={18} />
                 </Link>
@@ -86,24 +89,33 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right Content (Desktop Image) */}
-            <div className="hidden lg:block lg:w-1/2 relative">
-              {/* Abstract Tech Graphic */}
-              <div className="relative z-10 rounded-2xl overflow-hidden shadow-2xl border border-white/10 shadow-purple-900/20 group">
+            {/* Right Content (Hero Image) */}
+            <div className="w-full md:w-1/2 relative group mt-8 md:mt-0">
+              {/* High-quality hero image */}
+              <div className="relative z-10 rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 transition-transform duration-700 ease-in-out lg:group-hover:scale-[1.02]">
+                <img 
+                  src={heroImage} 
+                  alt="Professional technicians installing premium residential security"
+                  className="w-full h-auto md:h-[500px] lg:h-[600px] object-cover object-center"
+                  loading="eager"
+                  fetchPriority="high"
+                />
+              </div>
 
-                {/* Floating Badge */}
-                <div className="absolute bottom-8 left-8 z-20 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-xl flex items-center gap-4">
-                  <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
-                    <CheckCircle2 className="text-white" size={20} />
-                  </div>
-                  <div>
-                    <p className="text-white font-bold text-sm">System Status</p>
-                    <p className="text-green-400 text-xs font-mono">ONLINE • SECURE</p>
-                  </div>
+              {/* Floating Card */}
+              <div className="absolute -bottom-6 -right-2 sm:-right-6 md:bottom-8 md:-right-8 z-20 bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl flex items-center gap-5 transition-transform duration-500 lg:group-hover:-translate-y-2">
+                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-green-500/30">
+                  <CheckCircle2 className="text-white" size={24} />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-base md:text-lg whitespace-nowrap">24/7 Monitoring</p>
+                  <p className="text-gray-300 text-sm">Response Time</p>
+                  <p className="text-green-400 font-bold text-sm">&lt; 5 mins</p>
                 </div>
               </div>
-              {/* Decorative Dots */}
-              <div className="absolute -top-10 -right-10 w-40 h-40 bg-ess-purple/20 rounded-full blur-3xl"></div>
+              
+              {/* Decorative Glow Behind Image */}
+              <div className="absolute inset-0 bg-ess-purple/20 blur-[100px] -z-10 rounded-full scale-75 opacity-50 transition-opacity duration-700 lg:group-hover:opacity-80"></div>
             </div>
           </div>
         </div>
