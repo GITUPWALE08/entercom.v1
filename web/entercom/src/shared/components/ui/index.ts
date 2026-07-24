@@ -4,6 +4,7 @@ export * from './Card';
 export * from './StatusBadge';
 export * from './DataTable';
 export * from './Timeline';
+export * from './Button';
 export * from './Input';
 export * from './TextArea';
 export * from './Select';

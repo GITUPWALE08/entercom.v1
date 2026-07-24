@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { useAuthStore } from '../store/authStore';
-import { LoadingScreen } from '../shared/components/LoadingScreen';
+import { AppPreloader } from '../shared/components/AppPreloader';
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { isInitialized, setInitialized } = useAuthStore();
@@ -14,7 +14,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [setInitialized]);
 
   if (!isInitialized) {
-    return <LoadingScreen />;
+    return <AppPreloader />;
   }
 
   return <>{children}</>;

@@ -1,4 +1,5 @@
 import { EmptyState } from '../EmptyState';
+import { Skeleton } from '../Skeleton';
 
 interface Column<T> {
   header: string;
@@ -13,10 +14,11 @@ interface DataTableProps<T> {
   emptyTitle?: string;
   emptyDescription?: string;
   onRowClick?: (row: T) => void;
+  isLoading?: boolean;
 }
 
-export function DataTable<T>({ data, columns, keyExtractor, emptyTitle = 'No data found', emptyDescription = '', onRowClick }: DataTableProps<T>) {
-  if (data.length === 0) {
+export function DataTable<T>({ data, columns, keyExtractor, emptyTitle = 'No data found', emptyDescription = '', onRowClick, isLoading = false }: DataTableProps<T>) {
+  if (!isLoading && data.length === 0) {
     return <EmptyState title={emptyTitle} description={emptyDescription} />;
   }
 
@@ -31,19 +33,31 @@ export function DataTable<T>({ data, columns, keyExtractor, emptyTitle = 'No dat
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
-          {data.map((row) => (
-            <tr 
-              key={keyExtractor(row)} 
-              className={`hover:bg-gray-50/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
-              onClick={() => onRowClick && onRowClick(row)}
-            >
-              {columns.map((col, idx) => (
-                <td key={idx} className={`px-6 py-4 whitespace-nowrap ${col.className || ''}`}>
-                  {typeof col.accessor === 'function' ? col.accessor(row) : (row[col.accessor] as React.ReactNode)}
-                </td>
-              ))}
-            </tr>
-          ))}
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, rowIndex) => (
+              <tr key={`skeleton-${rowIndex}`}>
+                {columns.map((col, colIndex) => (
+                  <td key={`skeleton-col-${colIndex}`} className={`px-6 py-4 whitespace-nowrap ${col.className || ''}`}>
+                    <Skeleton className="h-4 w-3/4" />
+                  </td>
+                ))}
+              </tr>
+            ))
+          ) : (
+            data.map((row) => (
+              <tr 
+                key={keyExtractor(row)} 
+                className={`hover:bg-gray-50/50 transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}
+                onClick={() => onRowClick && onRowClick(row)}
+              >
+                {columns.map((col, idx) => (
+                  <td key={idx} className={`px-6 py-4 whitespace-nowrap ${col.className || ''}`}>
+                    {typeof col.accessor === 'function' ? col.accessor(row) : (row[col.accessor] as React.ReactNode)}
+                  </td>
+                ))}
+              </tr>
+            ))
+          )}
         </tbody>
       </table>
     </div>

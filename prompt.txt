@@ -1,55 +1,865 @@
-1, in check
-    for pattern in self.url_patterns:
-                   ^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/utils/functional.py", line 47, in __get__
-    res = instance.__dict__[self.name] = self.func(instance)
-                                         ^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/urls/resolvers.py", line 718, in url_patterns
-    patterns = getattr(self.urlconf_module, "urlpatterns", self.urlconf_module)
-                       ^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/utils/functional.py", line 47, in __get__
-    res = instance.__dict__[self.name] = self.func(instance)
-                                         ^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/urls/resolvers.py", line 711, in urlconf_module
-    return import_module(self.urlconf_name)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/python/Python-3.12.10/lib/python3.12/importlib/__init__.py", line 90, in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
-  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
-  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-  File "/opt/render/project/src/backend/config/urls.py", line 18, in <module>
-    path("api/v1/", include("apps.products.api.urls")),
-                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/urls/conf.py", line 39, in include
-    urlconf_module = import_module(urlconf_module)
-                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/python/Python-3.12.10/lib/python3.12/importlib/__init__.py", line 90, in import_module
-    return _bootstrap._gcd_import(name[level:], package, level)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
-  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
-  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
-  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
-  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
-  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
-  File "/opt/render/project/src/backend/apps/products/api/urls.py", line 2, in <module>
-    from .views import (
-  File "/opt/render/project/src/backend/apps/products/api/views.py", line 12, in <module>
-    from apps.products.domain.exceptions import DomainException
-ModuleNotFoundError: No module named 'apps.products.domain'
-==> Build failed 😞
+# Entercom Production UI/UX Consistency & Mobile Optimization Audit
+
+You are a Senior Frontend Engineer and UI/UX Architect working on the production Entercom platform.
+
+## Context
+
+Production is already live with real users.
+
+Stack:
+
+* React
+* TypeScript
+* Vite
+* React Query
+* Zustand
+* TailwindCSS
+* React Router
+
+The goal is NOT to redesign the application.
+
+The goal is to make the existing application feel polished, consistent, responsive, accessible, and production-ready.
+
+---
+
+# CRITICAL RULES
+
+1. DO NOT redesign the product.
+2. DO NOT change business workflows.
+3. DO NOT change API contracts.
+4. DO NOT remove existing functionality.
+5. Every UI change must remain backward compatible.
+6. Preserve existing colors and branding unless inconsistent.
+7. Every component must behave consistently across the application.
+8. Fix every occurrence globally instead of patching individual pages.
+
+---
+
+# GLOBAL UI AUDIT
+
+Perform a complete audit of every page, modal, drawer, form, table, card, sidebar, dashboard, and mobile layout.
+
+Look for inconsistencies in:
+
+* spacing
+* typography
+* colors
+* shadows
+* icon usage
+* borders
+* hover states
+* active states
+* disabled states
+* loading states
+* empty states
+* error states
+* success states
+* animations
+* responsiveness
+
+Standardize them.
+
+---
+
+# MOBILE RESPONSIVENESS
+
+Audit every page for screens:
+
+* 320px
+* 360px
+* 390px
+* 414px
+* 768px
+* 1024px
+
+Fix:
+
+* horizontal scrolling
+* overflowing cards
+* broken grids
+* clipped buttons
+* clipped text
+* overflowing tables
+* oversized dialogs
+* oversized forms
+* oversized charts
+* oversized images
+
+No page should require horizontal scrolling.
+
+---
+
+# FORMS
+
+Audit every form.
+
+Ensure consistency for:
+
+Input fields
+
+Select dropdowns
+
+Autocomplete
+
+Textareas
+
+Checkboxes
+
+Radio buttons
+
+Date pickers
+
+File uploads
+
+Password fields
+
+OTP fields
+
+Search bars
+
+Every form control must have:
+
+* labels
+* placeholder
+* focus ring
+* disabled state
+* validation state
+* helper text where appropriate
+
+---
+
+# DROPDOWNS
+
+Audit every Select component.
+
+Fix all missing dropdown indicators.
+
+Every dropdown MUST have:
+
+* ChevronDown icon
+* correct cursor
+* hover state
+* focus state
+* open animation
+* keyboard accessibility
+
+No select should look like a text input.
+
+---
+
+# BUTTON CONSISTENCY
+
+Audit every button.
+
+Standardize:
+
+Primary
+
+Secondary
+
+Danger
+
+Outline
+
+Ghost
+
+Link
+
+Loading
+
+Disabled
+
+Ensure identical:
+
+* height
+* padding
+* font
+* icon spacing
+* border radius
+* transition
+
+---
+
+# ICON CONSISTENCY
+
+Audit the entire application.
+
+Ensure consistent icon usage.
+
+Examples:
+
+Back buttons
+
+Dropdown arrows
+
+Search
+
+Filter
+
+Settings
+
+Notifications
+
+Profile
+
+Delete
+
+Edit
+
+Download
+
+Upload
+
+Expand
+
+Collapse
+
+Close
+
+Menu
+
+No page should use different icon styles for the same action.
+
+---
+
+# TABLES
+
+Audit every table.
+
+Ensure:
+
+Responsive overflow
+
+Sticky headers where appropriate
+
+Consistent row heights
+
+Proper empty states
+
+Loading skeletons
+
+Pagination consistency
+
+Action buttons aligned
+
+No clipped columns
+
+Mobile card fallback where necessary
+
+---
+
+# CARDS
+
+Audit every dashboard card.
+
+Ensure:
+
+Equal heights
+
+Equal spacing
+
+Clickable where appropriate
+
+Hover animation
+
+Keyboard accessibility
+
+Consistent shadows
+
+Consistent border radius
+
+Consistent icon alignment
+
+---
+
+# SIDEBAR
+
+Audit the sidebar.
+
+Requirements:
+
+Desktop
+
+Tablet
+
+Mobile overlay
+
+Collapsed mode
+
+Expanded mode
+
+Persistent width
+
+Smooth animation
+
+Scrollable navigation
+
+Active route highlighting
+
+Icons aligned
+
+Text aligned
+
+---
+
+# DASHBOARDS
+
+Audit all dashboards:
+
+Customer
+
+Technician
+
+Staff
+
+Manager
+
+Admin
+
+Super Admin
+
+Ensure:
+
+Consistent KPI cards
+
+Consistent charts
+
+Responsive widgets
+
+Clickable cards
+
+Correct spacing
+
+No overlapping content
+
+---
+
+# MODALS
+
+Audit every modal.
+
+Requirements:
+
+Responsive
+
+Proper width
+
+Proper height
+
+Scrollable content
+
+Sticky footer buttons if necessary
+
+Escape closes
+
+Backdrop closes (where appropriate)
+
+Accessible focus trapping
+
+---
+
+# TOASTS
+
+Standardize notifications.
+
+Consistent:
+
+Success
+
+Error
+
+Warning
+
+Info
+
+Loading
+
+Ensure identical positioning and animations.
+
+---
+
+# LOADING STATES
+
+Every async page should have:
+
+Skeleton loaders
+
+Button loading
+
+Table loading
+
+Card loading
+
+Chart loading
+
+Image loading
+
+No blank pages while loading.
+
+## GLOBAL LOADING & PRELOADER UX STANDARDS
+
+The Entercom platform is already in production with real users.
+
+The objective is to improve perceived performance and user experience, **not** to add loading animations everywhere.
+
+The application must intelligently distinguish between:
+
+* Application Preloader
+* Page Loader
+* Component Loader
+* Button Loader
+* Skeleton Loader
+
+Never use them interchangeably.
+
+---
+
+# 1. APPLICATION PRELOADER
+
+Use the official Entercom company logo as the application preloader.
+
+Purpose:
+
+Provide visual feedback while the application is performing heavy initialization.
+
+The logo animation should feel premium, smooth, and lightweight.
+
+Do NOT create an unnecessarily long splash screen.
+
+---
+
+## When the Application Preloader SHOULD appear
+
+Only display the preloader when one or more of these are true:
+
+* First application launch
+* Hard refresh
+* Initial authentication bootstrap
+* User profile initialization
+* Permission/RBAC initialization
+* Large dashboard initialization
+* Initial React Query cache hydration
+* Heavy application initialization (>2 seconds)
+
+Typical examples:
+
+* Login → Customer Portal
+* Login → Manager Portal
+* Login → Staff Portal
+* Login → Technician Portal
+* Login → Admin Portal
+
+---
+
+## When it MUST NOT appear
+
+Never show the preloader for:
+
+* Route navigation between already loaded pages
+* Opening a modal
+* Opening a drawer
+* Clicking sidebar links
+* Viewing request details
+* Viewing product details
+* Small API refreshes
+* Quick state updates
+
+---
+
+## Timing Rules
+
+Average load <2 seconds
+
+→ Do NOT show the preloader.
+
+Average load between 2–3 seconds
+
+→ Show the logo preloader.
+
+Longer than 3 seconds
+
+→ Continue showing the logo but also display progress feedback such as:
+
+* "Loading dashboard..."
+* "Preparing workspace..."
+* "Fetching your requests..."
+
+Never block the user for more than **5 seconds** without meaningful feedback.
+
+---
+
+# 2. PAGE LOADERS
+
+Use page-level loaders only when an entire page is waiting for its primary data.
+
+Examples:
+
+* Dashboard
+* Requests page
+* Orders page
+* Inventory
+* Analytics
+* Chat Inbox
+
+Preferred approach:
+
+* Skeleton UI
+* Partial placeholders
+* Progressive rendering
+
+Avoid blank white screens.
+
+---
+
+# 3. COMPONENT LOADERS
+
+Use localized loaders only.
+
+Examples:
+
+* Charts
+* Tables
+* Notification list
+* Product cards
+* Conversation list
+
+Only the affected component should show loading.
+
+The rest of the page must remain interactive.
+
+---
+
+# 4. BUTTON LOADERS
+
+Buttons performing async actions must show inline loading.
+
+Examples:
+
+* Login
+* Register
+* Submit Request
+* Approve Quote
+* Reject Quote
+* Save
+* Delete
+* Upload
+* Checkout
+* Assign Technician
+* Resolve Conversation
+
+Requirements:
+
+* Spinner inside the button
+* Disable repeated clicks
+* Preserve button width
+* Do not shift layout
+
+---
+
+# 5. FORM LOADERS
+
+Large forms should never trigger a full-page loader.
+
+Instead:
+
+* Disable the form
+* Show loading only on the submit button
+* Keep entered values visible
+
+---
+
+# 6. TABLE LOADERS
+
+Tables should use skeleton rows instead of generic spinners.
+
+Maintain:
+
+* Table headers
+* Pagination
+* Layout
+
+Only rows should be skeletonized.
+
+---
+
+# 7. CARD LOADERS
+
+Dashboard KPI cards should use skeleton cards.
+
+Do not replace the entire dashboard with a spinner.
+
+---
+
+# 8. IMAGE LOADERS
+
+Images should:
+
+* Lazy load
+* Fade in
+* Show placeholders while loading
+
+Broken images should gracefully fall back to a default placeholder.
+
+---
+
+# 9. SEARCH LOADERS
+
+Searching should not trigger full-page loading.
+
+Only update:
+
+* Search results
+* Result count
+
+Keep filters and search inputs interactive.
+
+---
+
+# 10. WEBSOCKET UPDATES
+
+Never show loaders for:
+
+* Real-time notifications
+* Incoming chat messages
+* Live request updates
+* Dashboard counters
+
+Use subtle animations instead.
+
+---
+
+# 11. PAGINATION
+
+Changing pages should:
+
+* Keep existing content visible
+* Show skeletons only in the incoming section
+* Avoid flashing the entire screen
+
+---
+
+# 12. LOADING CONSISTENCY
+
+Standardize all loading indicators across the application.
+
+Use one consistent design system for:
+
+* Spinner
+* Skeleton
+* Progress bar
+* Fade animation
+* Logo preloader
+
+---
+
+# PERFORMANCE RULES
+
+Avoid loaders for operations completing in under **300ms** to prevent distracting flicker.
+
+Prefer optimistic UI updates where safe.
+
+Reuse cached React Query data while refetching in the background.
+
+---
+
+# UX AUDIT
+
+Audit every page and determine the correct loading strategy.
+
+Replace any inappropriate full-page spinners with:
+
+* Skeleton loaders
+* Inline loaders
+* Button loaders
+* Component loaders
+
+Use the application logo preloader **only** where it genuinely improves perceived performance.
+
+---
+
+# ACCEPTANCE CRITERIA
+
+✔ Company logo preloader appears only during heavy application initialization.
+
+✔ No unnecessary splash screens.
+
+✔ No full-page loaders for small interactions.
+
+✔ Buttons use inline loading.
+
+✔ Tables use skeleton rows.
+
+✔ Cards use skeleton placeholders.
+
+✔ Images use placeholders and fade-in loading.
+
+✔ Forms preserve entered data while submitting.
+
+✔ WebSocket updates never block the UI.
+
+✔ No loader flicker for operations under 300ms.
+
+✔ Loading behavior is consistent across desktop, tablet, and mobile.
+
+The final experience should feel fast, modern, and intentional rather than overloaded with animations.
 
 
+---
 
-when applying for technician
-https://entercom-v1.vercel.app/portal/customer/apply-technician
+# EMPTY STATES
 
-{"document_urls":{"0":["Enter a valid URL."]}}
+Every list must have meaningful empty states.
 
+Examples:
 
-also the account button/element that shows the user if they want to go to profile/settings is not working
+No requests
+
+No orders
+
+No notifications
+
+No products
+
+No conversations
+
+Include:
+
+Icon
+
+Title
+
+Helpful description
+
+Relevant CTA
+
+---
+
+# ERROR STATES
+
+Standardize all error pages.
+
+Handle:
+
+404
+
+403
+
+500
+
+Offline
+
+Network timeout
+
+Unauthorized
+
+Expired session
+
+Provide recovery actions.
+
+---
+
+# ACCESSIBILITY
+
+Audit:
+
+ARIA labels
+
+Keyboard navigation
+
+Focus order
+
+Focus visibility
+
+Contrast
+
+Screen reader labels
+
+Touch target size
+
+No interactive element should be inaccessible.
+
+---
+
+# DESIGN TOKEN CONSISTENCY
+
+Ensure global consistency for:
+
+Spacing scale
+
+Border radius
+
+Shadow scale
+
+Transition durations
+
+Typography hierarchy
+
+Font sizes
+
+Icon sizes
+
+Container widths
+
+Page padding
+
+Section spacing
+
+---
+
+# PERFORMANCE
+
+Remove unnecessary re-renders.
+
+Lazy load heavy pages.
+
+Memoize expensive components where appropriate.
+
+Avoid layout shifts.
+
+---
+
+# FINAL QA
+
+After implementation verify:
+
+✓ Every page is mobile responsive.
+
+✓ No horizontal scrolling.
+
+✓ All dropdowns display a dropdown arrow.
+
+✓ All forms behave consistently.
+
+✓ All buttons are standardized.
+
+✓ All tables are responsive.
+
+✓ All dashboards are consistent.
+
+✓ Sidebar works on all screen sizes.
+
+✓ Empty, loading, and error states exist everywhere needed.
+
+✓ No visual inconsistencies remain.
+
+---
+
+# DELIVERABLES
+
+Provide a final implementation report including:
+
+1. Pages audited
+
+2. Components standardized
+
+3. Responsive issues fixed
+
+4. Accessibility improvements
+
+5. Performance improvements
+
+6. UI inconsistencies resolved
+
+7. Remaining recommendations (if any)
+
+The objective is to make the Entercom platform feel like a polished, enterprise-grade production application with a consistent experience across desktop, tablet, and mobile.

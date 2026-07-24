@@ -10,8 +10,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(({ label,
     {label && <label className="text-sm font-semibold text-gray-700">{label}</label>}
     <textarea
       ref={ref}
-      className={`w-full px-4 py-3 rounded-xl border bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-ess-purple/20 focus:border-ess-purple transition-colors min-h-[120px] resize-y ${
-        error ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'
+      className={`w-full px-4 py-3 rounded-xl border bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-ess-purple/20 focus:border-ess-purple transition-colors disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed resize-y min-h-[100px] ${
+        error ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200 hover:border-gray-300'
       } ${className}`}
       {...props}
     />
