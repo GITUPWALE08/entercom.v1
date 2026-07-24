@@ -1,5 +1,5 @@
 import React from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../../../../shared/components/ui/toastStore';
 import { apiClient } from '../../../../api/axios';
@@ -49,7 +49,64 @@ export default function ApplyTechnician() {
     });
   };
 
+  const { data: applications, isLoading } = useQuery({
+    queryKey: ['technician-application'],
+    queryFn: async () => {
+      const response = await apiClient.get('/users/technician-applications/');
+      return response.data;
+    }
+  });
+
   const isPending = submitMutation.isPending;
+
+  if (isLoading) {
+    return <div className="p-8 text-center text-gray-500">Loading...</div>;
+  }
+
+  const existingApplication = applications && applications.length > 0 ? applications[0] : null;
+
+  if (existingApplication) {
+    return (
+      <div className="max-w-3xl mx-auto mt-10 p-6 bg-white rounded-xl shadow-sm border border-gray-100">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">Application Status</h2>
+        
+        <div className="p-6 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-800">Technician Application</h3>
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              existingApplication.status === 'approved' ? 'bg-green-100 text-green-800' :
+              existingApplication.status === 'rejected' ? 'bg-red-100 text-red-800' :
+              existingApplication.status === 'under_review' ? 'bg-blue-100 text-blue-800' :
+              existingApplication.status === 'more_info_requested' ? 'bg-orange-100 text-orange-800' :
+              'bg-gray-100 text-gray-800'
+            }`}>
+              {existingApplication.status.replace('_', ' ').toUpperCase()}
+            </span>
+          </div>
+          
+          <p className="text-gray-600 mb-2">
+            Submitted on: {new Date(existingApplication.created_at).toLocaleDateString()}
+          </p>
+
+          {existingApplication.status === 'rejected' && existingApplication.rejection_reason && (
+            <div className="mt-4 p-4 bg-red-50 text-red-800 rounded-md">
+              <strong>Reason:</strong> {existingApplication.rejection_reason}
+            </div>
+          )}
+
+          {existingApplication.status === 'more_info_requested' && (
+            <div className="mt-4 p-4 bg-orange-50 text-orange-800 rounded-md">
+              The reviewer has requested more information. Please wait for them to reach out to you or contact support.
+            </div>
+          )}
+          
+          <div className="mt-6 text-sm text-gray-500">
+            You cannot submit a new application while one is already active.
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

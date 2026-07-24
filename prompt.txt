@@ -1,24 +1,113 @@
- File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/models/query.py", line 93, in __iter__
-    results = compiler.execute_sql(
-              ^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/models/sql/compiler.py", line 1574, in execute_sql
-    cursor.execute(sql, params)
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 79, in execute
-    return self._execute_with_wrappers(
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 92, in _execute_with_wrappers
-    return executor(sql, params, many, context)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 100, in _execute
-    with self.db.wrap_database_errors:
-         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/utils.py", line 91, in __exit__
-    raise dj_exc_value.with_traceback(traceback) from exc_value
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/utils.py", line 105, in _execute
-    return self.cursor.execute(sql, params)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/psycopg/cursor.py", line 97, in execute
-    raise ex.with_traceback(None)
-django.db.utils.ProgrammingError: column users_technician_application.form_data does not exist
-LINE 1: ...ser_id", "users_technician_application"."skills", "users_tec...
-                        
+Implement the Technician Recruitment Management module for Entercom.
+
+Current state:
+
+- Technician Application form already exists.
+- Customer application flow already exists.
+- Technician application can also serve as registration.
+
+Tasks:
+
+1. CUSTOMER PORTAL
+- Move "Apply as Technician" under a collapsible "Careers" sidebar group.
+- Design Careers to support future additions:
+  - Apply as Technician
+  - Apply as Staff
+  - Internship
+- If a customer has already submitted an application, replace the Apply button with an Application Status view.
+
+2. PUBLIC WEBSITE
+- Add a Careers section/page integrated naturally into the existing navigation.
+- Include:
+  - Why Join Entercom
+  - Benefits
+  - Requirements
+  - Apply as Technician CTA
+- Allow guests to apply directly.
+- The application should create a pending user account and send email verification.
+
+3. MANAGER PORTAL
+Create a Recruitment module.
+
+Features:
+- Technician Applications list
+- Filters
+- Search
+- Pagination
+- Application detail page
+- Manager actions:
+  - Approve
+  - Reject
+  - Request More Information
+  - Assign Reviewer
+  - Add Review Notes
+- Display uploaded documents and application timeline.
+
+4. ADMIN PORTAL
+Add Recruitment Dashboard.
+
+Features:
+- All manager capabilities
+- Bulk actions
+- Assign managers
+- Override decisions
+- Recruitment analytics
+- Archive applications
+
+5. APPROVAL FLOW
+On approval:
+- Activate technician role
+- Enable technician dashboard
+- Grant permissions
+- Create technician profile if required
+- Send approval email
+
+6. REJECTION FLOW
+- Save rejection reason
+- Notify applicant
+- Preserve application history
+
+7. Notifications
+
+Applicant receives:
+
+Application submitted
+Under review
+More information requested
+Approved
+Rejected
+
+Manager receives:
+
+New application assigned
+Applicant updated information
+
+Admin receives:
+
+Daily recruitment summary
+
+
+
+8. Technician Activation
+
+Approval should automatically:
+
+Enable Technician role.
+Grant technician permissions.
+Create technician profile (if separate).
+Enable technician dashboard.
+Send welcome email.
+Send onboarding instructions.
+
+9. UI/UX
+- Mobile responsive
+- Consistent with existing portal
+- Use existing design system
+- Accessible
+- Loading states
+- Empty states
+- Error handling
+
+Do not change existing business rules.
+Reuse existing RBAC, notification, and authentication systems.
+Build on the current implementation rather than replacing it.

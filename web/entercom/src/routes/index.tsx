@@ -15,6 +15,7 @@ import Home from '../pages/home';
 const Contact = lazy(() => import('../pages/contact'));
 const Services = lazy(() => import('../pages/services'));
 const Products = lazy(() => import('../pages/products'));
+const Careers = lazy(() => import('../pages/careers'));
 const About = lazy(() => import('../pages/about'));
 const Login = lazy(() => import('../pages/login'));
 const Register = lazy(() => import('../pages/register'));
@@ -37,6 +38,8 @@ const CustomerPaymentDetail = lazy(() => import('../features/portal/customer/pay
 const Profile = lazy(() => import('../features/portal/customer/profile/Profile'));
 const Settings = lazy(() => import('../features/portal/customer/profile/Settings'));
 const ApplyTechnician = lazy(() => import('../features/portal/customer/technician/ApplyTechnician'));
+const ApplyStaff = lazy(() => import('../features/portal/customer/technician/ApplyStaff'));
+const ApplyInternship = lazy(() => import('../features/portal/customer/technician/ApplyInternship'));
 
 const StaffDashboard = lazy(() => import('../features/portal/staff/Dashboard'));
 const TechnicianDashboard = lazy(() => import('../features/portal/staff/TechnicianDashboard'));
@@ -45,6 +48,8 @@ const ManagerReports = lazy(() => import('../features/portal/manager/Reports'));
 const EscalationList = lazy(() => import('../features/portal/manager/requests/EscalationList'));
 const ManagerRequestDetail = lazy(() => import('../features/portal/manager/requests/ManagerRequestDetail'));
 const TechnicianList = lazy(() => import('../features/portal/manager/technicians/TechnicianList'));
+const ManagerRecruitmentDashboard = lazy(() => import('../features/portal/manager/recruitment/ManagerRecruitmentDashboard'));
+const ManagerApplicationDetail = lazy(() => import('../features/portal/manager/recruitment/ApplicationDetail'));
 
 const TechnicianRequestList = lazy(() => import('../features/portal/staff/requests/TechnicianRequestList'));
 const TechnicianRequestDetail = lazy(() => import('../features/portal/staff/requests/TechnicianRequestDetail'));
@@ -55,6 +60,7 @@ const AuditLogList = lazy(() => import('../features/portal/admin/AuditLogList'))
 const UserList = lazy(() => import('../features/portal/admin/UserList'));
 const Configuration = lazy(() => import('../features/portal/admin/Configuration'));
 const SystemStatus = lazy(() => import('../features/portal/admin/SystemStatus'));
+const AdminRecruitmentDashboard = lazy(() => import('../features/portal/admin/recruitment/AdminRecruitmentDashboard'));
 
 const StaffRequestList = lazy(() => import('../features/portal/staff/requests/StaffRequestList'));
 const StaffRequestDetail = lazy(() => import('../features/portal/staff/requests/StaffRequestDetail'));
@@ -77,6 +83,7 @@ export const router = createBrowserRouter([
       { path: '/', element: <Home /> },
       { path: '/services', element: <Suspense fallback={<LoadingScreen/>}><Services /></Suspense> },
       { path: '/products', element: <Suspense fallback={<LoadingScreen/>}><Products /></Suspense> },
+      { path: '/careers', element: <Suspense fallback={<LoadingScreen/>}><Careers /></Suspense> },
       { path: '/about', element: <Suspense fallback={<LoadingScreen/>}><About /></Suspense> },
       { path: '/contact', element: <Suspense fallback={<LoadingScreen/>}><Contact /></Suspense> },
       {
@@ -123,6 +130,8 @@ export const router = createBrowserRouter([
               { path: 'profile', element: <Suspense fallback={<LoadingScreen/>}><Profile /></Suspense> },
               { path: 'settings', element: <Suspense fallback={<LoadingScreen/>}><Settings /></Suspense> },
               { path: 'apply-technician', element: <Suspense fallback={<LoadingScreen/>}><ApplyTechnician /></Suspense> },
+              { path: 'apply-staff', element: <Suspense fallback={<LoadingScreen/>}><ApplyStaff /></Suspense> },
+              { path: 'apply-internship', element: <Suspense fallback={<LoadingScreen/>}><ApplyInternship /></Suspense> },
             ],
           },
           // Staff Portal
@@ -162,6 +171,8 @@ export const router = createBrowserRouter([
               { path: 'requests', element: <Suspense fallback={<LoadingScreen/>}><EscalationList /></Suspense> },
               { path: 'requests/:id', element: <Suspense fallback={<LoadingScreen/>}><ManagerRequestDetail /></Suspense> },
               { path: 'technicians', element: <Suspense fallback={<LoadingScreen/>}><TechnicianList /></Suspense> },
+              { path: 'recruitment', element: <Suspense fallback={<LoadingScreen/>}><ManagerRecruitmentDashboard /></Suspense> },
+              { path: 'recruitment/:id', element: <Suspense fallback={<LoadingScreen/>}><ManagerApplicationDetail /></Suspense> },
               { path: 'inventory', element: <Suspense fallback={<LoadingScreen/>}><StaffInventory /></Suspense> },
               { path: 'payments', element: <Suspense fallback={<LoadingScreen/>}><StaffPaymentList /></Suspense> },
               { path: 'payments/:id', element: <Suspense fallback={<LoadingScreen/>}><StaffPaymentDetail /></Suspense> },
@@ -179,6 +190,7 @@ export const router = createBrowserRouter([
               { index: true, element: <Suspense fallback={<LoadingScreen/>}><AdminDashboard /></Suspense> },
               { path: 'audit-logs', element: <Suspense fallback={<LoadingScreen/>}><AuditLogList /></Suspense> },
               { path: 'users', element: <Suspense fallback={<LoadingScreen/>}><UserList /></Suspense> },
+              { path: 'recruitment', element: <Suspense fallback={<LoadingScreen/>}><AdminRecruitmentDashboard /></Suspense> },
               { path: 'configuration', element: <Suspense fallback={<LoadingScreen/>}><Configuration /></Suspense> },
               { path: 'profile', element: <Suspense fallback={<LoadingScreen/>}><Profile /></Suspense> },
               { path: 'settings', element: <Suspense fallback={<LoadingScreen/>}><Settings /></Suspense> },

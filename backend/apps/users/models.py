@@ -101,6 +101,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 class TechnicianApplicationStatus(models.TextChoices):
     PENDING = "pending", "Pending"
     UNDER_REVIEW = "under_review", "Under Review"
+    MORE_INFO_REQUESTED = "more_info_requested", "More Info Requested"
     APPROVED = "approved", "Approved"
     REJECTED = "rejected", "Rejected"
 
@@ -109,11 +110,25 @@ class TechnicianApplication(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="technician_application")
     skills = models.JSONField(default=list)
     form_data = models.JSONField(default=dict, blank=True)
-    status = models.CharField(max_length=20, choices=TechnicianApplicationStatus.choices, default=TechnicianApplicationStatus.PENDING)
+    status = models.CharField(max_length=30, choices=TechnicianApplicationStatus.choices, default=TechnicianApplicationStatus.PENDING)
     document_urls = models.JSONField(default=list)
     notes = models.TextField(blank=True, default="")
+    reviewer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="reviewed_technician_applications")
+    rejection_reason = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = "users_technician_application"
+
+class TechnicianApplicationActivity(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    application = models.ForeignKey(TechnicianApplication, on_delete=models.CASCADE, related_name="activities")
+    actor = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    action = models.CharField(max_length=255)
+    details = models.TextField(blank=True, default="")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "users_technician_application_activity"
+        ordering = ["-created_at"]

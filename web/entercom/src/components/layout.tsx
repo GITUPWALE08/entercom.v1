@@ -37,6 +37,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'About', path: '/about' },
     { name: 'Services', path: '/services' },
     { name: 'Products', path: '/products' },
+    { name: 'Careers', path: '/careers' },
     { name: 'Contact', path: '/contact' },
   ];
 
@@ -245,6 +246,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <ul className="space-y-2 text-sm">
                     <li><Link to="/services" className="hover:text-ess-purple">Services</Link></li>
                     <li><Link to="/products" className="hover:text-ess-purple">Products</Link></li>
+                    <li><Link to="/careers" className="hover:text-ess-purple">Careers</Link></li>
                     <li><Link to="/contact" className="hover:text-ess-purple">Contact Support</Link></li>
                   </ul>
                 </div>

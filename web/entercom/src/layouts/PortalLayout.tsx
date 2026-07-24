@@ -39,12 +39,19 @@ export function PortalLayout() {
     { name: 'Cart', href: '/portal/customer/cart' },
     { name: 'Orders', href: '/portal/customer/orders' },
     { name: 'Payments', href: '/portal/customer/payments' },
-    { name: 'Apply Technician', href: '/portal/customer/apply-technician' },
+    { 
+      name: 'Careers', 
+      isGroup: true,
+      children: [
+        { name: 'Apply as Technician', href: '/portal/customer/apply-technician' },
+        { name: 'Apply as Staff', href: '/portal/customer/apply-staff' },
+        { name: 'Internship', href: '/portal/customer/apply-internship' }
+      ]
+    },
   ];
 
   const staffNavigation = [
     { name: 'Dashboard', href: '/portal/staff' },
-    // { name: 'Technician Dashboard', href: '/portal/staff/technician' },
     { name: 'Requests', href: '/portal/staff/requests' },
     { name: 'Bookings', href: '/portal/staff/bookings' },
     { name: 'Inventory', href: '/portal/staff/inventory' },
@@ -64,6 +71,7 @@ export function PortalLayout() {
     { name: 'Requests & Escalations', href: '/portal/manager/requests' },
     { name: 'Bookings', href: '/portal/staff/bookings' },
     { name: 'Technicians', href: '/portal/manager/technicians' },
+    { name: 'Recruitment', href: '/portal/manager/recruitment' },
     { name: 'Inventory', href: '/portal/manager/inventory' },
     { name: 'Payments', href: '/portal/manager/payments' },
     { name: 'Reports', href: '/portal/manager/reports' },
@@ -76,6 +84,7 @@ export function PortalLayout() {
     { name: 'Products', href: '/portal/staff/products' },
     { name: 'Orders', href: '/portal/staff/orders' },
     { name: 'Payments', href: '/portal/staff/payments' },
+    { name: 'Recruitment', href: '/portal/admin/recruitment' },
     { name: 'Audit Logs', href: '/portal/admin/audit-logs' },
     { name: 'Users', href: '/portal/admin/users' },
     { name: 'Configuration', href: '/portal/admin/configuration' },
@@ -109,6 +118,69 @@ export function PortalLayout() {
     return false;
   };
 
+  // State to manage collapsible groups
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  
+  const toggleGroup = (groupName: string) => {
+    setOpenGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }));
+  };
+
+  const renderNavItem = (item: any, depth = 0) => {
+    if (item.isGroup) {
+      const isOpen = openGroups[item.name] || false;
+      return (
+        <div key={item.name} className="mb-1">
+          <button
+            onClick={() => toggleGroup(item.name)}
+            className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 text-gray-600 hover:bg-gray-50 hover:text-gray-900 ${!isSidebarExpanded ? 'justify-center' : ''}`}
+            title={!isSidebarExpanded ? item.name : undefined}
+          >
+            <div className="flex items-center">
+              {!isSidebarExpanded ? (
+                <span className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 text-gray-500 font-bold text-xs uppercase flex-shrink-0">
+                  {item.name.substring(0, 1)}
+                </span>
+              ) : (
+                <span className="truncate">{item.name}</span>
+              )}
+            </div>
+            {isSidebarExpanded && (
+              <span className="ml-2">
+                {isOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </span>
+            )}
+          </button>
+          {isOpen && isSidebarExpanded && (
+            <div className="mt-1 space-y-1 pl-4 border-l-2 border-gray-100 ml-4">
+              {item.children.map((child: any) => renderNavItem(child, depth + 1))}
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return (
+      <Link
+        key={item.name}
+        to={item.href}
+        title={!isSidebarExpanded ? item.name : undefined}
+        className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ${
+          isActive(item.href)
+            ? 'bg-gray-50 text-ess-purple'
+            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+        } ${!isSidebarExpanded ? 'justify-center' : ''}`}
+      >
+        {!isSidebarExpanded && depth === 0 ? (
+          <span className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 text-gray-500 font-bold text-xs uppercase flex-shrink-0">
+            {item.name.substring(0, 1)}
+          </span>
+        ) : (
+          <span className="truncate">{item.name}</span>
+        )}
+      </Link>
+    );
+  };
+
   return (
     <div className="flex h-screen w-screen bg-[#F3F4F6] font-sans overflow-hidden text-gray-900">
       {/* Sidebar */}
@@ -134,26 +206,7 @@ export function PortalLayout() {
         
         <div className="flex-1 overflow-y-auto py-6 px-3">
           <nav className="space-y-1">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                to={item.href}
-                title={!isSidebarExpanded ? item.name : undefined}
-                className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ${
-                  isActive(item.href)
-                    ? 'bg-gray-50 text-ess-purple'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                } ${!isSidebarExpanded ? 'justify-center' : ''}`}
-              >
-                {!isSidebarExpanded ? (
-                  <span className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 text-gray-500 font-bold text-xs uppercase flex-shrink-0">
-                    {item.name.substring(0, 1)}
-                  </span>
-                ) : (
-                  <span className="truncate">{item.name}</span>
-                )}
-              </Link>
-            ))}
+            {navigation.map((item) => renderNavItem(item))}
           </nav>
         </div>
 

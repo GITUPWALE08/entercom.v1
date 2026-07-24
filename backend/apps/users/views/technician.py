@@ -45,6 +45,9 @@ class TechnicianApplicationViewSet(viewsets.ModelViewSet):
         app = TechnicianOnboardingService.decide_application(
             manager=request.user,
             app_id=pk,
-            status=serializer.validated_data['status']
+            status=serializer.validated_data.get('status'),
+            reviewer_id=serializer.validated_data.get('reviewer_id'),
+            notes=serializer.validated_data.get('notes'),
+            rejection_reason=serializer.validated_data.get('rejection_reason')
         )
         return Response(TechnicianApplicationSerializer(app).data)

@@ -128,9 +128,31 @@ class RequestService:
     def get_timeline(request_id: Any, user: User) -> List[Dict[str, Any]]:
         """
         Retrieves the chronologically ordered state history for a request.
+        Filters out internal staff actions for customers.
         """
         history = StateHistory.objects.filter(request_id=request_id).order_by('timestamp')
-        return [{"from_state": h.from_state, "to_state": h.to_state, "reason": h.reason, "created_at": h.timestamp} for h in history]
+        
+        timeline = []
+        is_customer = not hasattr(user, 'role') or user.role.upper() == 'CUSTOMER'
+        
+        internal_states = [
+            LifecycleState.STAFF_REVIEW,
+            LifecycleState.AWAITING_ASSIGNMENT,
+            LifecycleState.PENDING_VERIFICATION,
+            LifecycleState.ESCALATED,
+        ]
+        
+        for h in history:
+            if is_customer and h.to_state in internal_states:
+                continue
+            timeline.append({
+                "from_state": h.from_state, 
+                "to_state": h.to_state, 
+                "reason": h.reason, 
+                "created_at": h.timestamp
+            })
+            
+        return timeline
 
     @staticmethod
     @transaction.atomic
