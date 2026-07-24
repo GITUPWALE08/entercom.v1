@@ -1,7 +1,7 @@
 import { Link, Navigate } from 'react-router-dom';
 import { Eye, Lock, ChevronRight, CheckCircle2, Server, HomeIcon } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
-import heroImage from '../assets/hero-security.jpg';
+import heroImage from '../assets/hero.jpg';
 
 const Home = () => {
    const { user, isAuthenticated } = useAuthStore();
