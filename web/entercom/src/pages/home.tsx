@@ -89,7 +89,10 @@ const Home = () => {
               </div>
             </div>
 
-            {/* Right Content (Hero Image) */}
+            
+          </div>
+
+          {/* Right Content (Hero Image) */}
             <div className="w-full md:w-1/2 relative group mt-8 md:mt-0">
               {/* High-quality hero image */}
               <div className="relative z-10 rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 transition-transform duration-700 ease-in-out lg:group-hover:scale-[1.02]">
@@ -117,7 +120,7 @@ const Home = () => {
               {/* Decorative Glow Behind Image */}
               <div className="absolute inset-0 bg-ess-purple/20 blur-[100px] -z-10 rounded-full scale-75 opacity-50 transition-opacity duration-700 lg:group-hover:opacity-80"></div>
             </div>
-          </div>
+            
         </div>
       </section>
 
