@@ -1,124 +1,340 @@
-You are a Senior UI/UX Designer and Senior React Frontend Engineer working on the Entercom Security public landing page (i.e the web/entercom/src/pages/home.tsx).
+You are a Senior Award-Winning Creative Director, Motion Designer, and Senior Frontend Engineer.
 
-Goal:
-Redesign ONLY the Hero section without changing the overall branding, colors, typography, or navigation.
+You are redesigning ONLY the Hero section of the Entercom Security website (i.e the web/entercom/src/pages/home.tsx).
 
-Current layout:
-- Left:
-  - Small badge
-  - Large heading
-  - Description
-  - CTA buttons
-- Right:
-  - Large purple/blue gradient glow with a horizontal line graphic.
+DO NOT create another generic SaaS landing page.
 
-Required Changes:
+DO NOT create another AI-generated template.
 
-1. Remove the large gradient/glow from the RIGHT side.
+DO NOT imitate Linear, Stripe, Vercel, Tailwind UI, or typical startup websites.
 
-2. Reposition the gradient behind the LEFT content only.
-   - The gradient should become a subtle background accent.
-   - Keep the same purple/blue branding.
-   - It should softly illuminate the headline and CTA area.
-   - Reduce its size and opacity so it never competes with the text.
+The design should feel like a premium Security Technology company.
 
-3. Replace the ENTIRE right side with a high-quality hero image.
+Think:
 
-The image should communicate:
+• confidence
+• trust
+• engineering precision
+• premium residential security
+• luxury smart homes
+• modern surveillance technology
 
-- Premium residential security
-- Modern smart home
-- Professional technicians installing CCTV
-- One technician on a ladder installing a camera
-- Another technician configuring equipment on a tablet
-- Branded Entercom uniforms
-- Clean branded service vehicle
-- Modern luxury home
-- Security sign in the yard
-- Bright daylight
-- Trustworthy and premium atmosphere
+The visitor should immediately think:
 
-Image behavior:
+"This company protects expensive homes."
 
-- Occupy approximately 50% of the hero width.
-- Use rounded corners (24px).
-- Add a soft shadow.
-- Slight zoom effect on large screens.
-- Crop gracefully on tablets.
-- Stack below the content on mobile.
+------------------------------------------------
 
-Layout:
+## LAYOUT
 
 Desktop:
-----------------------------------------------------
-| Text + CTA + subtle gradient | Large Hero Image |
-----------------------------------------------------
 
-Tablet:
-- Maintain two columns with reduced spacing.
+--------------------------------------------------------
+|                                                      |
+|  LEFT                     RIGHT                      |
+|                                                      |
+|  Badge                    Large Premium Hero Image   |
+|                                                      |
+|  Headline                 Image extends vertically   |
+|                                                      |
+|  Description                                      |
+|                                                      |
+|  CTA Buttons               Floating Glass Cards      |
+|                                                      |
+--------------------------------------------------------
 
-Mobile:
+The image should occupy about 55% of the hero width.
+
+Do NOT simply place a rectangular image.
+
+The image should feel integrated into the page.
+
+------------------------------------------------
+
+## HERO IMAGE
+
+Use the provided image.
+
+The image should be displayed inside a custom-shaped container.
+
+NOT a simple rectangle.
+
+Ideas:
+
+• asymmetric rounded corners
+• clipped polygon
+• floating panel
+• premium frame
+
+The image should slightly overlap the hero background.
+
+Give depth using shadows.
+
+------------------------------------------------
+
+## PARALLAX
+
+Implement subtle mouse parallax.
+
+NOT dramatic.
+
+Movement:
+
+Image:
+translate 8px max
+
+Floating cards:
+translate 14px max
+
+Background glow:
+translate 4px max
+
+Everything should move independently.
+
+Movement must be smooth.
+
+Use requestAnimationFrame.
+
+60fps.
+
+Respect prefers-reduced-motion.
+
+------------------------------------------------
+
+## FLOATING GLASS CARDS
+
+Create TWO floating information cards.
+
+Card 1
+
+24/7 Monitoring
+
+Always Watching
+
+Live System Status
+
+Green indicator
+
+------------------------
+
+Card 2
+
+Response Team
+
+Average Response
+
+< 5 Minutes
+
+Blue indicator
+
+Cards should:
+
+• float above image
+
+• have backdrop blur
+
+• glass effect
+
+• subtle border
+
+• soft shadow
+
+• tiny hover animation
+
+Cards should slightly move with parallax.
+
+------------------------------------------------
+
+## LEFT SIDE
+
+Keep all existing content.
+
+Do NOT rewrite marketing copy.
+
+Improve hierarchy.
+
+Increase spacing.
+
+Use stronger typography.
+
+The headline should dominate.
+
+Buttons should feel tactile.
+
+------------------------------------------------
+
+## BACKGROUND
+
+Move the current gradient behind ONLY the text.
+
+Shrink it.
+
+Reduce opacity.
+
+Then create multiple layered blurred lights.
+
+Use:
+
+Purple
+
+Electric Blue
+
+Very dark navy
+
+Do NOT create one giant blurry blob.
+
+Instead create several blurred radial lights with different opacity.
+
+Add:
+
+very subtle grid
+
+tiny blueprint lines
+
+abstract circuit traces
+
+very faint
+
+almost invisible
+
+This should feel engineered.
+
+------------------------------------------------
+
+## MICRO ANIMATIONS
+
+Hero image:
+
+Slow floating animation
+
+Duration:
+
+14–18 seconds
+
+Infinite
+
+Ease in out
+
+Floating cards:
+
+Different timing
+
+One slightly slower.
+
+Buttons:
+
+Hover lift
+
+2px
+
+Soft glow
+
+Image:
+
+Very subtle zoom
+
+scale(1.02)
+
+No bouncing.
+
+------------------------------------------------
+
+## DEPTH
+
+Create 4 visual layers.
+
+Layer 1
+
+Background
+
+Layer 2
+
+Gradient lights
+
+Layer 3
+
+Hero image
+
+Layer 4
+
+Floating cards
+
+The page should feel like it has depth.
+
+------------------------------------------------
+
+## PERFORMANCE
+
+Do NOT reduce Lighthouse score.
+
+CLS = 0
+
+LCP optimized
+
+Hero image:
+
+loading="eager"
+
+fetchPriority="high"
+
+Use modern image optimization.
+
+Animations:
+
+GPU accelerated.
+
+Use transform only.
+
+Never animate width, height, top, left.
+
+------------------------------------------------
+
+## RESPONSIVE
+
+Tablet
+
+Reduce parallax.
+
+Keep two columns.
+
+Mobile
+
+Stack vertically.
+
 Text
-CTA
+
+Buttons
+
 Image
 
-4. Add a subtle floating card over the bottom-right of the image.
+Cards reposition neatly.
 
-Card example:
+Do NOT hide important content.
 
-✓ 24/7 Monitoring
-Response Time
-< 5 mins
+------------------------------------------------
 
-or
+## DESIGN GOAL
 
-✓ 2,500+
-Protected Properties
+The Hero should feel like:
 
-The card should have:
-- Glassmorphism effect
-- Rounded corners
-- Soft shadow
-- Small icon
+A premium security operations company.
 
-5. Add a very subtle decorative background behind the hero.
+Not a startup.
 
-Examples:
-- faint grid
-- blurred circles
-- abstract security lines
+Not an AI template.
 
-The background should not distract from the content.
+Not a bootstrap landing page.
 
-6. Improve spacing.
+It should look like a company capable of securing million-dollar homes.
 
-Increase whitespace between:
-- heading
-- description
-- CTA buttons
+Every spacing, animation, shadow, gradient, and layer should reinforce professionalism, trust, and engineering excellence.
 
-7. Maintain accessibility.
+Do not modify routing.
 
-Ensure:
-- contrast remains WCAG compliant
-- responsive typography
-- CLS = 0
-- optimized image loading
-- lazy loading only below the fold
-- hero image should load eagerly
+Do not modify business logic.
 
-8. Preserve all existing functionality.
+Do not modify navigation.
 
-Do NOT modify:
-- routing
-- CTA actions
-- navigation
-- animations
-- theme
-- branding
+Redesign ONLY the Hero section.
 
-Deliver:
-- Updated Hero component
-- Responsive layout
-- Optimized image implementation
-- Clean production-ready code
+Rather than using a static hero image, you could use a cinemagraph-style effect. Keep the photo static, but animate only a few elements: a faint pulse on camera LEDs, a subtle shimmer on the service vehicle, and slow-moving floating cards.

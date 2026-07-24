@@ -1,7 +1,178 @@
 import { Link, Navigate } from 'react-router-dom';
+import React, { useEffect, useRef } from 'react';
 import { Eye, Lock, ChevronRight, CheckCircle2, Server, HomeIcon } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import heroImage from '../assets/hero.jpg';
+
+const HeroSection = () => {
+  const containerRef = useRef<HTMLElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
+  const card1Ref = useRef<HTMLDivElement>(null);
+  const card2Ref = useRef<HTMLDivElement>(null);
+  const glowRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (prefersReducedMotion) return;
+
+    let requestRef: number;
+    let mouseX = 0;
+    let mouseY = 0;
+    let currentX = 0;
+    let currentY = 0;
+
+    const onMouseMove = (e: MouseEvent) => {
+      const { innerWidth, innerHeight } = window;
+      mouseX = (e.clientX / innerWidth) * 2 - 1;
+      mouseY = (e.clientY / innerHeight) * 2 - 1;
+    };
+
+    const animate = () => {
+      currentX += (mouseX - currentX) * 0.05;
+      currentY += (mouseY - currentY) * 0.05;
+
+      if (imageRef.current) {
+        imageRef.current.style.transform = `translate(${currentX * 8}px, ${currentY * 8}px) scale(1.02)`;
+      }
+      if (card1Ref.current) {
+        card1Ref.current.style.transform = `translate(${currentX * 14}px, ${currentY * 14}px)`;
+      }
+      if (card2Ref.current) {
+        card2Ref.current.style.transform = `translate(${currentX * 10}px, ${currentY * 12}px)`;
+      }
+      if (glowRef.current) {
+        glowRef.current.style.transform = `translate(${currentX * -4}px, ${currentY * -4}px)`;
+      }
+
+      requestRef = requestAnimationFrame(animate);
+    };
+
+    window.addEventListener('mousemove', onMouseMove);
+    requestRef = requestAnimationFrame(animate);
+
+    return () => {
+      window.removeEventListener('mousemove', onMouseMove);
+      cancelAnimationFrame(requestRef);
+    };
+  }, []);
+
+  return (
+    <section ref={containerRef} className="relative bg-[#0A0F1C] overflow-hidden min-h-screen flex items-center pt-24 lg:pt-0">
+      {/* LAYER 1: Background & Blueprint Grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.01)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.01)_1px,transparent_1px)] bg-[size:16px_16px] pointer-events-none"></div>
+      
+      {/* LAYER 2: Gradient Lights */}
+      <div ref={glowRef} className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-[10%] left-[20%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px]"></div>
+        <div className="absolute top-[40%] left-[40%] w-[600px] h-[600px] bg-blue-900/10 rounded-full blur-[140px]"></div>
+        <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-indigo-900/20 rounded-full blur-[100px]"></div>
+        <div className="absolute top-0 left-0 w-full md:w-[60%] lg:w-[45%] h-full bg-gradient-to-r from-ess-purple/10 to-transparent blur-3xl"></div>
+      </div>
+
+      <div className="container mx-auto px-6 relative z-30 py-12 lg:py-0">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-16 lg:gap-8">
+          
+          {/* LEFT SIDE: Text Content (Approx 45%) */}
+          <div className="w-full lg:w-[45%] text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 bg-white/5 border border-white/10 backdrop-blur-md px-4 py-2 rounded-full mb-10 shadow-[0_0_15px_rgba(168,85,247,0.15)]">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></span>
+              <span className="text-gray-300 text-xs font-semibold tracking-widest uppercase">Premium Residential Security</span>
+            </div>
+            
+            <h1 className="text-5xl md:text-6xl lg:text-[5.5rem] font-extrabold text-white leading-[1.05] tracking-tight mb-8">
+              Build. Connect. <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-blue-100 to-gray-400 drop-shadow-lg">Protect.</span>
+            </h1>
+            
+            <p className="text-lg md:text-xl text-gray-400 mb-12 max-w-xl mx-auto lg:mx-0 leading-relaxed font-light">
+              Entercom Security protects high-value properties with engineered precision. Professionally installed cameras, smart sensors, and uncompromising reliability.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-6 justify-center lg:justify-start">
+              <Link to="/contact" className="w-full sm:w-auto text-center bg-white text-gray-950 hover:bg-gray-100 px-8 py-4 rounded-xl font-bold transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.15)] hover:shadow-[0_0_30px_rgba(255,255,255,0.25)] flex items-center justify-center gap-3 hover:-translate-y-[2px]">
+                Request Consultation <ChevronRight size={18} />
+              </Link>
+              <Link to="/services" className="w-full sm:w-auto text-center bg-white/5 hover:bg-white/10 backdrop-blur-md border border-white/10 text-white px-8 py-4 rounded-xl font-bold transition-all duration-300 hover:shadow-[0_0_20px_rgba(168,85,247,0.15)] hover:-translate-y-[2px]">
+                Explore Solutions
+              </Link>
+            </div>
+          </div>
+
+          {/* RIGHT SIDE: Hero Image (Approx 55%) */}
+          <div className="w-full lg:w-[55%] relative flex justify-end">
+            
+            {/* Custom Container for Image */}
+            <div 
+              ref={imageRef} 
+              className="relative w-full max-w-[800px] aspect-[4/3] rounded-tl-[120px] rounded-br-[120px] rounded-tr-[32px] rounded-bl-[32px] overflow-hidden shadow-[0_30px_60px_-15px_rgba(0,0,0,0.8)] border border-white/10 will-change-transform"
+              style={{ animation: 'floatImage 16s ease-in-out infinite' }}
+            >
+              <img 
+                src={heroImage} 
+                alt="Premium residential security installation by Entercom professionals"
+                className="w-full h-full object-cover"
+                loading="eager"
+                fetchPriority="high"
+              />
+              
+              {/* Cinemagraph Elements */}
+              <div className="absolute top-[20%] left-[45%] w-1.5 h-1.5 bg-red-500 rounded-full animate-ping opacity-80 shadow-[0_0_10px_rgba(239,68,68,1)]"></div>
+              <div className="absolute bottom-[30%] right-[30%] w-2 h-2 bg-blue-400 rounded-full animate-pulse opacity-60 blur-[1px]"></div>
+              
+              {/* Inner Edge Glow for Depth */}
+              <div className="absolute inset-0 shadow-[inset_0_0_30px_rgba(255,255,255,0.05)] pointer-events-none rounded-tl-[120px] rounded-br-[120px] rounded-tr-[32px] rounded-bl-[32px]"></div>
+            </div>
+
+            {/* LAYER 4: Floating Glass Cards */}
+            <div 
+              ref={card1Ref}
+              className="absolute top-10 -left-6 lg:left-0 z-40 bg-[#0f172a]/70 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] flex flex-col gap-1 will-change-transform group transition-colors hover:bg-[#0f172a]/90 hover:border-white/20"
+              style={{ animation: 'floatCard 14s ease-in-out infinite alternate' }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center border border-green-500/30">
+                  <div className="w-2.5 h-2.5 bg-green-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(74,222,128,0.5)]"></div>
+                </div>
+                <p className="text-white font-bold text-sm tracking-wide">24/7 Monitoring</p>
+              </div>
+              <p className="text-gray-400 text-xs uppercase tracking-wider pl-11">Always Watching</p>
+              <p className="text-green-400 text-[10px] font-mono mt-1 pl-11 group-hover:text-green-300">LIVE SYSTEM STATUS</p>
+            </div>
+
+            <div 
+              ref={card2Ref}
+              className="absolute bottom-10 -right-4 lg:right-10 z-40 bg-[#0f172a]/70 backdrop-blur-xl border border-white/10 p-5 rounded-2xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] flex flex-col gap-1 will-change-transform group transition-colors hover:bg-[#0f172a]/90 hover:border-white/20"
+              style={{ animation: 'floatCard 18s ease-in-out infinite alternate-reverse' }}
+            >
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                  <CheckCircle2 className="w-4 h-4 text-blue-400" />
+                </div>
+                <p className="text-white font-bold text-sm tracking-wide">Response Team</p>
+              </div>
+              <p className="text-gray-400 text-xs uppercase tracking-wider pl-11">Average Response</p>
+              <p className="text-blue-400 text-base font-bold mt-1 pl-11 drop-shadow-md">&lt; 5 Minutes</p>
+            </div>
+
+          </div>
+        </div>
+      </div>
+      
+      {/* Global Animation Styles */}
+      <style>{`
+        @keyframes floatImage {
+          0%, 100% { transform: translateY(0) scale(1.02); }
+          50% { transform: translateY(-15px) scale(1.02); }
+        }
+        @keyframes floatCard {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-10px); }
+        }
+      `}</style>
+    </section>
+  );
+};
 
 const Home = () => {
    const { user, isAuthenticated } = useAuthStore();
@@ -51,75 +222,7 @@ const Home = () => {
   ]
   return (
     <div className="bg-white">
-      {/* Hero Section - Split Layout */}
-      <section className="relative bg-slate-900 overflow-hidden">
-        {/* Subtle Decorative Background */}
-        <div className="absolute inset-0 opacity-10 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-ess-purple/30 via-slate-900 to-slate-900 pointer-events-none"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none"></div>
-
-        {/* Gradient positioned behind left content */}
-        <div className="absolute top-0 left-0 w-full md:w-[60%] lg:w-[50%] h-full bg-gradient-to-r from-ess-purple/20 to-transparent blur-3xl pointer-events-none"></div>
-
-        <div className="container mx-auto px-6 py-16 md:py-24 lg:py-32 relative z-10">
-          <div className="flex flex-col md:flex-row items-center gap-12 lg:gap-24 w-full">
-            
-            {/* Left Content (Text) */}
-            <div className="w-full md:w-1/2 text-center md:text-left relative z-20">
-              <span className="inline-block bg-ess-purple/20 border border-ess-purple/30 text-ess-purple text-[10px] md:text-xs font-bold px-3 py-1 rounded-full mb-8 tracking-wider uppercase">
-                Entercom Security Systems
-              </span>
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold text-white leading-[1.15] mb-8">
-                Build. Connect. <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Protect.</span>
-              </h1>
-              <p className="text-lg md:text-xl text-gray-400 mb-10 max-w-2xl mx-auto md:mx-0 leading-relaxed">
-                Entercom Security helps homes and small businesses protect their properties with
-                professionally installed camera systems, sensors, and smart security solutions—
-                designed for real-world reliability, not complexity.
-              </p>
-              
-              {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-5 justify-center md:justify-start">
-                <Link to="/contact" className="w-full sm:w-auto text-center bg-ess-purple hover:bg-ess-darkPurple text-white px-8 py-4 rounded-xl font-bold transition-all shadow-lg shadow-purple-900/50 flex items-center justify-center gap-2 hover:scale-105">
-                  Get a Free Quote <ChevronRight size={18} />
-                </Link>
-                <Link to="/services" className="w-full sm:w-auto text-center bg-white/5 hover:bg-white/10 backdrop-blur-sm border border-white/10 text-white px-8 py-4 rounded-xl font-bold transition-all hover:scale-105">
-                  Our Solutions
-                </Link>
-              </div>
-            </div>
-
-            {/* Right Content (Hero Image) */}
-            <div className="w-full md:w-1/2 relative group mt-8 md:mt-0">
-              {/* High-quality hero image */}
-              <div className="relative z-10 rounded-[24px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/10 transition-transform duration-700 ease-in-out lg:group-hover:scale-[1.02]">
-                <img 
-                  src={heroImage} 
-                  alt="Professional technicians installing premium residential security"
-                  className="w-full h-auto md:h-[500px] lg:h-[600px] object-cover object-center"
-                  loading="eager"
-                  fetchPriority="high"
-                />
-              </div>
-
-              {/* Floating Card */}
-              <div className="absolute -bottom-6 -right-2 sm:-right-6 md:bottom-8 md:-right-8 z-20 bg-white/10 backdrop-blur-xl border border-white/20 p-5 rounded-2xl shadow-2xl flex items-center gap-5 transition-transform duration-500 lg:group-hover:-translate-y-2">
-                <div className="w-12 h-12 bg-green-500 rounded-xl flex items-center justify-center shrink-0 shadow-lg shadow-green-500/30">
-                  <CheckCircle2 className="text-white" size={24} />
-                </div>
-                <div>
-                  <p className="text-white font-bold text-base md:text-lg whitespace-nowrap">24/7 Monitoring</p>
-                  <p className="text-gray-300 text-sm">Response Time</p>
-                  <p className="text-green-400 font-bold text-sm">&lt; 5 mins</p>
-                </div>
-              </div>
-              
-              {/* Decorative Glow Behind Image */}
-              <div className="absolute inset-0 bg-ess-purple/20 blur-[100px] -z-10 rounded-full scale-75 opacity-50 transition-opacity duration-700 lg:group-hover:opacity-80"></div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HeroSection />
 
       {/* Stats Section - Floating Cards on Desktop */}
       {/* <section className="relative z-20 -mt-8 md:-mt-16 px-6">
