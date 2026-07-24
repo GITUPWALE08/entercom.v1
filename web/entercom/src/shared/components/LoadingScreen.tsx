@@ -1,5 +1,3 @@
-// import React from 'react';
-
 export function LoadingScreen({ message = 'Loading...' }: { message?: string }) {
   return (
     <div className="flex h-[60vh] w-full flex-col items-center justify-center bg-transparent transition-opacity duration-300">
