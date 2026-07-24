@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, CheckCircle, XCircle, Clock, FileText, User, Briefcase, MessageSquare, AlertCircle } from 'lucide-react';
+import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, CheckCircle, XCircle, Clock, FileText, User, Briefcase, AlertCircle } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/PageHeader';
 
 export default function ApplicationDetail() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [app, setApp] = useState<any>(null);
   const [notes, setNotes] = useState('');

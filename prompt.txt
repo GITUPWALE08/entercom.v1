@@ -1,113 +1,14 @@
-Implement the Technician Recruitment Management module for Entercom.
 
-Current state:
-
-- Technician Application form already exists.
-- Customer application flow already exists.
-- Technician application can also serve as registration.
-
-Tasks:
-
-1. CUSTOMER PORTAL
-- Move "Apply as Technician" under a collapsible "Careers" sidebar group.
-- Design Careers to support future additions:
-  - Apply as Technician
-  - Apply as Staff
-  - Internship
-- If a customer has already submitted an application, replace the Apply button with an Application Status view.
-
-2. PUBLIC WEBSITE
-- Add a Careers section/page integrated naturally into the existing navigation.
-- Include:
-  - Why Join Entercom
-  - Benefits
-  - Requirements
-  - Apply as Technician CTA
-- Allow guests to apply directly.
-- The application should create a pending user account and send email verification.
-
-3. MANAGER PORTAL
-Create a Recruitment module.
-
-Features:
-- Technician Applications list
-- Filters
-- Search
-- Pagination
-- Application detail page
-- Manager actions:
-  - Approve
-  - Reject
-  - Request More Information
-  - Assign Reviewer
-  - Add Review Notes
-- Display uploaded documents and application timeline.
-
-4. ADMIN PORTAL
-Add Recruitment Dashboard.
-
-Features:
-- All manager capabilities
-- Bulk actions
-- Assign managers
-- Override decisions
-- Recruitment analytics
-- Archive applications
-
-5. APPROVAL FLOW
-On approval:
-- Activate technician role
-- Enable technician dashboard
-- Grant permissions
-- Create technician profile if required
-- Send approval email
-
-6. REJECTION FLOW
-- Save rejection reason
-- Notify applicant
-- Preserve application history
-
-7. Notifications
-
-Applicant receives:
-
-Application submitted
-Under review
-More information requested
-Approved
-Rejected
-
-Manager receives:
-
-New application assigned
-Applicant updated information
-
-Admin receives:
-
-Daily recruitment summary
-
-
-
-8. Technician Activation
-
-Approval should automatically:
-
-Enable Technician role.
-Grant technician permissions.
-Create technician profile (if separate).
-Enable technician dashboard.
-Send welcome email.
-Send onboarding instructions.
-
-9. UI/UX
-- Mobile responsive
-- Consistent with existing portal
-- Use existing design system
-- Accessible
-- Loading states
-- Empty states
-- Error handling
-
-Do not change existing business rules.
-Reuse existing RBAC, notification, and authentication systems.
-Build on the current implementation rather than replacing it.
+src/features/portal/admin/recruitment/AdminRecruitmentDashboard.tsx(3,34): error TS6133: 'Settings' is declared but its value is never read.
+src/features/portal/admin/recruitment/AdminRecruitmentDashboard.tsx(4,28): error TS2307: Cannot find module '../../../../shared/components/PageHeader' or its corresponding type declarations.
+src/features/portal/admin/recruitment/AdminRecruitmentDashboard.tsx(81,14): error TS2552: Cannot find name 'Clock'. Did you mean 'Lock'?
+src/features/portal/manager/recruitment/ApplicationDetail.tsx(3,77): error TS6133: 'MessageSquare' is declared but its value is never read.
+src/features/portal/manager/recruitment/ApplicationDetail.tsx(4,28): error TS2307: Cannot find module '../../../../shared/components/PageHeader' or its corresponding type declarations.
+src/features/portal/manager/recruitment/ApplicationDetail.tsx(8,9): error TS6133: 'navigate' is declared but its value is never read.
+src/features/portal/manager/recruitment/ManagerRecruitmentDashboard.tsx(4,28): error TS2307: Cannot find module '../../../../shared/components/PageHeader' or its corresponding type declarations.
+src/layouts/PortalLayout.tsx(350,19): error TS2322: Type 'string | undefined' is not assignable to type 'To'.
+  Type 'undefined' is not assignable to type 'To'.
+src/layouts/PortalLayout.tsx(353,30): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/pages/careers.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
+Error: Command "npm run build" exited with 2

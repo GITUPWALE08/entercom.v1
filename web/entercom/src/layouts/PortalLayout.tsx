@@ -125,7 +125,7 @@ export function PortalLayout() {
     setOpenGroups(prev => ({ ...prev, [groupName]: !prev[groupName] }));
   };
 
-  const renderNavItem = (item: any, depth = 0) => {
+  const renderNavItem = (item: any, onClick?: () => void, depth = 0) => {
     if (item.isGroup) {
       const isOpen = openGroups[item.name] || false;
       return (
@@ -151,8 +151,8 @@ export function PortalLayout() {
             )}
           </button>
           {isOpen && isSidebarExpanded && (
-            <div className="mt-1 space-y-1 pl-4 border-l-2 border-gray-100 ml-4">
-              {item.children.map((child: any) => renderNavItem(child, depth + 1))}
+            <div className="mt-1 space-y-1 pl-4">
+              {item.children.map((child: any) => renderNavItem(child, onClick, depth + 1))}
             </div>
           )}
         </div>
@@ -163,12 +163,12 @@ export function PortalLayout() {
       <Link
         key={item.name}
         to={item.href}
+        onClick={onClick}
         title={!isSidebarExpanded ? item.name : undefined}
-        className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 ${
-          isActive(item.href)
-            ? 'bg-gray-50 text-ess-purple'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-        } ${!isSidebarExpanded ? 'justify-center' : ''}`}
+        className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors duration-150 group 
+          ${depth > 0 ? 'ml-2' : ''}
+          ${isActive(item.href) ? 'bg-purple-50 text-ess-purple' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'}
+          ${!isSidebarExpanded && depth === 0 ? 'justify-center' : ''}`}
       >
         {!isSidebarExpanded && depth === 0 ? (
           <span className="w-6 h-6 flex items-center justify-center rounded bg-gray-100 text-gray-500 font-bold text-xs uppercase flex-shrink-0">
@@ -344,18 +344,7 @@ export function PortalLayout() {
 
           <div className="flex-1 overflow-y-auto py-6 px-4">
             <nav className="space-y-1">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-3 rounded-xl text-base font-medium transition-colors ${
-                    isActive(item.href) ? 'bg-purple-50 text-ess-purple' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              ))}
+              {navigation.map((item) => renderNavItem(item, () => setIsMobileMenuOpen(false)))}
             </nav>
           </div>
           
