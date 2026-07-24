@@ -1,5 +1,5 @@
 import { Link, Navigate } from 'react-router-dom';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Eye, Lock, ChevronRight, CheckCircle2, Server, HomeIcon } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import heroImage from '../assets/hero.jpg';
