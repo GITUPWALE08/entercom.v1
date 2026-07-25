@@ -1,1 +1,1 @@
-when I send a message it won't show in the chat unless I go back and enter the chat again, why is this happening?
+there is no chat interface on the staff page or manager portal

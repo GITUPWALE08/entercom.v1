@@ -54,6 +54,7 @@ export function PortalLayout() {
 
   const staffNavigation = [
     { name: 'Dashboard', href: '/portal/staff' },
+    { name: 'Inbox', href: '/portal/staff/inbox' },
     { name: 'Requests', href: '/portal/staff/requests' },
     { name: 'Bookings', href: '/portal/staff/bookings' },
     { name: 'Inventory', href: '/portal/staff/inventory' },
@@ -64,12 +65,14 @@ export function PortalLayout() {
 
   const technicianNavigation = [
     { name: 'Technician Dashboard', href: '/portal/staff/technician' },
+    { name: 'Inbox', href: '/portal/staff/inbox' },
     { name: 'Requests', href: '/portal/staff/technician/requests' },
     { name: 'Profile', href: '/portal/staff/profile' },
   ];
 
   const managerNavigation = [
     { name: 'Dashboard', href: '/portal/manager' },
+    { name: 'Inbox', href: '/portal/staff/inbox' },
     { name: 'Requests & Escalations', href: '/portal/manager/requests' },
     { name: 'Bookings', href: '/portal/staff/bookings' },
     { name: 'Technicians', href: '/portal/manager/technicians' },
@@ -81,6 +84,7 @@ export function PortalLayout() {
 
   const adminNavigation = [
     { name: 'Dashboard', href: '/portal/admin' },
+    { name: 'Inbox', href: '/portal/staff/inbox' },
     { name: 'Requests', href: '/portal/staff/requests' },
     { name: 'Inventory', href: '/portal/staff/inventory' },
     { name: 'Products', href: '/portal/staff/products' },
