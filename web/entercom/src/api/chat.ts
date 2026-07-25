@@ -24,6 +24,14 @@ export interface ChatMessage {
   delivered_at: string | null;
   read_at: string | null;
   is_deleted: boolean;
+  reply_to?: {
+    id: string;
+    sender: { id: string; first_name: string; last_name: string; email: string; };
+    body: string;
+    message_type: string;
+    created_at: string;
+    is_deleted: boolean;
+  } | null;
   attachments?: ChatAttachment[];
 }
 
@@ -95,11 +103,12 @@ export const chatApi = {
     return { results: data, next: null };
   },
 
-  sendMessage: async (id: string, body: string, messageType: 'text' | 'internal_note' = 'text', files: File[] = []): Promise<ChatMessage> => {
+  sendMessage: async (id: string, body: string, messageType: 'text' | 'internal_note' = 'text', files: File[] = [], replyToId?: string): Promise<ChatMessage> => {
     if (files.length > 0) {
       const formData = new FormData();
       formData.append('body', body);
       formData.append('message_type', messageType);
+      if (replyToId) formData.append('reply_to_id', replyToId);
       files.forEach(f => formData.append('attachments', f));
       
       const { data } = await axiosInstance.post(`/chat/conversations/${id}/messages/`, formData, {
@@ -109,9 +118,20 @@ export const chatApi = {
       });
       return data;
     } else {
-      const { data } = await axiosInstance.post(`/chat/conversations/${id}/messages/`, { body, message_type: messageType });
+      const payload: any = { body, message_type: messageType };
+      if (replyToId) payload.reply_to_id = replyToId;
+      const { data } = await axiosInstance.post(`/chat/conversations/${id}/messages/`, payload);
       return data;
     }
+  },
+
+  editMessage: async (messageId: string, body: string): Promise<ChatMessage> => {
+    const { data } = await axiosInstance.put(`/chat/messages/${messageId}/`, { body });
+    return data;
+  },
+
+  deleteMessage: async (messageId: string): Promise<void> => {
+    await axiosInstance.delete(`/chat/messages/${messageId}/`);
   },
 
   markRead: async (id: string): Promise<void> => {
@@ -128,5 +148,13 @@ export const chatApi = {
 
   resolve: async (id: string): Promise<void> => {
     await axiosInstance.post(`/chat/conversations/${id}/resolve/`);
+  },
+
+  close: async (id: string): Promise<void> => {
+    await axiosInstance.post(`/chat/conversations/${id}/close/`);
+  },
+
+  reopen: async (id: string): Promise<void> => {
+    await axiosInstance.post(`/chat/conversations/${id}/reopen/`);
   },
 };

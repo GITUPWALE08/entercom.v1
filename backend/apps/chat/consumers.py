@@ -42,6 +42,25 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
             if action == 'mark_read':
                 await self.mark_conversation_read(self.user, self.conversation_id)
+            elif action in ['typing_start', 'typing_stop']:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'user_typing',
+                        'action': action,
+                        'user_id': str(self.user.id),
+                        'user_name': self.user.get_full_name()
+                    }
+                )
+            elif action in ['presence_online', 'presence_offline']:
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'user_presence',
+                        'action': action,
+                        'user_id': str(self.user.id)
+                    }
+                )
         except Exception:
             pass
 
@@ -54,7 +73,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'sender_id': event.get('sender_id'),
             'body': event.get('body'),
             'message_type': event.get('message_type'),
+            'reply_to_id': event.get('reply_to_id'),
             'created_at': event.get('created_at'),
+            'delivered_at': event.get('delivered_at'),
+            'read_at': event.get('read_at'),
         }))
 
     async def user_read(self, event):
@@ -62,6 +84,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
             'type': 'read_receipt',
             'user_id': event.get('user_id'),
             'read_at': event.get('read_at'),
+        }))
+        
+    async def user_typing(self, event):
+        await self.send(text_data=json.dumps({
+            'type': event['action'],
+            'user_id': event['user_id'],
+            'user_name': event['user_name']
+        }))
+        
+    async def user_presence(self, event):
+        await self.send(text_data=json.dumps({
+            'type': event['action'],
+            'user_id': event['user_id']
+        }))
+
+    async def message_updated(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'message_updated',
+            'message_id': event.get('message_id'),
+            'body': event.get('body'),
+            'edited_at': event.get('edited_at'),
+        }))
+
+    async def message_deleted(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'message_deleted',
+            'message_id': event.get('message_id'),
         }))
 
     @database_sync_to_async

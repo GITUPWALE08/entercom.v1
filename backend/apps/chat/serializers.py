@@ -18,14 +18,28 @@ class ConversationParticipantSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class MessageReplySerializer(serializers.ModelSerializer):
+    sender = UserListSerializer(read_only=True)
+    class Meta:
+        model = Message
+        fields = ['id', 'sender', 'body', 'message_type', 'created_at', 'is_deleted']
+        read_only_fields = fields
+
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        if instance.is_deleted:
+            data['body'] = "This message was deleted."
+        return data
+
 class MessageSerializer(serializers.ModelSerializer):
     sender = UserListSerializer(read_only=True)
     attachments = serializers.SerializerMethodField()
+    reply_to = MessageReplySerializer(read_only=True)
 
     class Meta:
         model = Message
-        fields = ['id', 'conversation', 'sender', 'body', 'message_type', 'created_at', 'edited_at', 'delivered_at', 'read_at', 'is_deleted', 'attachments']
-        read_only_fields = ['id', 'conversation', 'sender', 'created_at', 'edited_at', 'delivered_at', 'read_at', 'is_deleted', 'attachments']
+        fields = ['id', 'conversation', 'sender', 'body', 'message_type', 'reply_to', 'created_at', 'edited_at', 'delivered_at', 'read_at', 'is_deleted', 'attachments']
+        read_only_fields = ['id', 'conversation', 'sender', 'reply_to', 'created_at', 'edited_at', 'delivered_at', 'read_at', 'is_deleted', 'attachments']
 
     def get_attachments(self, obj):
         from .models import Attachment

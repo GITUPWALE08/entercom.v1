@@ -1,12 +1,21 @@
 import React, { useState, useRef } from 'react';
 import { useAuthStore } from '../../../store/authStore';
 
+import type { ChatMessage } from '../../../api/chat';
+
 interface MessageComposerProps {
-  onSend: (body: string, type: 'text' | 'internal_note', files: File[]) => Promise<void>;
+  onSend: (body: string, type: 'text' | 'internal_note', files: File[], replyToId?: string) => Promise<void>;
   disabled?: boolean;
+  replyToMessage?: ChatMessage | null;
+  onCancelReply?: () => void;
+  editingMessage?: ChatMessage | null;
+  onEditSubmit?: (body: string) => Promise<void>;
+  onCancelEdit?: () => void;
+  sendTypingStart?: () => void;
+  sendTypingStop?: () => void;
 }
 
-export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
+export function MessageComposer({ onSend, disabled, replyToMessage, onCancelReply, editingMessage, onEditSubmit, onCancelEdit, sendTypingStart, sendTypingStop }: MessageComposerProps) {
   const { user } = useAuthStore();
   const [text, setText] = useState('');
   const [isInternal, setIsInternal] = useState(false);
@@ -17,13 +26,22 @@ export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
   
   const canSendInternal = user && ['admin', 'manager', 'staff'].includes(user.role);
 
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if ((!text.trim() && files.length === 0) || isSending || disabled || text.length > maxLength) return;
 
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    sendTypingStop?.();
+
     try {
       setIsSending(true);
-      await onSend(text.trim(), isInternal ? 'internal_note' : 'text', files);
+      if (editingMessage && onEditSubmit) {
+        await onEditSubmit(text.trim());
+      } else {
+        await onSend(text.trim(), isInternal ? 'internal_note' : 'text', files, replyToMessage?.id);
+      }
       setText('');
       setFiles([]);
     } catch (err) {
@@ -32,6 +50,13 @@ export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
       setIsSending(false);
     }
   };
+
+  // Populate text if editing
+  React.useEffect(() => {
+    if (editingMessage) {
+      setText(editingMessage.body);
+    }
+  }, [editingMessage]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -54,8 +79,30 @@ export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="p-4 bg-white border-t border-gray-100 flex flex-col gap-2">
-      {files.length > 0 && (
+    <div className="bg-white border-t border-gray-100 flex flex-col">
+      {replyToMessage && (
+        <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
+          <div className="flex flex-col text-sm truncate opacity-80">
+            <span className="font-semibold text-xs text-ess-purple">Replying to {replyToMessage.sender?.first_name || 'System'}</span>
+            <span className="truncate text-gray-500">{replyToMessage.body}</span>
+          </div>
+          <button onClick={onCancelReply} className="text-gray-400 hover:text-gray-700">
+            &times;
+          </button>
+        </div>
+      )}
+      {editingMessage && (
+        <div className="flex items-center justify-between px-4 py-2 bg-blue-50 border-b border-blue-200">
+          <div className="flex flex-col text-sm truncate opacity-80">
+            <span className="font-semibold text-xs text-blue-700">Editing Message</span>
+          </div>
+          <button onClick={onCancelEdit} className="text-gray-400 hover:text-gray-700">
+            &times;
+          </button>
+        </div>
+      )}
+      <form onSubmit={handleSubmit} className="p-4 flex flex-col gap-2">
+        {files.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-2">
           {files.map((file, i) => (
             <div key={i} className="flex items-center gap-1 bg-gray-100 px-2 py-1 rounded text-sm text-gray-700">
@@ -102,7 +149,14 @@ export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
         
         <textarea
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => {
+            setText(e.target.value);
+            if (sendTypingStart && sendTypingStop) {
+              sendTypingStart();
+              if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+              typingTimeoutRef.current = setTimeout(() => sendTypingStop(), 3000);
+            }
+          }}
           onKeyDown={handleKeyDown}
           placeholder={isInternal ? "Type an internal note..." : "Type a message..."}
           disabled={disabled || isSending}
@@ -135,5 +189,6 @@ export function MessageComposer({ onSend, disabled }: MessageComposerProps) {
         </span>
       </div>
     </form>
+    </div>
   );
 }

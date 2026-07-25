@@ -49,33 +49,54 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
             created_at: data.created_at,
             edited_at: null,
             is_deleted: false,
-            delivered_at: null,
-            read_at: null,
+            delivered_at: data.delivered_at,
+            read_at: data.read_at,
+            reply_to: data.reply_to_id ? { id: data.reply_to_id, body: '', sender: { id: '', first_name: '', last_name: '', email: '' }, message_type: 'text', created_at: '', is_deleted: false } : null,
           };
           
-          // Update React Query Cache
           queryClient.setQueryData(
             ['chat', conversationId, 'messages'], 
             (oldData: any) => {
               if (!oldData) return oldData;
-              // Handle infinite query pages vs normal list
+              if (oldData.results) {
+                return { ...oldData, results: [...oldData.results, newMsg] };
+              }
               if (oldData.pages) {
                 const newPages = [...oldData.pages];
                 if (newPages.length > 0) {
-                  // Prepend to first page assuming desc ordering, or append to last
-                  // (Depends on how pagination is structured. We'll append to first for simplicity)
                   newPages[0].results = [newMsg, ...newPages[0].results];
                 }
                 return { ...oldData, pages: newPages };
               }
-              // Flat array fallback
-              return [newMsg, ...(oldData || [])];
+              return [...(oldData || []), newMsg];
             }
           );
-          
           if (onMessageReceived) onMessageReceived(newMsg);
+        } else if (data.type === 'message_updated') {
+          queryClient.setQueryData(['chat', conversationId, 'messages'], (oldData: any) => {
+              if (!oldData) return oldData;
+              const updateMsg = (msg: ChatMessage) => msg.id === data.message_id ? { ...msg, body: data.body, edited_at: data.edited_at } : msg;
+              if (oldData.results) return { ...oldData, results: oldData.results.map(updateMsg) };
+              if (oldData.pages) return { ...oldData, pages: oldData.pages.map((p: any) => ({ ...p, results: p.results.map(updateMsg) })) };
+              return oldData.map(updateMsg);
+          });
+        } else if (data.type === 'message_deleted') {
+          queryClient.setQueryData(['chat', conversationId, 'messages'], (oldData: any) => {
+              if (!oldData) return oldData;
+              const updateMsg = (msg: ChatMessage) => msg.id === data.message_id ? { ...msg, is_deleted: true } : msg;
+              if (oldData.results) return { ...oldData, results: oldData.results.map(updateMsg) };
+              if (oldData.pages) return { ...oldData, pages: oldData.pages.map((p: any) => ({ ...p, results: p.results.map(updateMsg) })) };
+              return oldData.map(updateMsg);
+          });
         } else if (data.type === 'read_receipt') {
           if (onReadReceipt) onReadReceipt(data.user_id, data.read_at);
+        } else if (data.type === 'typing_start' || data.type === 'typing_stop') {
+          // You could pass this to a callback or manage state here
+          const event = new CustomEvent('chat_typing', { detail: data });
+          window.dispatchEvent(event);
+        } else if (data.type === 'presence_online' || data.type === 'presence_offline') {
+          const event = new CustomEvent('chat_presence', { detail: data });
+          window.dispatchEvent(event);
         }
       } catch (err) {
         console.error('Failed to parse websocket message', err);
@@ -116,11 +137,17 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     };
   }, [connect]);
 
-  const markRead = () => {
+  const sendTypingStart = useCallback(() => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
-      ws.current.send(JSON.stringify({ action: 'mark_read' }));
+      ws.current.send(JSON.stringify({ action: 'typing_start' }));
     }
-  };
+  }, []);
 
-  return { isConnected, markRead };
+  const sendTypingStop = useCallback(() => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({ action: 'typing_stop' }));
+    }
+  }, []);
+
+  return { isConnected, markRead, sendTypingStart, sendTypingStop };
 }

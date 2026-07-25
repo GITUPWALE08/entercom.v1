@@ -24,6 +24,22 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
     },
   });
 
+  const closeMutation = useMutation({
+    mutationFn: () => chatApi.close(conversation.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat', conversation.id] });
+      queryClient.invalidateQueries({ queryKey: ['chat'] });
+    },
+  });
+
+  const reopenMutation = useMutation({
+    mutationFn: () => chatApi.reopen(conversation.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chat', conversation.id] });
+      queryClient.invalidateQueries({ queryKey: ['chat'] });
+    },
+  });
+
   return (
     <div className="p-4 bg-white border-b border-gray-100 flex justify-between items-center shrink-0 shadow-sm z-10 relative">
       <div>
@@ -84,6 +100,34 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
             className="px-3 py-1.5 text-sm font-medium bg-green-50 border border-green-200 text-green-700 rounded-lg hover:bg-green-100 transition-colors shadow-sm disabled:opacity-50"
           >
             {resolveMutation.isPending ? 'Resolving...' : 'Resolve'}
+          </button>
+        )}
+        
+        {isStaff && isResolved && !isClosed && (
+          <button 
+            onClick={() => {
+                if (window.confirm('Are you sure you want to close this conversation?')) {
+                    closeMutation.mutate();
+                }
+            }}
+            disabled={closeMutation.isPending}
+            className="px-3 py-1.5 text-sm font-medium bg-gray-100 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors shadow-sm disabled:opacity-50"
+          >
+            {closeMutation.isPending ? 'Closing...' : 'Close'}
+          </button>
+        )}
+        
+        {isStaff && (isResolved || isClosed) && (
+          <button 
+            onClick={() => {
+                if (window.confirm('Are you sure you want to reopen this conversation?')) {
+                    reopenMutation.mutate();
+                }
+            }}
+            disabled={reopenMutation.isPending}
+            className="px-3 py-1.5 text-sm font-medium bg-blue-50 border border-blue-200 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors shadow-sm disabled:opacity-50"
+          >
+            {reopenMutation.isPending ? 'Reopening...' : 'Reopen'}
           </button>
         )}
       </div>

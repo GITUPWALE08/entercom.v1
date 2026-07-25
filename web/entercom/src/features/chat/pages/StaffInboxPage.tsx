@@ -14,6 +14,10 @@ export default function StaffInboxPage() {
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const [queueFilter, setQueueFilter] = useState('all');
+  const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
+  const [editingMessage, setEditingMessage] = useState<ChatMessage | null>(null);
+  const [typingUsers, setTypingUsers] = useState<Record<string, string>>({});
 
   const { data: conversations = [] } = useQuery({
     queryKey: ['chat', searchQuery],
@@ -33,8 +37,17 @@ export default function StaffInboxPage() {
     enabled: !!id,
   });
 
+  const filteredConversations = conversations.filter(c => {
+    if (queueFilter === 'all') return true;
+    if (queueFilter === 'resolved') return c.status === 'resolved';
+    if (queueFilter === 'closed') return c.status === 'closed';
+    if (queueFilter === 'unassigned') return c.status === 'open' && !c.assigned_staff;
+    if (queueFilter === 'assigned') return c.status === 'open' && !!c.assigned_staff;
+    return true;
+  });
+
   // WebSocket hook ensures messages list updates in real-time.
-  const { markRead } = useChatWebsocket({
+  const { markRead, sendTypingStart, sendTypingStop } = useChatWebsocket({
     conversationId: id || '',
     onMessageReceived: (_msg: ChatMessage) => {
       // Re-fetch conversation list to update last message & unread count instantly
@@ -54,9 +67,35 @@ export default function StaffInboxPage() {
     }
   }, [id, markRead, queryClient, searchQuery]);
 
+  useEffect(() => {
+    const handleTyping = (e: CustomEvent) => {
+      const { action, user_id, user_name } = e.detail;
+      setTypingUsers(prev => {
+        const next = { ...prev };
+        if (action === 'typing_start') {
+          next[user_id] = user_name;
+        } else {
+          delete next[user_id];
+        }
+        return next;
+      });
+      if (action === 'typing_start') {
+        setTimeout(() => {
+          setTypingUsers(prev => {
+            const next = { ...prev };
+            delete next[user_id];
+            return next;
+          });
+        }, 5000);
+      }
+    };
+    window.addEventListener('chat_typing' as any, handleTyping);
+    return () => window.removeEventListener('chat_typing' as any, handleTyping);
+  }, []);
+
   const sendMessageMutation = useMutation({
-    mutationFn: (args: { body: string, messageType: 'text' | 'internal_note', files: File[] }) => 
-      chatApi.sendMessage(id!, args.body, args.messageType, args.files),
+    mutationFn: (args: { body: string, messageType: 'text' | 'internal_note', files: File[], replyToId?: string }) => 
+      chatApi.sendMessage(id!, args.body, args.messageType, args.files, args.replyToId),
     onSuccess: () => {
       // Invalidate just in case, but websocket should have already handled appending.
       queryClient.invalidateQueries({ queryKey: ['chat', id, 'messages'] });
@@ -64,8 +103,31 @@ export default function StaffInboxPage() {
     },
   });
 
-  const handleSend = async (body: string, messageType: 'text' | 'internal_note', files: File[]) => {
-    await sendMessageMutation.mutateAsync({ body, messageType, files });
+  const handleSend = async (body: string, messageType: 'text' | 'internal_note', files: File[], replyToId?: string) => {
+    await sendMessageMutation.mutateAsync({ body, messageType, files, replyToId });
+    setReplyToMessage(null);
+  };
+
+  const editMessageMutation = useMutation({
+    mutationFn: (args: { messageId: string, body: string }) => 
+      chatApi.editMessage(args.messageId, args.body),
+    onSuccess: () => {
+      setEditingMessage(null);
+    },
+  });
+
+  const deleteMessageMutation = useMutation({
+    mutationFn: (messageId: string) => chatApi.deleteMessage(messageId),
+  });
+
+  const handleEditSubmit = async (body: string) => {
+    if (editingMessage) {
+      await editMessageMutation.mutateAsync({ messageId: editingMessage.id, body });
+    }
+  };
+
+  const handleDelete = (msg: ChatMessage) => {
+    deleteMessageMutation.mutate(msg.id);
   };
 
   const handleAssign = () => {
@@ -87,11 +149,13 @@ export default function StaffInboxPage() {
       <div className="flex h-[calc(100vh-160px)] bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mt-2">
         
         <ConversationSidebar 
-          conversations={conversations} 
+          conversations={filteredConversations} 
           activeId={id} 
           basePath="/portal/staff/inbox" 
           searchQuery={searchQuery}
           onSearchChange={setSearchQuery}
+          queueFilter={queueFilter}
+          onQueueChange={setQueueFilter}
         />
         
         <div className="flex-1 flex flex-col h-full bg-gray-50/30">
@@ -114,10 +178,21 @@ export default function StaffInboxPage() {
               <MessageList 
                 messages={messages} 
                 isLoading={isLoadingMessages} 
+                onReply={(msg) => { setReplyToMessage(msg); setEditingMessage(null); }}
+                onEdit={(msg) => { setEditingMessage(msg); setReplyToMessage(null); }}
+                onDelete={handleDelete}
+                typingUsers={typingUsers}
               />
               <MessageComposer 
                 onSend={handleSend} 
                 disabled={conversationDetail.status === 'closed'} 
+                replyToMessage={replyToMessage}
+                onCancelReply={() => setReplyToMessage(null)}
+                editingMessage={editingMessage}
+                onEditSubmit={handleEditSubmit}
+                onCancelEdit={() => setEditingMessage(null)}
+                sendTypingStart={sendTypingStart}
+                sendTypingStop={sendTypingStop}
               />
             </>
           ) : (

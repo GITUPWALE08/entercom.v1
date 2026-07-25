@@ -26,7 +26,7 @@ class ChatService:
             return conversation
 
     @staticmethod
-    def send_message(conversation, sender, body, message_type='text', files=None):
+    def send_message(conversation, sender, body, message_type='text', files=None, reply_to=None):
         if conversation.status == 'closed':
             raise ValueError("Cannot send messages in a closed conversation.")
             
@@ -36,6 +36,7 @@ class ChatService:
                 sender=sender,
                 body=body,
                 message_type=message_type,
+                reply_to=reply_to,
                 delivered_at=timezone.now() if sender else None, # system messages are auto-delivered
             )
             
@@ -71,6 +72,7 @@ class ChatService:
                     'sender_id': str(sender.id) if sender else None,
                     'body': body,
                     'message_type': message_type,
+                    'reply_to_id': str(reply_to.id) if reply_to else None,
                     'created_at': message.created_at.isoformat(),
                     'delivered_at': message.delivered_at.isoformat() if message.delivered_at else None,
                     'read_at': message.read_at.isoformat() if message.read_at else None,
@@ -159,6 +161,80 @@ class ChatService:
                 message_type='system'
             )
             return conversation
+
+    @staticmethod
+    def close_conversation(conversation, closed_by):
+        with transaction.atomic():
+            conversation.status = ConversationStatus.CLOSED
+            conversation.save()
+            
+            # System message
+            ChatService.send_message(
+                conversation, 
+                None, 
+                f"Conversation closed by {closed_by.get_full_name()}.",
+                message_type='system'
+            )
+            return conversation
+
+    @staticmethod
+    def reopen_conversation(conversation, reopened_by):
+        with transaction.atomic():
+            conversation.status = ConversationStatus.OPEN
+            conversation.resolved_at = None
+            conversation.save()
+            
+            # System message
+            ChatService.send_message(
+                conversation, 
+                None, 
+                f"Conversation reopened by {reopened_by.get_full_name()}.",
+                message_type='system'
+            )
+            return conversation
+
+    @staticmethod
+    def edit_message(message, new_body, user):
+        if message.sender != user:
+            raise ValueError("You can only edit your own messages.")
+        if message.is_deleted:
+            raise ValueError("Cannot edit a deleted message.")
+            
+        with transaction.atomic():
+            message.body = new_body
+            message.edited_at = timezone.now()
+            message.save(update_fields=['body', 'edited_at'])
+            
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"chat_{message.conversation.id}",
+                {
+                    'type': 'message_updated',
+                    'message_id': str(message.id),
+                    'body': new_body,
+                    'edited_at': message.edited_at.isoformat(),
+                }
+            )
+            return message
+
+    @staticmethod
+    def delete_message(message, user):
+        if message.sender != user and user.role not in ['admin', 'manager']:
+            raise ValueError("Unauthorized to delete this message.")
+            
+        with transaction.atomic():
+            message.is_deleted = True
+            message.save(update_fields=['is_deleted'])
+            
+            channel_layer = get_channel_layer()
+            async_to_sync(channel_layer.group_send)(
+                f"chat_{message.conversation.id}",
+                {
+                    'type': 'message_deleted',
+                    'message_id': str(message.id),
+                }
+            )
+            return message
 
     @staticmethod
     def transfer_conversation(conversation, new_staff, transferred_by, reason=""):

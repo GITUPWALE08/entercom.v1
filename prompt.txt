@@ -1,9 +1,528 @@
-got this error when I tried going to tech available:
-404 Not Found
-The page you are looking for doesn't exist or has been moved.
+You are a Senior Django Architect, Senior React/TypeScript Engineer, Senior UX Engineer, and Senior Product Engineer working on the Entercom Security platform.
 
-Go back home
-Reload Page
+You are entering:
 
-on this route:
-https://entercom-v1.vercel.app/portal/manager/users?role=technician
+PHASE 7.2 — COMPLETE THE SUPPORT CHAT SYSTEM
+
+====================================================
+
+IMPORTANT
+
+DO NOT redesign the architecture.
+
+DO NOT introduce a new chat system.
+
+DO NOT create duplicate APIs.
+
+DO NOT replace existing WebSocket infrastructure.
+
+DO NOT modify RBAC.
+
+DO NOT modify the notification architecture.
+
+DO NOT introduce unnecessary abstractions.
+
+The Support Chat already exists.
+
+Your responsibility is to:
+
+1. Audit
+2. Complete
+3. Polish
+4. Productionize
+
+using the existing implementation.
+
+====================================================
+
+CURRENT STATUS
+
+Already implemented:
+
+✓ Conversations
+
+✓ Participants
+
+✓ Real-time messaging
+
+✓ WebSockets
+
+✓ Notifications
+
+✓ Attachments
+
+✓ Conversation assignment
+
+✓ Conversation transfer
+
+✓ Search
+
+✓ Internal Notes
+
+✓ Read receipts
+
+✓ Delivery status
+
+====================================================
+
+FIRST TASK
+
+Perform a COMPLETE implementation audit.
+
+For every module report:
+
+Already implemented
+
+Partially implemented
+
+Missing
+
+Broken
+
+Needs improvement
+
+Do NOT assume.
+
+====================================================
+
+PART 1 — CUSTOMER CHAT
+
+The customer experience should feel similar to modern support systems like:
+
+Intercom
+
+Zendesk Messenger
+
+Crisp
+
+Freshchat
+
+Required:
+
+Conversation List
+
+Conversation Detail
+
+Message Timeline
+
+Unread indicators
+
+Rich attachment preview
+
+Image preview
+
+PDF preview
+
+Download button
+
+Drag & Drop upload
+
+Mobile upload
+
+Upload progress
+
+Retry failed upload
+
+Typing indicator
+
+Online/offline status
+
+Last seen
+
+Conversation status badge
+
+Resolved badge
+
+Closed badge
+
+Assigned staff badge
+
+Better empty states
+
+Skeleton loading
+
+Auto-scroll
+
+Unread divider
+
+Jump to latest
+
+Responsive mobile UI
+
+Keyboard-friendly
+
+====================================================
+
+PART 2 — STAFF INBOX
+
+Complete the operational inbox.
+
+Required:
+
+Conversation Queue
+
+Assigned Queue
+
+Unassigned Queue
+
+Resolved Queue
+
+Closed Queue
+
+Search
+
+Advanced Filters
+
+Priority filter
+
+Request Category filter
+
+Technician filter
+
+Customer filter
+
+Date filter
+
+Unread filter
+
+Has Attachment filter
+
+Pagination
+
+Bulk actions
+
+Assign
+
+Transfer
+
+Resolve
+
+Close
+
+Reopen
+
+Archive (if architecture supports)
+
+Conversation Timeline
+
+Participant List
+
+Customer Information
+
+Linked Request
+
+Linked Booking
+
+Linked Payment
+
+Linked Order
+
+Linked Quote
+
+Internal Notes
+
+Conversation Activity Log
+
+====================================================
+
+PART 3 — TECHNICIAN CHAT
+
+Technicians should have a dedicated support workspace.
+
+Required:
+
+Assigned Conversations
+
+Request Conversations
+
+Internal Messages
+
+Customer Messages
+
+Quote Discussions
+
+Verification Discussions
+
+Escalation Requests
+
+Attachments
+
+====================================================
+
+PART 4 — MANAGER CHAT
+
+Managers need visibility.
+
+Implement:
+
+Live Queue
+
+Conversation Monitoring
+
+Staff Workload
+
+Average Response Time
+
+Pending Conversations
+
+Escalated Conversations
+
+Resolved Today
+
+Transfer History
+
+====================================================
+
+PART 5 — ADMIN CHAT
+
+Global administration.
+
+Implement:
+
+All Conversations
+
+Global Search
+
+Conversation Analytics
+
+Audit Trail
+
+Conversation Export
+
+Attachment Management
+
+Retention Settings (if architecture supports)
+
+====================================================
+
+PART 6 — REALTIME COMPLETION
+
+Finish every realtime interaction.
+
+Implement:
+
+Typing Started
+
+Typing Stopped
+
+Online
+
+Offline
+
+Last Seen
+
+Message Delivered
+
+Message Read
+
+Conversation Assigned
+
+Conversation Transferred
+
+Conversation Resolved
+
+Conversation Closed
+
+Attachment Uploaded
+
+Attachment Deleted (if supported)
+
+Reconnect handling
+
+Duplicate event protection
+
+====================================================
+
+PART 7 — MESSAGE FEATURES
+
+Complete messaging UX.
+
+Support:
+
+Reply
+
+Reply Preview
+
+Quote Message (if architecture supports)
+
+Copy
+
+Edit (existing schema supports edited_at)
+
+Delete (soft delete)
+
+Retry failed
+
+Timestamp
+
+Delivered indicator
+
+Read indicator
+
+Image viewer
+
+PDF viewer
+
+Attachment gallery
+
+System messages
+
+Internal notes styling
+
+====================================================
+
+PART 8 — MOBILE UX
+
+The chat must feel native.
+
+Implement:
+
+Responsive layout
+
+Sticky composer
+
+Keyboard avoidance
+
+Bottom safe area
+
+Image picker
+
+File picker
+
+Long press actions
+
+Swipe gestures (if appropriate)
+
+Touch-friendly spacing
+
+====================================================
+
+PART 9 — NOTIFICATION VERIFICATION
+
+Verify every chat event produces the correct notifications.
+
+Flow:
+
+Message
+
+↓
+
+Conversation Service
+
+↓
+
+DispatchOrchestrator
+
+↓
+
+NotificationService
+
+↓
+
+Celery
+
+↓
+
+Provider
+
+↓
+
+Inbox
+
+↓
+
+WebSocket
+
+↓
+
+Frontend
+
+Verify every step.
+
+====================================================
+
+PART 10 — PERFORMANCE
+
+Audit:
+
+Large conversations
+
+1000+
+
+5000+
+
+10000+ messages
+
+Attachment performance
+
+Image lazy loading
+
+Pagination
+
+Infinite scroll
+
+WebSocket reconnect
+
+Memory leaks
+
+Duplicate listeners
+
+Render performance
+
+====================================================
+
+PART 11 — SECURITY
+
+Verify:
+
+Conversation ownership
+
+Staff permissions
+
+Internal notes visibility
+
+Technician isolation
+
+Customer isolation
+
+Attachment authorization
+
+WebSocket authorization
+
+====================================================
+
+PART 12 — PREPARE FOR AI
+
+DO NOT implement AI.
+
+Instead prepare the chat so AI can later plug in seamlessly.
+
+Create extension points only if required.
+
+The AI should eventually become another conversation participant without requiring major architectural changes.
+
+====================================================
+
+OUTPUT
+
+Produce:
+
+1. Audit Report
+
+2. Missing Features
+
+3. Improvements Implemented
+
+4. Security Verification
+
+5. Performance Verification
+
+6. Mobile Verification
+
+7. Production Readiness Report
+
+Do NOT stop after the audit.
+
+Continue implementing every missing feature until the chat system is production-ready.
+
+Reuse all existing services, APIs, WebSocket consumers, models, permissions, notifications, and architecture.

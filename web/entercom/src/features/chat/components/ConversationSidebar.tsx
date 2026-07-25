@@ -7,9 +7,11 @@ interface ConversationSidebarProps {
   basePath: string; // e.g. '/portal/staff/inbox' or '/portal/customer/support'
   searchQuery?: string;
   onSearchChange?: (q: string) => void;
+  queueFilter?: string;
+  onQueueChange?: (q: string) => void;
 }
 
-export function ConversationSidebar({ conversations, activeId, basePath, searchQuery, onSearchChange }: ConversationSidebarProps) {
+export function ConversationSidebar({ conversations, activeId, basePath, searchQuery, onSearchChange, queueFilter, onQueueChange }: ConversationSidebarProps) {
   return (
     <div className="w-full md:w-80 border-r border-gray-100 bg-white flex flex-col h-full shrink-0">
       <div className="p-4 border-b border-gray-100 flex flex-col gap-3">
@@ -24,6 +26,19 @@ export function ConversationSidebar({ conversations, activeId, basePath, searchQ
             onChange={e => onSearchChange(e.target.value)}
             className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-ess-purple focus:border-transparent outline-none"
           />
+        )}
+        {onQueueChange && (
+          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
+            {['all', 'unassigned', 'assigned', 'resolved', 'closed'].map(q => (
+              <button
+                key={q}
+                onClick={() => onQueueChange(q)}
+                className={`px-3 py-1 text-xs font-medium rounded-full shrink-0 capitalize transition-colors ${queueFilter === q ? 'bg-ess-purple text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
         )}
       </div>
       
@@ -46,11 +61,16 @@ export function ConversationSidebar({ conversations, activeId, basePath, searchQ
                     <h3 className={`text-sm font-medium truncate pr-2 ${isActive ? 'text-ess-purple' : 'text-gray-900'} ${conv.unread_count > 0 ? 'font-bold' : ''}`}>
                       {conv.subject}
                     </h3>
-                    {conv.unread_count > 0 && (
-                      <span className="shrink-0 bg-ess-purple text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                        {conv.unread_count}
-                      </span>
-                    )}
+                    </h3>
+                    <div className="flex gap-1 items-center shrink-0">
+                      {conv.status === 'resolved' && <span className="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">Resolved</span>}
+                      {conv.status === 'closed' && <span className="bg-gray-200 text-gray-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">Closed</span>}
+                      {conv.unread_count > 0 && (
+                        <span className="bg-ess-purple text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                          {conv.unread_count}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="flex justify-between items-end">

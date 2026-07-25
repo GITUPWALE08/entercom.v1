@@ -13,6 +13,36 @@ from .serializers import (
 from .services import ChatService
 from .permissions import IsParticipantOrStaff, CanSendMessages
 
+class MessageViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = MessageSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role in ['admin', 'manager', 'staff']:
+            return Message.objects.all()
+        # simplified check for others
+        return Message.objects.filter(conversation__participants__user=user, conversation__participants__is_active=True)
+
+    def update(self, request, *args, **kwargs):
+        message = self.get_object()
+        new_body = request.data.get('body')
+        if not new_body:
+            return Response({'error': 'Message body cannot be empty'}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            updated_msg = ChatService.edit_message(message, new_body, request.user)
+            return Response(MessageSerializer(updated_msg).data)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
+
+    def destroy(self, request, *args, **kwargs):
+        message = self.get_object()
+        try:
+            ChatService.delete_message(message, request.user)
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
+
 class ConversationViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
     
@@ -71,6 +101,13 @@ class ConversationViewSet(viewsets.ModelViewSet):
         elif request.method == 'POST':
             body = request.data.get('body')
             message_type = request.data.get('message_type', 'text')
+            reply_to_id = request.data.get('reply_to_id')
+            reply_to = None
+            if reply_to_id:
+                try:
+                    reply_to = Message.objects.get(id=reply_to_id, conversation=conversation)
+                except Message.DoesNotExist:
+                    pass
             
             if not body and not request.FILES:
                 return Response({'error': 'Message body or attachments cannot be empty'}, status=status.HTTP_400_BAD_REQUEST)
@@ -98,7 +135,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
                 if file.size > MAX_FILE_SIZE:
                     return Response({'error': f'File too large: {file.name}'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            message = ChatService.send_message(conversation, request.user, body or "", message_type, files)
+            message = ChatService.send_message(conversation, request.user, body or "", message_type, files, reply_to=reply_to)
             serializer = MessageSerializer(message)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -133,6 +170,24 @@ class ConversationViewSet(viewsets.ModelViewSet):
         conversation = self.get_object()
         ChatService.resolve_conversation(conversation, request.user)
         return Response({'status': 'resolved'})
+
+    @action(detail=True, methods=['post'])
+    def close(self, request, pk=None):
+        if request.user.role not in ['admin', 'manager', 'staff']:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+            
+        conversation = self.get_object()
+        ChatService.close_conversation(conversation, request.user)
+        return Response({'status': 'closed'})
+
+    @action(detail=True, methods=['post'])
+    def reopen(self, request, pk=None):
+        if request.user.role not in ['admin', 'manager', 'staff']:
+            return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
+            
+        conversation = self.get_object()
+        ChatService.reopen_conversation(conversation, request.user)
+        return Response({'status': 'reopened'})
 
     @action(detail=False, methods=['get'])
     def search(self, request):
