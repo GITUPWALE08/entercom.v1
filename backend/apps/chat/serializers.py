@@ -93,4 +93,5 @@ class ConversationDetailSerializer(ConversationListSerializer):
 class ConversationCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Conversation
-        fields = ['subject', 'conversation_type', 'request', 'booking', 'payment']
+        fields = ['id', 'public_id', 'subject', 'conversation_type', 'request', 'booking', 'payment']
+        read_only_fields = ['id', 'public_id']

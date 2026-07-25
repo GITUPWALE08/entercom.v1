@@ -6,12 +6,16 @@ import type { Notification, NotificationPreference } from '../api/notifications'
 export const NOTIFICATIONS_KEY = ['notifications'];
 export const NOTIFICATIONS_PREFERENCES_KEY = ['notifications', 'preferences'];
 
+import { useAuthStore } from '../store/authStore';
+
 export function useNotifications() {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
 
   const query = useInfiniteQuery({
     queryKey: NOTIFICATIONS_KEY,
     queryFn: ({ pageParam = 0 }) => notificationsApi.getNotifications(pageParam, 20),
+    enabled: !!user,
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) => {
       if (lastPage.next) {
@@ -26,6 +30,7 @@ export function useNotifications() {
   const unreadCountQuery = useQuery({
     queryKey: [...NOTIFICATIONS_KEY, 'unreadCount'],
     queryFn: notificationsApi.getUnreadCount,
+    enabled: !!user,
   });
 
   const markAsRead = useMutation({
@@ -119,10 +124,12 @@ export function useNotifications() {
 
 export function useNotificationPreferences() {
   const queryClient = useQueryClient();
+  const { user } = useAuthStore();
 
   const query = useQuery({
     queryKey: NOTIFICATIONS_PREFERENCES_KEY,
     queryFn: notificationsApi.getPreferences,
+    enabled: !!user,
   });
 
   const updatePreference = useMutation({
