@@ -61,6 +61,10 @@ class ChatService:
                 participant.save()
                 message.read_at = timezone.now()
                 message.save(update_fields=['read_at'])
+
+            # Bump the conversation updated_at so it floats to the top of the inbox
+            conversation.updated_at = timezone.now()
+            conversation.save(update_fields=['updated_at'])
             
             # Broadcast via websockets
             channel_layer = get_channel_layer()

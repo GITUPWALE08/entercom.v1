@@ -1,1 +1,1 @@
-there is no chat interface on the staff page or manager portal
+when user sent message it's not showing on either manager or admin inbox

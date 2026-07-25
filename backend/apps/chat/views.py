@@ -19,7 +19,7 @@ class MessageViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role in ['admin', 'manager', 'staff']:
+        if user.role in ['admin', 'manager', 'staff', 'super_admin']:
             return Message.objects.all()
         # simplified check for others
         return Message.objects.filter(conversation__participants__user=user, conversation__participants__is_active=True)
@@ -50,7 +50,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         user = self.request.user
         
         # Superadmin, admin, manager, staff see all
-        if user.role in ['admin', 'manager', 'staff']:
+        if user.role in ['admin', 'manager', 'staff', 'super_admin']:
             return Conversation.objects.all().select_related('created_by', 'assigned_staff', 'request')
             
         # Technician sees conversations linked to their assigned requests, and their own
@@ -88,7 +88,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
         
         if request.method == 'GET':
             messages = conversation.messages.select_related('sender').all()
-            if request.user.role not in ['admin', 'manager', 'staff']:
+            if request.user.role not in ['admin', 'manager', 'staff', 'super_admin']:
                 messages = messages.exclude(message_type='internal_note')
                 
             page = self.paginate_queryset(messages)
@@ -115,7 +115,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
             if body and len(body) > 5000:
                 return Response({'error': 'Message too long'}, status=status.HTTP_400_BAD_REQUEST)
                 
-            if message_type == 'internal_note' and request.user.role not in ['admin', 'manager', 'staff']:
+            if message_type == 'internal_note' and request.user.role not in ['admin', 'manager', 'staff', 'super_admin']:
                 return Response({'error': 'Unauthorized to send internal notes'}, status=status.HTTP_403_FORBIDDEN)
                 
             files = request.FILES.getlist('attachments')
@@ -147,7 +147,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def assign(self, request, pk=None):
-        if request.user.role not in ['admin', 'manager', 'staff']:
+        if request.user.role not in ['admin', 'manager', 'staff', 'super_admin']:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
             
         conversation = self.get_object()
@@ -164,7 +164,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def resolve(self, request, pk=None):
-        if request.user.role not in ['admin', 'manager', 'staff']:
+        if request.user.role not in ['admin', 'manager', 'staff', 'super_admin']:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
             
         conversation = self.get_object()
@@ -173,7 +173,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def close(self, request, pk=None):
-        if request.user.role not in ['admin', 'manager', 'staff']:
+        if request.user.role not in ['admin', 'manager', 'staff', 'super_admin']:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
             
         conversation = self.get_object()
@@ -182,7 +182,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def reopen(self, request, pk=None):
-        if request.user.role not in ['admin', 'manager', 'staff']:
+        if request.user.role not in ['admin', 'manager', 'staff', 'super_admin']:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
             
         conversation = self.get_object()
@@ -213,7 +213,7 @@ class ConversationViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'])
     def transfer(self, request, pk=None):
-        if request.user.role not in ['admin', 'manager', 'staff']:
+        if request.user.role not in ['admin', 'manager', 'staff', 'super_admin']:
             return Response({'error': 'Unauthorized'}, status=status.HTTP_403_FORBIDDEN)
             
         conversation = self.get_object()

@@ -118,7 +118,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         from .models import Conversation, ConversationParticipant
         try:
             conversation = Conversation.objects.get(id=conversation_id)
-            if user.role in ['admin', 'manager', 'staff']:
+            if user.role in ['admin', 'manager', 'staff', 'super_admin']:
                 return True
             if user.role == 'technician':
                 if conversation.request and getattr(conversation.request, 'assigned_to_id', None) == user.id:
