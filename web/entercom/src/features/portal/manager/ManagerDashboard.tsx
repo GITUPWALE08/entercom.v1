@@ -78,7 +78,7 @@ export default function ManagerDashboard() {
           <Link to="/portal/manager/payments" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard title="Revenue Summary" value={`₦${revenueSummary.toLocaleString()}`} />
           </Link>
-          <Link to="/portal/manager/users?role=technician" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+          <Link to="/portal/manager/technicians" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard title="Tech Availability" value={activeTechnicians} />
           </Link>
         </div>

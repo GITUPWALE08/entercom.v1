@@ -1,3 +1,9 @@
-src/features/portal/admin/AdminDashboard.tsx(13,1): error TS6192: All imports in import declaration are unused.
-src/features/portal/manager/ManagerDashboard.tsx(30,9): error TS6133: 'orders' is declared but its value is never read.
-Error: Command "npm run build" exited with 2
+got this error when I tried going to tech available:
+404 Not Found
+The page you are looking for doesn't exist or has been moved.
+
+Go back home
+Reload Page
+
+on this route:
+https://entercom-v1.vercel.app/portal/manager/users?role=technician
