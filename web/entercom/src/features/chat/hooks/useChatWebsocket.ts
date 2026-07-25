@@ -137,6 +137,12 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     };
   }, [connect]);
 
+  const markRead = useCallback(() => {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+      ws.current.send(JSON.stringify({ action: 'mark_read' }));
+    }
+  }, []);
+
   const sendTypingStart = useCallback(() => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ action: 'typing_start' }));

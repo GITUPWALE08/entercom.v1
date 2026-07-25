@@ -61,7 +61,6 @@ export function ConversationSidebar({ conversations, activeId, basePath, searchQ
                     <h3 className={`text-sm font-medium truncate pr-2 ${isActive ? 'text-ess-purple' : 'text-gray-900'} ${conv.unread_count > 0 ? 'font-bold' : ''}`}>
                       {conv.subject}
                     </h3>
-                    </h3>
                     <div className="flex gap-1 items-center shrink-0">
                       {conv.status === 'resolved' && <span className="bg-green-100 text-green-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">Resolved</span>}
                       {conv.status === 'closed' && <span className="bg-gray-200 text-gray-700 text-[10px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider">Closed</span>}

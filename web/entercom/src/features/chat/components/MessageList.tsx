@@ -161,7 +161,7 @@ export function MessageList({ messages, isLoading, onReply, onEdit, onDelete, ty
                 </div>
 
                 {/* Message Actions Menu (Hover) */}
-                {!msg.is_deleted && msg.message_type !== 'system' && (
+                {!msg.is_deleted && (msg.message_type as string) !== 'system' && (
                   <div className={`absolute top-1/2 -translate-y-1/2 ${isMine ? 'right-full mr-2' : 'left-full ml-2'} opacity-0 group-hover/msg:opacity-100 transition-opacity flex items-center gap-1 bg-white shadow-sm border border-gray-100 rounded-lg p-1`}>
                     <button onClick={() => onReply?.(msg)} className="p-1.5 text-gray-400 hover:text-ess-purple hover:bg-gray-50 rounded" title="Reply">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
@@ -185,6 +185,7 @@ export function MessageList({ messages, isLoading, onReply, onEdit, onDelete, ty
                 {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 {renderStatus()}
               </span>
+            </div>
             </div>
           </React.Fragment>
         );

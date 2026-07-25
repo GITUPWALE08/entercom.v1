@@ -26,7 +26,7 @@ export function MessageComposer({ onSend, disabled, replyToMessage, onCancelRepl
   
   const canSendInternal = user && ['admin', 'manager', 'staff'].includes(user.role);
 
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
