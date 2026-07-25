@@ -6,6 +6,7 @@ import { useWebsocket } from '../hooks/useWebsocket';
 import { Menu, X, Settings as SettingsIcon, ChevronDown, ChevronUp, ChevronLeft, ChevronRight } from 'lucide-react';
 import logo from '../assets/logo.png';
 import { NotificationCenter } from '../components/NotificationCenter';
+import { ThemeSwitcher } from '../components/ThemeSwitcher';
 
 export function PortalLayout() {
   const { user } = useAuthStore();
@@ -295,6 +296,7 @@ export function PortalLayout() {
             >
               <SettingsIcon size={20} />
             </Link>
+            <ThemeSwitcher />
             <NotificationCenter />
             <button 
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

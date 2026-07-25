@@ -4,18 +4,21 @@ import { RouterProvider } from 'react-router-dom';
 import { router } from './routes';
 import { QueryProvider } from './providers/QueryProvider';
 import { AuthProvider } from './providers/AuthProvider';
+import { ThemeProvider } from './providers/ThemeProvider';
 import { ToastContainer } from './shared/components/ui/ToastContainer';
 import { AppPreloader } from './components/system/AppPreloader';
 import './index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <QueryProvider>
-      <AuthProvider>
-        <AppPreloader />
-        <RouterProvider router={router} />
-        <ToastContainer />
-      </AuthProvider>
-    </QueryProvider>
+    <ThemeProvider>
+      <QueryProvider>
+        <AuthProvider>
+          <AppPreloader />
+          <RouterProvider router={router} />
+          <ToastContainer />
+        </AuthProvider>
+      </QueryProvider>
+    </ThemeProvider>
   </StrictMode>
 );

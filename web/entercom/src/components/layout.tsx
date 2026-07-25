@@ -5,6 +5,7 @@ import logo from '../assets/logo.png';
 
 import { useAuthStore } from '../store/authStore';
 import { useLogout } from '../hooks/useLogout';
+import { ThemeSwitcher } from './ThemeSwitcher';
 // import HeroSection from './hero';
 
 interface LayoutProps {
@@ -129,16 +130,20 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   </Link>
                 </div>
               )}
+              <ThemeSwitcher />
             </nav>
 
-            {/* Mobile Menu Toggle */}
-            <button 
-              onClick={() => setIsMenuOpen(!isMenuOpen)} 
-              className="md:hidden p-2 text-ess-navy relative z-50 focus:outline-none bg-white"
-              aria-label="Toggle menu"
-            >
-              {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
-            </button>
+            {/* Mobile Menu Toggle & Theme Switcher */}
+            <div className="md:hidden flex items-center gap-2">
+              <ThemeSwitcher />
+              <button 
+                onClick={() => setIsMenuOpen(!isMenuOpen)} 
+                className="p-2 text-ess-navy relative z-50 focus:outline-none bg-white"
+                aria-label="Toggle menu"
+              >
+                {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+              </button>
+            </div>
           </div>
 
           {/* Mobile Full Screen Menu Overlay */}
