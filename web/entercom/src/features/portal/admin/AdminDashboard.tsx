@@ -10,7 +10,6 @@ import { MetricCard } from '../../../shared/components/ui/Card';
 import { Skeleton } from '../../../shared/components/Skeleton';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
-import { Activity, ShieldCheck, Users, HardDrive, AlertTriangle, Briefcase, FileText } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function AdminDashboard() {

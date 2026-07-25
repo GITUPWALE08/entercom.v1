@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { requestsApi } from '../../../api/requests';
 import { productsApi } from '../../../api/products';
-import { ordersApi } from '../../../api/orders';
 import { paymentsApi } from '../../../api/payments';
 import { usersApi } from '../../../api/users';
 import { useAuthStore } from '../../../store/authStore';
@@ -25,11 +24,6 @@ export default function ManagerDashboard() {
   const { data: products, isLoading: loadingProducts } = useQuery({
     queryKey: ['products'],
     queryFn: productsApi.list,
-  });
-
-  const { data: orders } = useQuery({
-    queryKey: ['orders'],
-    queryFn: ordersApi.list,
   });
 
   const { data: payments } = useQuery({
