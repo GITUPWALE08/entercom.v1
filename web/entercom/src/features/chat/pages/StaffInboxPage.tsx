@@ -96,9 +96,16 @@ export default function StaffInboxPage() {
   const sendMessageMutation = useMutation({
     mutationFn: (args: { body: string, messageType: 'text' | 'internal_note', files: File[], replyToId?: string }) => 
       chatApi.sendMessage(id!, args.body, args.messageType, args.files, args.replyToId),
-    onSuccess: () => {
-      // Invalidate just in case, but websocket should have already handled appending.
-      queryClient.invalidateQueries({ queryKey: ['chat', id, 'messages'] });
+    onSuccess: (newMessage) => {
+      // Manually append for immediate UI feedback
+      queryClient.setQueryData(['chat', id, 'messages'], (old: any) => {
+        if (!old) return { results: [newMessage] };
+        if (old.results) {
+          if (old.results.find((m: any) => m.id === newMessage.id)) return old;
+          return { ...old, results: [...old.results, newMessage] };
+        }
+        return { results: [...(old || []), newMessage] };
+      });
       queryClient.invalidateQueries({ queryKey: ['chat'] });
     },
   });

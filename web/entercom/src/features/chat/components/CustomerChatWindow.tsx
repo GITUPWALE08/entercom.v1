@@ -81,7 +81,8 @@ export function CustomerChatWindow({ conversationId: initialConversationId, onCl
     onSuccess: async (newConv, textArg) => {
       setConversationId(newConv.id);
       // Immediately send the first message
-      await chatApi.sendMessage(newConv.id, textArg, 'text', []);
+      const msg = await chatApi.sendMessage(newConv.id, textArg, 'text', []);
+      queryClient.setQueryData(['chat', newConv.id, 'messages'], { results: [msg], next: null });
       queryClient.invalidateQueries({ queryKey: ['chat-conversations'] });
     }
   });
@@ -90,8 +91,16 @@ export function CustomerChatWindow({ conversationId: initialConversationId, onCl
     mutationFn: (data: { text: string; files: File[]; replyToId?: string }) => {
       return chatApi.sendMessage(conversationId, data.text, 'text', data.files, data.replyToId);
     },
-    onSuccess: () => {
+    onSuccess: (newMessage) => {
       setReplyTo(undefined);
+      queryClient.setQueryData(['chat', conversationId, 'messages'], (old: any) => {
+        if (!old) return { results: [newMessage] };
+        if (old.results) {
+          if (old.results.find((m: any) => m.id === newMessage.id)) return old;
+          return { ...old, results: [...old.results, newMessage] };
+        }
+        return { results: [...(old || []), newMessage] };
+      });
     }
   });
 
