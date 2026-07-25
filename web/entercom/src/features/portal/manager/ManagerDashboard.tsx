@@ -5,6 +5,7 @@ import { requestsApi } from '../../../api/requests';
 import { productsApi } from '../../../api/products';
 import { ordersApi } from '../../../api/orders';
 import { paymentsApi } from '../../../api/payments';
+import { usersApi } from '../../../api/users';
 import { useAuthStore } from '../../../store/authStore';
 import { PageContainer } from '../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../shared/components/ErrorBoundary';
@@ -36,11 +37,28 @@ export default function ManagerDashboard() {
     queryFn: paymentsApi.list,
   });
 
-  const escalatedRequests = ensureArray(requests).filter(r => r.status === 'escalated') || [];
-  const openRequests = ensureArray(requests).filter(r => r.status !== 'completed' && r.status !== 'cancelled') || [];
-  const inventoryAlerts = ensureArray(products).filter(p => p.quantity_available <= (p.low_stock_threshold || 10)) || [];
-  const pendingOrders = ensureArray(orders).filter(o => o.status === 'pending') || [];
-  const pendingPayments = ensureArray(payments).filter(p => p.status === 'pending') || [];
+  const { data: users } = useQuery({
+    queryKey: ['users', 'technician'],
+    queryFn: () => usersApi.list('technician'),
+  });
+
+  const allRequests = ensureArray(requests);
+  const totalRequests = allRequests.length;
+  const activeJobs = allRequests.filter(r => ['assigned', 'in_progress', 'pending_verification'].includes(r.status));
+  const slaAlerts = allRequests.filter((r: any) => 
+    (r.status === 'submitted' || r.status === 'unassigned' || r.status === 'awaiting_assignment') && 
+    (r.priority === 'emergency' || r.priority === 'high')
+  );
+
+  const completedPayments = ensureArray(payments).filter(p => p.status === 'completed');
+  const revenueSummary = completedPayments.reduce((acc, curr: any) => acc + parseFloat(curr.amount || 0), 0);
+
+  const inventoryAlerts = ensureArray(products).filter(p => p.quantity_available <= (p.low_stock_threshold || 10));
+
+  // Placeholder for pending recruitment as there's no endpoint bound in frontend yet
+  const pendingRecruitment = 3; 
+
+  const activeTechnicians = ensureArray(users).filter((u: any) => u.is_active).length;
 
   return (
     <ErrorBoundary>
@@ -50,37 +68,40 @@ export default function ManagerDashboard() {
           <p className="mt-2 text-gray-500 text-lg">Welcome back, {user?.first_name}. Here is the overview of operations.</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <Link to="/portal/manager/requests?filter=escalated" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
-            <MetricCard title="Escalated" value={ensureArray(escalatedRequests).length} />
-          </Link>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
           <Link to="/portal/manager/requests" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
-            <MetricCard title="Open Requests" value={ensureArray(openRequests).length} />
+            <MetricCard title="Total Requests" value={totalRequests} />
           </Link>
-          <Link to="/portal/manager/inventory?filter=alerts" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
-            <MetricCard title="Inventory Alerts" value={ensureArray(inventoryAlerts).length} />
+          <Link to="/portal/manager/requests?filter=active" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Active Jobs" value={activeJobs.length} />
           </Link>
-          <Link to="/portal/manager/orders?filter=pending" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
-            <MetricCard title="Pending Orders" value={ensureArray(pendingOrders).length} />
+          <Link to="/portal/manager/recruitment" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Pending Recruitment" value={pendingRecruitment} />
           </Link>
-          <Link to="/portal/manager/payments?filter=pending" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
-            <MetricCard title="Pending Payments" value={ensureArray(pendingPayments).length} />
+          <Link to="/portal/manager/requests?filter=sla_alerts" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="SLA Alerts" value={slaAlerts.length} />
+          </Link>
+          <Link to="/portal/manager/payments" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Revenue Summary" value={`₦${revenueSummary.toLocaleString()}`} />
+          </Link>
+          <Link to="/portal/manager/users?role=technician" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Tech Availability" value={activeTechnicians} />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Escalations List */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-lg font-bold text-gray-900">Recent Escalations</h2>
+          {/* SLA Alerts List */}
+          <div className="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
+            <div className="p-6 border-b border-red-100 flex justify-between items-center bg-red-50">
+              <h2 className="text-lg font-bold text-red-900">SLA Alerts</h2>
             </div>
             <div className="divide-y divide-gray-100">
               {loadingRequests ? (
                 <div className="p-6 space-y-4">
                   {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
-              ) : ensureArray(escalatedRequests).length > 0 ? (
-                escalatedRequests.slice(0, 5).map(req => (
+              ) : slaAlerts.length > 0 ? (
+                slaAlerts.slice(0, 5).map(req => (
                   <Link key={req.id} to={`/portal/manager/requests/${req.id}`} className="block p-6 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <span className="font-semibold text-gray-900">{req.public_id || req.id.split('-')[0].toUpperCase()}</span>
@@ -91,7 +112,7 @@ export default function ManagerDashboard() {
                 ))
               ) : (
                 <div className="p-6">
-                  <EmptyState title="No Escalations" description="No escalations requiring attention." />
+                  <EmptyState title="No SLA Alerts" description="All requests are meeting SLAs." />
                 </div>
               )}
             </div>
@@ -107,7 +128,7 @@ export default function ManagerDashboard() {
                 <div className="p-6 space-y-4">
                   {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
-              ) : ensureArray(inventoryAlerts).length > 0 ? (
+              ) : inventoryAlerts.length > 0 ? (
                 inventoryAlerts.slice(0, 5).map(prod => (
                   <Link key={prod.id} to={`/portal/manager/products/${prod.id}`} className="block p-6 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors">
                     <div className="flex justify-between items-start mb-2">

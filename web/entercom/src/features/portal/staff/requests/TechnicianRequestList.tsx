@@ -24,16 +24,18 @@ export default function TechnicianRequestList() {
     if (!requests) return [];
     
     // For technician, we only care about their queue
-    const baseRequests = ensureArray(requests).filter(r => 
-      r.status !== 'completed' && r.status !== 'cancelled'
-    );
+    const baseRequests = ensureArray(requests);
 
     let result = baseRequests.filter((req: any) => {
       // Tab Filters
-      if (filterParam === 'assigned' && !['assigned', 'in_progress'].includes(req.status)) return false;
+      if (filterParam === 'assigned' && req.status !== 'assigned') return false;
+      if (filterParam === 'active' && req.status !== 'in_progress') return false;
       if (filterParam === 'pending' && !['submitted', 'unassigned', 'awaiting_assignment', 'staff_review'].includes(req.status)) return false;
       if (filterParam === 'verification' && req.status !== 'pending_verification') return false;
       if (filterParam === 'quotes' && !['pending_quote_approval', 'quote_review', 'awaiting_quote'].includes(req.status)) return false;
+      if (filterParam === 'completed' && req.status !== 'completed') return false;
+      if (filterParam === 'cancelled' && req.status !== 'cancelled') return false;
+      if (filterParam === 'all' && ['completed', 'cancelled'].includes(req.status)) return false; // Hide history from 'all' by default
       
       // Search Term
       if (searchTerm) {
@@ -78,7 +80,7 @@ export default function TechnicianRequestList() {
         </div>
 
         <div className="flex gap-2 overflow-x-auto pb-4 mb-4 hide-scrollbar border-b border-gray-100">
-          {['all', 'assigned', 'pending', 'verification', 'quotes'].map(f => (
+          {['all', 'assigned', 'active', 'verification', 'quotes', 'completed', 'cancelled'].map(f => (
             <button
               key={f}
               onClick={() => handleTabChange(f)}
@@ -142,7 +144,23 @@ export default function TechnicianRequestList() {
               },
               {
                 header: 'Status',
-                accessor: (req) => <StatusBadge status={req.status} />
+                accessor: (req) => (
+                  <div className="flex flex-col gap-1">
+                    <StatusBadge status={req.status} />
+                    {req.payment_status && (
+                      <span className="text-[10px] uppercase font-bold text-gray-500">{req.payment_status}</span>
+                    )}
+                  </div>
+                )
+              },
+              {
+                header: 'Customer / Address',
+                accessor: (req) => (
+                   <div className="flex flex-col">
+                     <span className="text-sm font-medium text-gray-900">{req.customer?.first_name || 'N/A'} {req.customer?.last_name || ''}</span>
+                     <span className="text-xs text-gray-500 truncate max-w-[150px]">{req.address?.street || 'No address provided'}</span>
+                   </div>
+                )
               },
               {
                 header: 'Created',

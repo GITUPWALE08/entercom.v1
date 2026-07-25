@@ -5,9 +5,11 @@ import { useAuthStore } from '../../../store/authStore';
 import { requestsApi } from '../../../api/requests';
 import { ordersApi } from '../../../api/orders';
 import { productsApi } from '../../../api/products';
+import { paymentsApi } from '../../../api/payments';
 import { PageContainer } from '../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../shared/components/ErrorBoundary';
 import { Card, CardContent, StatusBadge } from '../../../shared/components/ui';
+import { MetricCard } from '../../../shared/components/ui/Card';
 import { Skeleton as SkeletonFallback } from '../../../shared/components/Skeleton';
 
 export default function CustomerDashboard() {
@@ -28,9 +30,26 @@ export default function CustomerDashboard() {
     queryFn: productsApi.list,
   });
 
-  const activeRequest = ensureArray(requests).find(r => r.status !== 'completed' && r.status !== 'cancelled');
-  const recentOrder = orders?.[0];
-  const recommendedProducts = products?.slice(0, 3) || [];
+  const { data: payments } = useQuery({
+    queryKey: ['payments'],
+    queryFn: paymentsApi.list,
+  });
+
+  const allRequests = ensureArray(requests);
+  const allPayments = ensureArray(payments);
+
+  const activeRequest = allRequests.find(r => r.status !== 'completed' && r.status !== 'cancelled');
+  const activeRequestsCount = allRequests.filter(r => r.status !== 'completed' && r.status !== 'cancelled').length;
+  const pastRequestsCount = allRequests.filter(r => r.status === 'completed' || r.status === 'cancelled').length;
+  const pendingQuotesCount = allRequests.filter(r => r.status === 'pending_quote_approval').length;
+  
+  const unpaidInvoicesCount = allPayments.filter(p => p.status === 'pending').length;
+  
+  // Loyalty points placeholder
+  const loyaltyPoints = 1250;
+
+  const recentOrder = ensureArray(orders)?.[0];
+  const recommendedProducts = ensureArray(products)?.slice(0, 3) || [];
 
   return (
     <ErrorBoundary>
@@ -43,6 +62,25 @@ export default function CustomerDashboard() {
           <p className="mt-2 text-gray-600 text-lg">
             Here's what's happening with your security systems.
           </p>
+        </div>
+
+        {/* Dashboard Metric Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+          <Link to="/portal/customer/requests?filter=active" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Active Requests" value={activeRequestsCount} />
+          </Link>
+          <Link to="/portal/customer/requests?filter=past" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Past Requests" value={pastRequestsCount} />
+          </Link>
+          <Link to="/portal/customer/requests?filter=quotes" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Pending Quotes" value={pendingQuotesCount} />
+          </Link>
+          <Link to="/portal/customer/payments?filter=unpaid" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
+            <MetricCard title="Unpaid Invoices" value={unpaidInvoicesCount} />
+          </Link>
+          <div className="block cursor-default">
+            <MetricCard title="Loyalty Points" value={loyaltyPoints} />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

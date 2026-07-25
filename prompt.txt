@@ -1,14 +1,395 @@
+You are a Senior Django Architect, Senior React/TypeScript Engineer, Senior UX Designer, and Product Engineer working on the Entercom Security platform.
 
-src/features/portal/admin/recruitment/AdminRecruitmentDashboard.tsx(3,34): error TS6133: 'Settings' is declared but its value is never read.
-src/features/portal/admin/recruitment/AdminRecruitmentDashboard.tsx(4,28): error TS2307: Cannot find module '../../../../shared/components/PageHeader' or its corresponding type declarations.
-src/features/portal/admin/recruitment/AdminRecruitmentDashboard.tsx(81,14): error TS2552: Cannot find name 'Clock'. Did you mean 'Lock'?
-src/features/portal/manager/recruitment/ApplicationDetail.tsx(3,77): error TS6133: 'MessageSquare' is declared but its value is never read.
-src/features/portal/manager/recruitment/ApplicationDetail.tsx(4,28): error TS2307: Cannot find module '../../../../shared/components/PageHeader' or its corresponding type declarations.
-src/features/portal/manager/recruitment/ApplicationDetail.tsx(8,9): error TS6133: 'navigate' is declared but its value is never read.
-src/features/portal/manager/recruitment/ManagerRecruitmentDashboard.tsx(4,28): error TS2307: Cannot find module '../../../../shared/components/PageHeader' or its corresponding type declarations.
-src/layouts/PortalLayout.tsx(350,19): error TS2322: Type 'string | undefined' is not assignable to type 'To'.
-  Type 'undefined' is not assignable to type 'To'.
-src/layouts/PortalLayout.tsx(353,30): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
-  Type 'undefined' is not assignable to type 'string'.
-src/pages/careers.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
-Error: Command "npm run build" exited with 2
+You are entering **Phase 1 — Internal Operations Completion**.
+
+This phase is NOT about introducing new business logic.
+
+This phase is about making the internal operational portals production-ready.
+
+The architecture, workflows, request lifecycle, RBAC, notification system, recruitment module, payment flow, booking flow, and technician workflow have already been implemented and approved.
+
+Your responsibility is to complete, polish, optimize, and connect existing functionality.
+
+DO NOT redesign the system.
+
+DO NOT introduce new lifecycle states.
+
+DO NOT introduce new permissions.
+
+DO NOT invent workflows.
+
+Always reuse existing services, APIs, events, permissions, and notification infrastructure.
+
+==================================================
+
+OBJECTIVE
+
+Complete the internal operational portals.
+
+The goal is that Managers, Staff, Technicians, and Admins can perform all day-to-day operational work entirely from the UI without requiring developer intervention.
+
+Focus on:
+
+• usability
+• operational efficiency
+• mobile responsiveness
+• consistency
+• production readiness
+
+==================================================
+
+PHASE 1A — TECHNICIAN PORTAL
+
+Audit the existing technician portal first.
+
+Determine:
+
+Implemented
+
+Missing
+
+Broken
+
+Incomplete
+
+Then complete the portal.
+
+Required features:
+
+Dashboard
+
+• Welcome section
+• Today's assignments
+• Active jobs
+• Upcoming bookings
+• Pending quotes
+• Pending verifications
+• Notification summary
+
+Jobs
+
+• Active Jobs
+• Assigned Jobs
+• Completed Jobs
+• Cancelled Jobs
+
+Each job should include:
+
+• request summary
+• customer
+• address
+• navigation button
+• current state
+• timeline
+• payment status
+• quote status
+• verification status
+
+Job Details
+
+• timeline
+• request history
+• quote history
+• uploaded evidence
+• customer notes
+• internal notes
+• attachments
+
+Quotes
+
+• pending quotes
+• approved quotes
+• rejected quotes
+• revisions
+
+Verification
+
+• upload evidence
+• verification history
+• verification status
+
+History
+
+• completed jobs
+• cancelled jobs
+
+Profile
+
+• personal information
+• technician information
+• uploaded documents
+• emergency contacts
+• availability
+• assigned service areas
+• notification preferences
+
+Settings
+
+• account
+• password
+• notification preferences
+
+Ensure:
+
+• responsive design
+• loading states
+• empty states
+• skeletons
+• proper filtering
+• search
+• pagination
+
+==================================================
+
+PHASE 1B — STAFF PORTAL
+
+Audit first.
+
+Then improve.
+
+Dashboard
+
+Cards
+
+• Pending Requests
+• Active Requests
+• Pending Quotes
+• Bookings Today
+• Inventory Alerts
+• Notifications
+
+Every dashboard card MUST be clickable.
+
+Request Management
+
+Improve:
+
+• filtering
+• sorting
+• bulk actions
+• search
+• pagination
+
+Inventory
+
+Allow staff to:
+
+• edit inventory
+• update stock
+• mark unavailable
+• mark available
+
+Reuse existing inventory logic.
+
+Do not introduce new inventory rules.
+
+Quotes
+
+Improve:
+
+• filtering
+• revision history
+• approval tracking
+
+Notifications
+
+Improve notification center.
+
+==================================================
+
+PHASE 1C — MANAGER PORTAL
+
+Audit.
+
+Complete.
+
+Dashboard
+
+Cards
+
+• Total Requests
+• Active Jobs
+• Pending Recruitment
+• SLA Alerts
+• Revenue Summary
+• Technician Availability
+
+All cards clickable.
+
+Recruitment
+
+Integrate existing recruitment module.
+
+Manager should:
+
+• review applications
+• approve
+• reject
+• request more information
+• assign reviewer
+
+Technician Monitoring
+
+Display:
+
+• workload
+• active jobs
+• completed jobs
+• pending verifications
+• acceptance rate
+• average completion time
+
+Requests
+
+Improve management UI.
+
+Analytics
+
+Use existing backend data.
+
+Do NOT create new metrics.
+
+==================================================
+
+PHASE 1D — ADMIN PORTAL
+
+Audit.
+
+Complete.
+
+Dashboard
+
+Improve overall operational visibility.
+
+User Management
+
+Improve UI.
+
+Role Management
+
+Improve UI.
+
+Display:
+
+• current role
+• permissions
+• status
+
+Recruitment
+
+Integrate recruitment dashboard.
+
+Inventory
+
+Complete inventory management.
+
+Settings
+
+Improve:
+
+• system settings
+• notification settings
+• operational settings
+
+==================================================
+
+GLOBAL UI REQUIREMENTS
+
+Every portal MUST:
+
+• be fully mobile responsive
+• support tablet
+• support desktop
+
+Improve:
+
+• spacing
+• typography
+• icons
+• dropdown indicators
+• forms
+• tables
+• filters
+• pagination
+• empty states
+• loading states
+• skeleton loaders
+
+Sidebars
+
+Must be:
+
+• collapsible
+• resizable
+• mobile friendly
+
+Cards
+
+Should be:
+
+• interactive
+• clickable where appropriate
+
+Tables
+
+Must:
+
+• collapse elegantly on mobile
+• avoid horizontal scrolling whenever possible
+
+==================================================
+
+PERFORMANCE
+
+Do not introduce unnecessary re-renders.
+
+Reuse:
+
+• React Query
+• Zustand
+• existing hooks
+
+Maintain:
+
+CLS = 0
+
+Fast interactions
+
+Optimized queries
+
+==================================================
+
+ACCESSIBILITY
+
+Ensure:
+
+• keyboard navigation
+• ARIA labels
+• focus management
+• proper contrast
+• touch-friendly controls
+
+==================================================
+
+DELIVERABLE
+
+1. Audit Report
+   • Existing implementation
+   • Missing functionality
+   • Improvements made
+
+2. Updated Technician Portal
+
+3. Updated Staff Portal
+
+4. Updated Manager Portal
+
+5. Updated Admin Portal
+
+6. Mobile responsiveness improvements
+
+7. UI consistency improvements
+
+Do not generate placeholders.
+
+Complete the implementation using the existing architecture and business rules.

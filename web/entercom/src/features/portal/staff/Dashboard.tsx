@@ -2,7 +2,9 @@ import { ensureArray } from '../../../utils/arrays';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { requestsApi } from '../../../api/requests';
-import { paymentsApi } from '../../../api/payments';
+import { bookingsApi } from '../../../api/bookings';
+import { productsApi } from '../../../api/products';
+import { useNotifications } from '../../../hooks/useNotifications';
 import { useAuthStore } from '../../../store/authStore';
 import { PageContainer } from '../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../shared/components/ErrorBoundary';
@@ -12,6 +14,7 @@ import { EmptyState } from '../../../shared/components/EmptyState';
 
 export default function StaffDashboard() {
   const { user } = useAuthStore();
+  const { unreadCount } = useNotifications();
   
   const { data: requests, isLoading: isLoadingRequests, refetch: refetchRequests, isFetching: isFetchingRequests } = useQuery({
     queryKey: ['requests'],
@@ -19,30 +22,39 @@ export default function StaffDashboard() {
     refetchInterval: 30000,
   });
 
-  const { data: payments, isLoading: isLoadingPayments, refetch: refetchPayments, isFetching: isFetchingPayments } = useQuery({
-    queryKey: ['payments'],
-    queryFn: paymentsApi.list,
+  const today = new Date().toISOString().split('T')[0];
+  const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+  const { data: bookings, isLoading: isLoadingBookings, refetch: refetchBookings, isFetching: isFetchingBookings } = useQuery({
+    queryKey: ['bookings', today],
+    queryFn: () => bookingsApi.list({ start_date: today, end_date: tomorrow }),
+    refetchInterval: 30000,
+  });
+
+  const { data: products, isLoading: isLoadingProducts, refetch: refetchProducts, isFetching: isFetchingProducts } = useQuery({
+    queryKey: ['products'],
+    queryFn: productsApi.list,
     refetchInterval: 60000,
   });
 
   const allRequests = ensureArray(requests);
-  const allPayments = ensureArray(payments);
-
-  const newRequests = allRequests.filter((r: any) => r.status === 'submitted');
-  const emergencyQueue = allRequests.filter((r: any) => r.priority === 'emergency' && r.status !== 'completed' && r.status !== 'cancelled');
-  const unassignedRequests = allRequests.filter((r: any) => r.status === 'unassigned' || r.status === 'awaiting_assignment');
   
-  // SLA Risk: Emergency not assigned within 1 hour, or High not assigned within 4 hours. 
-  // We'll approximate by checking unassigned + priority.
+  const pendingRequests = allRequests.filter((r: any) => ['submitted', 'unassigned', 'awaiting_assignment', 'staff_review'].includes(r.status));
+  const activeRequests = allRequests.filter((r: any) => ['assigned', 'in_progress', 'pending_verification'].includes(r.status));
+  const pendingQuotes = allRequests.filter((r: any) => ['pending_quote_approval', 'quote_review', 'awaiting_quote'].includes(r.status));
+  
+  const todaysBookings = bookings?.length || 0;
+  
+  const inventoryAlerts = ensureArray(products).filter((p: any) => 
+    p.status !== 'archived' && (p.quantity_available <= (p.low_stock_threshold || 5) || p.status === 'out_of_stock')
+  );
+
   const slaRisks = allRequests.filter((r: any) => 
     (r.status === 'submitted' || r.status === 'unassigned' || r.status === 'awaiting_assignment') && 
     (r.priority === 'emergency' || r.priority === 'high')
   );
 
-  const failedPayments = allPayments.filter((p: any) => p.status === 'failed');
-
-  const isLoading = isLoadingRequests || isLoadingPayments;
-  const isFetching = isFetchingRequests || isFetchingPayments;
+  const isLoading = isLoadingRequests || isLoadingBookings || isLoadingProducts;
+  const isFetching = isFetchingRequests || isFetchingBookings || isFetchingProducts;
 
   return (
     <ErrorBoundary>
@@ -54,7 +66,7 @@ export default function StaffDashboard() {
           </div>
           <div className="flex items-center gap-3">
             <button 
-              onClick={() => { refetchRequests(); refetchPayments(); }}
+              onClick={() => { refetchRequests(); refetchBookings(); refetchProducts(); }}
               className="inline-flex items-center px-4 py-2 bg-white text-gray-700 rounded-xl font-medium border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm"
               disabled={isFetching}
             >
@@ -64,26 +76,29 @@ export default function StaffDashboard() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
-          <Link to="/portal/staff/requests" className="block">
-            <MetricCard title="New Requests" value={newRequests.length} />
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
+          <Link to="/portal/staff/requests?filter=pending" className="block">
+            <MetricCard title="Pending Requests" value={pendingRequests.length} />
           </Link>
-          <Link to="/portal/staff/requests?filter=emergency" className="block">
-            <MetricCard title="Emergency Queue" value={emergencyQueue.length} />
+          <Link to="/portal/staff/requests?filter=active" className="block">
+            <MetricCard title="Active Requests" value={activeRequests.length} />
           </Link>
-          <Link to="/portal/staff/requests?filter=unassigned" className="block">
-            <MetricCard title="Unassigned" value={unassignedRequests.length} />
+          <Link to="/portal/staff/requests?filter=quotes" className="block">
+            <MetricCard title="Pending Quotes" value={pendingQuotes.length} />
           </Link>
-          <Link to="/portal/staff/requests?filter=sla_risk" className="block">
-            <MetricCard title="SLA Risk" value={slaRisks.length} />
+          <Link to="/portal/staff/bookings" className="block">
+            <MetricCard title="Bookings Today" value={todaysBookings} />
           </Link>
-          <Link to="/portal/staff/payments?filter=failed" className="block">
-            <MetricCard title="Failed Payments" value={failedPayments.length} />
+          <Link to="/portal/staff/inventory" className="block">
+            <MetricCard title="Inventory Alerts" value={inventoryAlerts.length} />
+          </Link>
+          <Link to="/portal/staff/settings" className="block">
+            <MetricCard title="Notifications" value={unreadCount} />
           </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Emergency & SLA Risks */}
+          {/* SLA Risks */}
           <div className="bg-white rounded-2xl shadow-sm border border-red-100 overflow-hidden">
             <div className="p-6 border-b border-red-100 flex justify-between items-center bg-red-50">
               <h2 className="text-lg font-bold text-red-900">Urgent Attention Required</h2>
@@ -93,8 +108,8 @@ export default function StaffDashboard() {
                 <div className="p-6 space-y-4">
                   {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
-              ) : slaRisks.length > 0 || emergencyQueue.length > 0 ? (
-                [...new Set([...emergencyQueue, ...slaRisks])].slice(0, 5).map((req: any) => (
+              ) : slaRisks.length > 0 ? (
+                slaRisks.slice(0, 5).map((req: any) => (
                   <Link key={req.id} to={`/portal/staff/requests/${req.id}`} className="block p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex justify-between items-start mb-2">
                       <span className="font-semibold text-gray-900">{req.public_id || req.id.split('-')[0].toUpperCase()}</span>
@@ -113,29 +128,29 @@ export default function StaffDashboard() {
             </div>
           </div>
 
-          {/* Failed Payments */}
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-lg font-bold text-gray-900">Failed Payments</h2>
+          {/* Low Stock Alerts */}
+          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 overflow-hidden">
+            <div className="p-6 border-b border-orange-100 flex justify-between items-center bg-orange-50">
+              <h2 className="text-lg font-bold text-orange-900">Inventory Alerts</h2>
             </div>
             <div className="divide-y divide-gray-100">
               {isLoading ? (
                 <div className="p-6 space-y-4">
                   {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
-              ) : failedPayments.length > 0 ? (
-                failedPayments.slice(0, 5).map((pay: any) => (
-                  <Link key={pay.id} to={`/portal/staff/payments/${pay.id}`} className="block p-6 hover:bg-gray-50 transition-colors">
+              ) : inventoryAlerts.length > 0 ? (
+                inventoryAlerts.slice(0, 5).map((item: any) => (
+                  <Link key={item.id} to={`/portal/staff/inventory`} className="block p-6 hover:bg-gray-50 transition-colors">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-gray-900">{pay.reference || pay.id.split('-')[0].toUpperCase()}</span>
-                      <span className="font-bold text-gray-900">₦{parseFloat(pay.amount).toLocaleString()}</span>
+                      <span className="font-semibold text-gray-900">{item.name}</span>
+                      <span className="font-bold text-orange-700">{item.quantity_available} left</span>
                     </div>
-                    <p className="text-sm text-red-600 font-medium">Failed — Action Required</p>
+                    <p className="text-sm text-orange-600 font-medium">{item.status === 'out_of_stock' ? 'Out of stock' : 'Low stock warning'}</p>
                   </Link>
                 ))
               ) : (
                 <div className="p-6">
-                  <EmptyState title="No failed payments" description="All recent transactions were successful." />
+                  <EmptyState title="Inventory is healthy" description="No low stock items." />
                 </div>
               )}
             </div>
@@ -146,3 +161,4 @@ export default function StaffDashboard() {
     </ErrorBoundary>
   );
 }
+
