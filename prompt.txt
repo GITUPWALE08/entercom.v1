@@ -1,195 +1,382 @@
-You are a Senior Django Architect, Senior React/TypeScript Engineer, Senior UX Engineer, and Senior Product Engineer working on the Entercom Security platform.
+You are a Senior Django Architect, Senior React/TypeScript Engineer, Senior UX Designer, Senior Product Designer, and Senior Frontend Engineer working on the Entercom Security platform.
 
 You are entering:
 
-PHASE 7.2 — COMPLETE THE SUPPORT CHAT SYSTEM
+PHASE 7.3 — COMPLETE SUPPORT CHAT EXPERIENCE (UI/UX)
 
-====================================================
+DO NOT redesign the backend.
 
-IMPORTANT
+DO NOT redesign the chat architecture.
 
-DO NOT redesign the architecture.
+DO NOT duplicate APIs.
 
-DO NOT introduce a new chat system.
+DO NOT replace WebSocket infrastructure.
 
-DO NOT create duplicate APIs.
+Reuse the existing chat implementation.
 
-DO NOT replace existing WebSocket infrastructure.
+Your task is to transform the existing chat into a polished, production-grade support experience comparable to Intercom, Crisp, Zendesk Messenger, or Linear Support while maintaining Entercom branding.
 
-DO NOT modify RBAC.
+======================================================
+PRIMARY OBJECTIVE
+======================================================
 
-DO NOT modify the notification architecture.
+Complete every customer-facing and internal support chat UI.
 
-DO NOT introduce unnecessary abstractions.
+The experience should feel premium, modern, fast, and intuitive.
 
-The Support Chat already exists.
+======================================================
+PART 1 — GLOBAL SUPPORT LAUNCHER
+======================================================
 
-Your responsibility is to:
+Implement a floating Support Launcher.
 
-1. Audit
-2. Complete
-3. Polish
-4. Productionize
+Requirements:
 
-using the existing implementation.
+• Fixed bottom-right
+• Responsive
+• Accessible
+• Brand colors only
+• Uses Entercom design language
+• Subtle animation
+• Hover effect
+• Ripple effect on click
+• Keyboard accessible
+• Mobile friendly
 
-====================================================
+Display:
 
-CURRENT STATUS
+• unread badge
+• online indicator
+• tooltip ("Need Help?")
+• pulse animation only when unread messages exist
 
-Already implemented:
+The launcher should NEVER obstruct important buttons.
 
-✓ Conversations
+======================================================
+VISIBILITY RULES
+======================================================
 
-✓ Participants
+Show the launcher only where it improves UX.
 
-✓ Real-time messaging
+Visible on:
 
-✓ WebSockets
+✓ Public website
 
-✓ Notifications
+✓ Customer Portal
 
-✓ Attachments
+✓ Dashboard
 
-✓ Conversation assignment
+✓ Request pages
 
-✓ Conversation transfer
+✓ Booking pages
 
-✓ Search
+✓ Payment pages
 
-✓ Internal Notes
+✓ Product pages
 
-✓ Read receipts
+✓ Order pages
 
-✓ Delivery status
+✓ Quote pages
 
-====================================================
+Hidden on:
 
-FIRST TASK
+✗ Login
 
-Perform a COMPLETE implementation audit.
+✗ Register
 
-For every module report:
+✗ Forgot Password
 
-Already implemented
+✗ Verify Email
 
-Partially implemented
+✗ Fullscreen authentication pages
 
-Missing
+✗ Technician Portal
 
-Broken
+✗ Staff Portal
 
-Needs improvement
+✗ Manager Portal
 
-Do NOT assume.
+✗ Admin Portal
 
-====================================================
+Internal users should use the dedicated Support Inbox instead.
 
-PART 1 — CUSTOMER CHAT
+======================================================
+PART 2 — SMART CONTEXT
+======================================================
 
-The customer experience should feel similar to modern support systems like:
+The launcher must automatically understand context.
 
-Intercom
+Examples:
 
-Zendesk Messenger
+Customer is viewing
 
-Crisp
+Request
 
-Freshchat
+↓
 
-Required:
+Automatically attach
 
-Conversation List
+request_id
 
-Conversation Detail
+Customer is viewing
+
+Order
+
+↓
+
+Attach
+
+order_id
+
+Customer is viewing
+
+Booking
+
+↓
+
+Attach
+
+booking_id
+
+Customer is viewing
+
+Payment
+
+↓
+
+Attach
+
+payment_id
+
+Customer is viewing
+
+Quote
+
+↓
+
+Attach
+
+quote_id
+
+The customer should never have to explain which item they need help with.
+
+The context should appear inside the conversation header.
+
+Example:
+
+Support
+
+Request REQ-1023
+
+======================================================
+PART 3 — CHAT ENTRY PANEL
+======================================================
+
+Clicking the launcher should NOT immediately open the conversation.
+
+Instead show a beautiful support panel.
+
+Include:
+
+Continue Conversation
+
+Start New Conversation
+
+Browse Help Topics
+
+Track Existing Request
+
+Payment Support
+
+Booking Support
+
+Order Support
+
+Technical Support
+
+General Enquiry
+
+If an active conversation exists:
+
+Automatically show
+
+Continue Conversation
+
+at the top.
+
+======================================================
+PART 4 — CUSTOMER CHAT WINDOW
+======================================================
+
+Implement a premium chat window.
+
+Desktop:
+
+Slide in from the right.
+
+Mobile:
+
+Full screen.
+
+Must include:
+
+Conversation Header
 
 Message Timeline
 
-Unread indicators
+Rich Attachments
 
-Rich attachment preview
+Image Preview
 
-Image preview
+PDF Preview
 
-PDF preview
+Download Buttons
 
-Download button
+Upload Progress
 
-Drag & Drop upload
+Typing Indicator
 
-Mobile upload
+Delivered Indicator
 
-Upload progress
+Read Indicator
 
-Retry failed upload
+Online Status
 
-Typing indicator
+Last Seen
 
-Online/offline status
+Date Separators
 
-Last seen
+Unread Divider
 
-Conversation status badge
+Auto Scroll
 
-Resolved badge
+Jump to Latest
 
-Closed badge
+Sticky Composer
 
-Assigned staff badge
+Responsive Layout
 
-Better empty states
+======================================================
+PART 5 — QUICK ACTIONS
+======================================================
 
-Skeleton loading
+Before typing, display support shortcuts.
 
-Auto-scroll
+Examples:
 
-Unread divider
+I need help with my request
 
-Jump to latest
+Payment Issue
 
-Responsive mobile UI
+Booking Question
 
-Keyboard-friendly
+Warranty Support
 
-====================================================
+Device Outage
 
-PART 2 — STAFF INBOX
+Installation Support
 
-Complete the operational inbox.
+General Question
 
-Required:
+Selecting one should:
+
+pre-fill the category
+
+or
+
+start a categorized conversation.
+
+======================================================
+PART 6 — ATTACHMENTS
+======================================================
+
+Improve attachment experience.
+
+Support:
+
+Images
+
+PDF
+
+Word
+
+Text
+
+Show:
+
+thumbnail
+
+upload progress
+
+retry upload
+
+download
+
+preview
+
+error states
+
+======================================================
+PART 7 — EMPTY STATES
+======================================================
+
+Design polished empty states.
+
+Examples:
+
+No conversations yet
+
+Need help?
+
+Start a conversation with our support team.
+
+No messages
+
+Send the first message.
+
+No attachments
+
+Attach screenshots or documents.
+
+======================================================
+PART 8 — INTERNAL SUPPORT INBOX
+======================================================
+
+Do NOT use floating widgets.
+
+Instead improve the inbox.
+
+Implement:
 
 Conversation Queue
 
-Assigned Queue
+Assigned
 
-Unassigned Queue
+Unassigned
 
-Resolved Queue
+Resolved
 
-Closed Queue
+Closed
 
-Search
+Advanced Search
 
-Advanced Filters
+Filters
 
-Priority filter
+Priority
 
-Request Category filter
+Customer
 
-Technician filter
+Request Category
 
-Customer filter
+Technician
 
-Date filter
+Date
 
-Unread filter
+Unread
 
-Has Attachment filter
+Has Attachments
 
-Pagination
-
-Bulk actions
+Bulk Actions
 
 Assign
 
@@ -201,261 +388,99 @@ Close
 
 Reopen
 
-Archive (if architecture supports)
+Conversation Activity Timeline
 
-Conversation Timeline
-
-Participant List
-
-Customer Information
+Customer Profile Summary
 
 Linked Request
 
 Linked Booking
 
-Linked Payment
-
 Linked Order
+
+Linked Payment
 
 Linked Quote
 
 Internal Notes
 
-Conversation Activity Log
+======================================================
+PART 9 — NOTIFICATIONS
+======================================================
 
-====================================================
+Integrate notifications beautifully.
 
-PART 3 — TECHNICIAN CHAT
+New message:
 
-Technicians should have a dedicated support workspace.
+Toast
 
-Required:
+Unread badge
 
-Assigned Conversations
+Floating launcher pulse
 
-Request Conversations
+Click toast
 
-Internal Messages
+↓
 
-Customer Messages
+Open conversation
 
-Quote Discussions
+Mark read
 
-Verification Discussions
+↓
 
-Escalation Requests
+Badge updates instantly
 
-Attachments
+======================================================
+PART 10 — RESPONSIVE DESIGN
+======================================================
 
-====================================================
+Everything must be fully responsive.
 
-PART 4 — MANAGER CHAT
+Audit every chat component.
 
-Managers need visibility.
+Ensure:
 
-Implement:
+Mobile
 
-Live Queue
+Tablet
 
-Conversation Monitoring
+Desktop
 
-Staff Workload
+Large screens
 
-Average Response Time
+No overflow.
 
-Pending Conversations
+No clipped buttons.
 
-Escalated Conversations
+No broken layouts.
 
-Resolved Today
-
-Transfer History
-
-====================================================
-
-PART 5 — ADMIN CHAT
-
-Global administration.
-
-Implement:
-
-All Conversations
-
-Global Search
-
-Conversation Analytics
-
-Audit Trail
-
-Conversation Export
-
-Attachment Management
-
-Retention Settings (if architecture supports)
-
-====================================================
-
-PART 6 — REALTIME COMPLETION
-
-Finish every realtime interaction.
-
-Implement:
-
-Typing Started
-
-Typing Stopped
-
-Online
-
-Offline
-
-Last Seen
-
-Message Delivered
-
-Message Read
-
-Conversation Assigned
-
-Conversation Transferred
-
-Conversation Resolved
-
-Conversation Closed
-
-Attachment Uploaded
-
-Attachment Deleted (if supported)
-
-Reconnect handling
-
-Duplicate event protection
-
-====================================================
-
-PART 7 — MESSAGE FEATURES
-
-Complete messaging UX.
+======================================================
+PART 11 — ACCESSIBILITY
+======================================================
 
 Support:
 
-Reply
+Keyboard navigation
 
-Reply Preview
+Focus management
 
-Quote Message (if architecture supports)
+Screen readers
 
-Copy
+ARIA labels
 
-Edit (existing schema supports edited_at)
+Proper color contrast
 
-Delete (soft delete)
+======================================================
+PART 12 — PERFORMANCE
+======================================================
 
-Retry failed
-
-Timestamp
-
-Delivered indicator
-
-Read indicator
-
-Image viewer
-
-PDF viewer
-
-Attachment gallery
-
-System messages
-
-Internal notes styling
-
-====================================================
-
-PART 8 — MOBILE UX
-
-The chat must feel native.
-
-Implement:
-
-Responsive layout
-
-Sticky composer
-
-Keyboard avoidance
-
-Bottom safe area
-
-Image picker
-
-File picker
-
-Long press actions
-
-Swipe gestures (if appropriate)
-
-Touch-friendly spacing
-
-====================================================
-
-PART 9 — NOTIFICATION VERIFICATION
-
-Verify every chat event produces the correct notifications.
-
-Flow:
-
-Message
-
-↓
-
-Conversation Service
-
-↓
-
-DispatchOrchestrator
-
-↓
-
-NotificationService
-
-↓
-
-Celery
-
-↓
-
-Provider
-
-↓
-
-Inbox
-
-↓
-
-WebSocket
-
-↓
-
-Frontend
-
-Verify every step.
-
-====================================================
-
-PART 10 — PERFORMANCE
-
-Audit:
+Optimize:
 
 Large conversations
 
-1000+
+Attachment loading
 
-5000+
-
-10000+ messages
-
-Attachment performance
-
-Image lazy loading
+Lazy images
 
 Pagination
 
@@ -463,66 +488,126 @@ Infinite scroll
 
 WebSocket reconnect
 
+Duplicate event prevention
+
 Memory leaks
 
-Duplicate listeners
-
-Render performance
-
-====================================================
-
-PART 11 — SECURITY
-
-Verify:
-
-Conversation ownership
-
-Staff permissions
-
-Internal notes visibility
-
-Technician isolation
-
-Customer isolation
-
-Attachment authorization
-
-WebSocket authorization
-
-====================================================
-
-PART 12 — PREPARE FOR AI
+======================================================
+PART 13 — AI READY
+======================================================
 
 DO NOT implement AI.
 
-Instead prepare the chat so AI can later plug in seamlessly.
+Prepare the UI.
 
-Create extension points only if required.
+Future flow:
 
-The AI should eventually become another conversation participant without requiring major architectural changes.
+Customer
 
-====================================================
+↓
 
+AI Assistant
+
+↓
+
+Human Support
+
+No redesign should be required later.
+
+Reserve:
+
+Assistant Avatar
+
+Suggested Replies
+
+Knowledge Cards
+
+Escalate to Human
+
+Conversation Summary
+
+======================================================
+PART 14 — ENTERCOM BRANDING
+======================================================
+
+Do NOT build a generic chat widget.
+
+Everything must match the Entercom design system.
+
+Use:
+
+Existing colors
+
+Existing typography
+
+Existing spacing
+
+Existing buttons
+
+Existing shadows
+
+Existing animations
+
+Maintain consistency with the rest of the application.
+
+======================================================
+PART 15 — UX POLISH
+======================================================
+
+Review every interaction.
+
+Improve:
+
+Hover states
+
+Focus states
+
+Transitions
+
+Loading states
+
+Skeleton loaders
+
+Micro-interactions
+
+Button feedback
+
+Error messages
+
+Success states
+
+Empty states
+
+======================================================
 OUTPUT
+======================================================
 
-Produce:
+1. Audit current chat UI
 
-1. Audit Report
+2. List missing UX features
 
-2. Missing Features
+3. Implement every missing UI feature
 
-3. Improvements Implemented
+4. Improve responsiveness
 
-4. Security Verification
+5. Improve accessibility
 
-5. Performance Verification
+6. Verify notification integration
 
-6. Mobile Verification
+7. Verify WebSocket synchronization
 
-7. Production Readiness Report
+8. Verify mobile UX
 
-Do NOT stop after the audit.
+9. Verify desktop UX
 
-Continue implementing every missing feature until the chat system is production-ready.
+10. Produce a Production Readiness Report
 
-Reuse all existing services, APIs, WebSocket consumers, models, permissions, notifications, and architecture.
+Goal:
+
+Deliver a support chat experience that feels polished, premium, and production-ready, comparable to modern SaaS products, while fully reusing the existing backend architecture.
+
+======================================================
+TODO (LATER PHASES)
+======================================================
+- Implement Photo Evidence / Verification Feature for technicians.
+- Add Technician Tab on the Manager's page.

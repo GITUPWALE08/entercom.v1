@@ -7,6 +7,7 @@ import { Menu, X, Settings as SettingsIcon, ChevronDown, ChevronUp, ChevronLeft,
 import logo from '../assets/logo.png';
 import { NotificationCenter } from '../components/NotificationCenter';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
+import { SupportWidget } from '../features/chat/components/SupportWidget';
 
 export function PortalLayout() {
   const { user } = useAuthStore();
@@ -388,6 +389,7 @@ export function PortalLayout() {
         <main className="flex-1 overflow-y-auto bg-[#F9FAFB]">
           <Outlet />
         </main>
+        {userRole === 'customer' && <SupportWidget />}
       </div>
     </div>
   );
