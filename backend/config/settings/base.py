@@ -220,14 +220,24 @@ SPECTACULAR_SETTINGS = {
 REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 
 if REDIS_URL:
+    import ssl
+    
+    redis_config = {
+        "hosts": [REDIS_URL],
+        "capacity": 1500,
+        "expiry": 10,
+    }
+    
+    if REDIS_URL.startswith("rediss://"):
+        ssl_context = ssl.SSLContext()
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        redis_config["ssl_context"] = ssl_context
+
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": {
-                "hosts": [REDIS_URL],
-                "capacity": 1500,
-                "expiry": 10,
-            },
+            "CONFIG": redis_config,
         },
     }
 
