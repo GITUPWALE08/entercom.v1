@@ -1,1 +1,30 @@
-when user sent message it's not showing on either manager or admin inbox
+Request URL
+https://entercom-v1.onrender.com/api/v1/chat/conversations/2dc5bdfa-a200-4175-998f-8d287752c50b/messages/?page=1
+Request Method
+GET
+Status Code
+403 Forbidden
+Remote Address
+216.24.57.15:443
+Referrer Policy
+strict-origin-when-cross-origin
+
+{"detail":"You do not have permission to perform this action."}
+
+
+
+Request URL
+https://entercom-v1.onrender.com/api/v1/chat/conversations/2dc5bdfa-a200-4175-998f-8d287752c50b/
+Request Method
+GET
+Status Code
+403 Forbidden
+Remote Address
+216.24.57.15:443
+Referrer Policy
+strict-origin-when-cross-origin
+{"detail":"You do not have permission to perform this action."}
+
+
+
+Conversation not found.

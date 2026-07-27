@@ -7,11 +7,11 @@ class IsParticipantOrStaff(permissions.BasePermission):
     """
     def has_object_permission(self, request, view, obj):
         # Admins, managers and staff can view all conversations
-        if request.user.role in ['admin', 'manager', 'staff']:
+        if request.user.role.lower() in ['admin', 'manager', 'staff', 'super_admin']:
             return True
             
         # Check if the user is a technician and the conversation is linked to a request they are assigned to
-        if request.user.role == 'technician':
+        if request.user.role.lower() == 'technician':
             if obj.request and getattr(obj.request, 'assigned_to_id', None) == request.user.id:
                 return True
                 
@@ -29,10 +29,10 @@ class CanSendMessages(permissions.BasePermission):
         if obj.status == 'closed':
             return False
             
-        if request.user.role in ['admin', 'manager', 'staff']:
+        if request.user.role.lower() in ['admin', 'manager', 'staff', 'super_admin']:
             return True
             
-        if request.user.role == 'technician':
+        if request.user.role.lower() == 'technician':
             if obj.request and getattr(obj.request, 'assigned_to_id', None) == request.user.id:
                 return True
                 
