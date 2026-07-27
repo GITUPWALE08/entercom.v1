@@ -44,15 +44,12 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     let wsHost = import.meta.env.VITE_WS_URL;
     if (!wsHost) {
-      const apiUrl = import.meta.env.VITE_API_URL;
-      if (apiUrl) {
-        try {
-          const url = new URL(apiUrl);
-          wsHost = `${url.protocol === 'https:' ? 'wss:' : 'ws:'}//${url.host}`;
-        } catch (e) {
-          wsHost = `${wsProtocol}//${window.location.host}`;
-        }
-      } else {
+      // Use VITE_API_URL if set, otherwise use the same default as axios.ts
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+      try {
+        const url = new URL(apiUrl);
+        wsHost = `${url.protocol === 'https:' ? 'wss:' : 'ws:'}//${url.host}`;
+      } catch (e) {
         wsHost = `${wsProtocol}//${window.location.host}`;
       }
     }
