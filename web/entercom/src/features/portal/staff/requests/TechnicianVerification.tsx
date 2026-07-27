@@ -1,11 +1,11 @@
-import { ensureArray } from '../../../../utils/arrays';
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { requestsApi } from '../../../../api/requests';
 import { PageContainer } from '../../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../../shared/components/ErrorBoundary';
-import { Input, TextArea, Alert } from '../../../../shared/components/ui';
+import { TextArea, Alert } from '../../../../shared/components/ui';
 
 export default function TechnicianVerification() {
   const { id } = useParams<{ id: string }>();

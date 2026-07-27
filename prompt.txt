@@ -1,5 +1,5 @@
-the chat UI is still not showing message when inside chat until you leave the chat and enter back
-
-when I attached a file I was unable to open it  (https://entercom-v1.vercel.app/media/chat_attachments/2026/07/27/Adegoke_Adewale_Idris_Resume_WebDeveloper.docx)
-
--> - [ ] **Evidence / Photo Evidence**: Implement the feature to allow technicians to properly upload and attach photo evidence during the verification submission process.
+src/features/portal/staff/requests/StaffVerification.tsx(1,1): error TS6133: 'ensureArray' is declared but its value is never read.
+src/features/portal/staff/requests/StaffVerification.tsx(8,10): error TS6133: 'Input' is declared but its value is never read.
+src/features/portal/staff/requests/TechnicianVerification.tsx(1,1): error TS6133: 'ensureArray' is declared but its value is never read.
+src/features/portal/staff/requests/TechnicianVerification.tsx(8,10): error TS6133: 'Input' is declared but its value is never read.
+Error: Command "npm run build" exited with 2
