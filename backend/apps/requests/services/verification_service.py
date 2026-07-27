@@ -83,15 +83,25 @@ class VerificationService:
             request=request, status=VerificationStatus.PENDING
         )
 
-        for photo_url in evidence.get("photos", []):
-            Evidence.objects.create(
-                verification=verification,
-                type=EvidenceType.PHOTO,
-                file_url=photo_url,
-                geo_lat=evidence.get("metadata", {}).get("lat"),
-                geo_long=evidence.get("metadata", {}).get("lng"),
-                device_timestamp=evidence.get("metadata", {}).get("timestamp"),
-            )
+        for photo in evidence.get("photos", []):
+            if isinstance(photo, str):
+                Evidence.objects.create(
+                    verification=verification,
+                    type=EvidenceType.PHOTO,
+                    file_url=photo,
+                    geo_lat=evidence.get("metadata", {}).get("lat"),
+                    geo_long=evidence.get("metadata", {}).get("lng"),
+                    device_timestamp=evidence.get("metadata", {}).get("timestamp"),
+                )
+            else:
+                Evidence.objects.create(
+                    verification=verification,
+                    type=EvidenceType.PHOTO,
+                    file=photo,
+                    geo_lat=evidence.get("metadata", {}).get("lat"),
+                    geo_long=evidence.get("metadata", {}).get("lng"),
+                    device_timestamp=evidence.get("metadata", {}).get("timestamp"),
+                )
 
         correlation_id = str(uuid.uuid4())
         StateHistory.objects.create(
@@ -110,7 +120,7 @@ class VerificationService:
             resource_id=str(request.id),
             metadata={
                 "verification_id": str(verification.id),
-                "evidence_links": evidence.get("photos", []),
+                "evidence_links": [],  # Will be populated when viewing
                 "previous_state": prev_status,
                 "new_state": new_status,
             },
@@ -120,7 +130,7 @@ class VerificationService:
             request_id=request.id,
             correlation_id=correlation_id,
             actor_id=actor.id,
-            evidence_links=evidence.get("photos", []),
+            evidence_links=[],
         ))
 
         # Notify staff/management that verification is required

@@ -13,7 +13,7 @@ export default function StaffVerification() {
   const queryClient = useQueryClient();
 
   const [notes, setNotes] = useState('');
-  const [photosStr, setPhotosStr] = useState('https://example.com/photo1.jpg');
+  const [photos, setPhotos] = useState<File[]>([]);
   const [checklist, setChecklist] = useState({ hardware_installed: false, tested: false });
   const [customerAck, setCustomerAck] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -33,9 +33,8 @@ export default function StaffVerification() {
     e.preventDefault();
     setError(null);
 
-    const photos = photosStr.split(',').map(p => p.trim()).filter(Boolean);
-    if (ensureArray(photos).length === 0) {
-      setError('At least one photo URL is required');
+    if (photos.length === 0) {
+      setError('At least one photo is required');
       return;
     }
 
@@ -67,14 +66,18 @@ export default function StaffVerification() {
 
             <div className="space-y-6">
               <div>
-                <Input 
-                  label="Photo Evidence URLs (comma separated)"
-                  type="text" 
-                  value={photosStr}
-                  onChange={e => setPhotosStr(e.target.value)}
+                <label className="block text-sm font-semibold text-gray-900 mb-2">Photo Evidence</label>
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  multiple
+                  onChange={e => setPhotos(Array.from(e.target.files || []))}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-ess-purple/10 file:text-ess-purple hover:file:bg-ess-purple/20"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">Simulating photo uploads with URLs for now.</p>
+                {photos.length > 0 && (
+                  <p className="text-sm text-gray-600 mt-2">{photos.length} file(s) selected.</p>
+                )}
               </div>
 
               <div>

@@ -73,7 +73,8 @@ class Evidence(models.Model):
     )
     
     type = models.CharField(max_length=50, choices=EvidenceType.choices)
-    file_url = models.URLField(max_length=1024)
+    file_url = models.URLField(max_length=1024, null=True, blank=True)
+    file = models.FileField(upload_to='verification_evidence/', null=True, blank=True)
     
     geo_lat = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     geo_long = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)

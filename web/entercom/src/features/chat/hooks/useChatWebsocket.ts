@@ -19,9 +19,21 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     const token = localStorage.getItem('access_token');
     if (!token || !conversationId) return;
 
-    // Use wss:// in production, ws:// in dev based on your environment
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const wsHost = import.meta.env.VITE_WS_URL || `${wsProtocol}//${window.location.host}`;
+    let wsHost = import.meta.env.VITE_WS_URL;
+    if (!wsHost) {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (apiUrl) {
+        try {
+          const url = new URL(apiUrl);
+          wsHost = `${url.protocol === 'https:' ? 'wss:' : 'ws:'}//${url.host}`;
+        } catch (e) {
+          wsHost = `${wsProtocol}//${window.location.host}`;
+        }
+      } else {
+        wsHost = `${wsProtocol}//${window.location.host}`;
+      }
+    }
     
     // Connect with token in protocol (or query param if server supports it).
     // Assuming token is passed via protocols array as standard for JWT in websockets
@@ -58,13 +70,26 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
             ['chat', conversationId, 'messages'], 
             (oldData: any) => {
               if (!oldData) return oldData;
+              // If the message is already in cache, ignore
+              let exists = false;
+              if (oldData.results) exists = oldData.results.some((m: any) => m.id === newMsg.id);
+              else if (oldData.pages) exists = oldData.pages.some((p: any) => p.results.some((m: any) => m.id === newMsg.id));
+              else exists = oldData.some?.((m: any) => m.id === newMsg.id);
+              
+              if (exists) return oldData;
+              
+              // We trigger a refetch to get the full message including attachments
+              setTimeout(() => {
+                 queryClient.invalidateQueries({ queryKey: ['chat', conversationId, 'messages'] });
+              }, 100);
+
               if (oldData.results) {
                 return { ...oldData, results: [...oldData.results, newMsg] };
               }
               if (oldData.pages) {
                 const newPages = [...oldData.pages];
                 if (newPages.length > 0) {
-                  newPages[0].results = [newMsg, ...newPages[0].results];
+                  newPages[0].results = [...newPages[0].results, newMsg];
                 }
                 return { ...oldData, pages: newPages };
               }

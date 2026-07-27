@@ -133,7 +133,7 @@ class CustomerQuoteActionSerializer(serializers.Serializer):
     reason = serializers.CharField(required=False, allow_blank=True)
 
 class SubmitVerificationSerializer(serializers.Serializer):
-    photos = serializers.ListField(child=serializers.URLField(), required=True, allow_empty=False)
+    photos = serializers.ListField(child=serializers.FileField(), required=True, allow_empty=False)
     notes = serializers.CharField(required=False, allow_blank=True)
     checklist = serializers.JSONField(required=False)
     customer_ack = serializers.BooleanField(required=False)

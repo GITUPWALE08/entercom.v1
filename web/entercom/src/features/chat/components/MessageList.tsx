@@ -2,6 +2,26 @@ import React, { useEffect, useRef, useState } from 'react';
 import type { ChatMessage } from '../../../api/chat';
 import { useAuthStore } from '../../../store/authStore';
 
+const getBackendOrigin = () => {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  if (apiUrl) {
+    try {
+      return new URL(apiUrl).origin;
+    } catch (e) {
+      return '';
+    }
+  }
+  return '';
+};
+
+const getAttachmentUrl = (url: string) => {
+  if (url.startsWith('/')) {
+    const origin = getBackendOrigin();
+    return origin ? `${origin}${url}` : url;
+  }
+  return url;
+};
+
 interface MessageListProps {
   messages: ChatMessage[];
   isLoading: boolean;
@@ -100,11 +120,11 @@ export function MessageList({ messages, isLoading, onReply, onEdit, onDelete, ty
                 return (
                   <React.Fragment key={att.id}>
                     {isImage ? (
-                      <button onClick={() => setViewingImage(att.file)} className="block bg-black/10 rounded overflow-hidden">
-                        <img src={att.file} alt={att.file_name} className="max-w-[200px] max-h-[200px] object-cover" />
+                      <button onClick={() => setViewingImage(getAttachmentUrl(att.file))} className="block bg-black/10 rounded overflow-hidden">
+                        <img src={getAttachmentUrl(att.file)} alt={att.file_name} className="max-w-[200px] max-h-[200px] object-cover" />
                       </button>
                     ) : (
-                      <a href={att.file} target="_blank" rel="noopener noreferrer" className="block bg-black/10 rounded overflow-hidden">
+                      <a href={getAttachmentUrl(att.file)} target="_blank" rel="noopener noreferrer" className="block bg-black/10 rounded overflow-hidden">
                         <div className="flex items-center gap-2 p-2 text-sm underline">
                           <span>📄</span>
                           <span className="truncate">{att.file_name}</span>
