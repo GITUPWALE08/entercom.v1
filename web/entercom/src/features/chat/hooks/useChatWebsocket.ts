@@ -170,8 +170,8 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
       console.log('Chat websocket closed', event.code);
       
       // 4403 is our custom unauthorized code, don't reconnect
-      if (event.code !== 4403 && reconnectAttempts.current < maxReconnectAttempts) {
-        const timeout = Math.pow(2, reconnectAttempts.current) * 1000;
+      if (event.code !== 4403) {
+        const timeout = Math.min(Math.pow(2, reconnectAttempts.current) * 1000, 30000);
         reconnectAttempts.current += 1;
         reconnectTimerRef.current = window.setTimeout(connect, timeout);
       }
