@@ -109,32 +109,33 @@ class ChatService:
 
     @staticmethod
     def mark_read(conversation, user):
-        participant, created = ConversationParticipant.objects.get_or_create(
-            conversation=conversation,
-            user=user
-        )
-        participant.last_read_at = timezone.now()
-        participant.save()
-        
-        # Mark all messages as delivered and read
-        now = timezone.now()
-        unread_messages = conversation.messages.exclude(sender=user).filter(read_at__isnull=True)
-        for msg in unread_messages:
-            msg.read_at = now
-            if not msg.delivered_at:
-                msg.delivered_at = now
-            msg.save(update_fields=['read_at', 'delivered_at'])
+        with transaction.atomic():
+            participant, created = ConversationParticipant.objects.get_or_create(
+                conversation=conversation,
+                user=user
+            )
+            participant.last_read_at = timezone.now()
+            participant.save()
             
-        channel_layer = get_channel_layer()
-        transaction.on_commit(lambda: async_to_sync(channel_layer.group_send)(
-            f"chat_{conversation.id}",
-            {
-                'type': 'user_read',
-                'user_id': str(user.id),
-                'read_at': participant.last_read_at.isoformat()
-            }
-        ))
-        return participant
+            # Mark all messages as delivered and read
+            now = timezone.now()
+            unread_messages = conversation.messages.exclude(sender=user).filter(read_at__isnull=True)
+            for msg in unread_messages:
+                msg.read_at = now
+                if not msg.delivered_at:
+                    msg.delivered_at = now
+                msg.save(update_fields=['read_at', 'delivered_at'])
+                
+            channel_layer = get_channel_layer()
+            transaction.on_commit(lambda: async_to_sync(channel_layer.group_send)(
+                f"chat_{conversation.id}",
+                {
+                    'type': 'user_read',
+                    'user_id': str(user.id),
+                    'read_at': participant.last_read_at.isoformat()
+                }
+            ))
+            return participant
 
     @staticmethod
     def assign_staff(conversation, staff_user, assigned_by):

@@ -14,6 +14,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
   const [isConnected, setIsConnected] = useState(false);
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
+  const reconnectTimerRef = useRef<number | null>(null);
 
   const onMessageReceivedRef = useRef(onMessageReceived);
   const onReadReceiptRef = useRef(onReadReceipt);
@@ -27,6 +28,18 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
   const connect = useCallback(() => {
     const token = localStorage.getItem('access_token');
     if (!token || !conversationId) return;
+
+    // Close any existing connection before opening a new one
+    if (ws.current) {
+      ws.current.onclose = null; // Prevent reconnect from firing
+      ws.current.close();
+      ws.current = null;
+    }
+    // Clear any pending reconnect timer
+    if (reconnectTimerRef.current) {
+      window.clearTimeout(reconnectTimerRef.current);
+      reconnectTimerRef.current = null;
+    }
 
     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     let wsHost = import.meta.env.VITE_WS_URL;
@@ -64,8 +77,16 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
           const newMsg: ChatMessage = data.message;
           
           // Emit mark_delivered if message is from someone else
-          const userId = localStorage.getItem('user_id'); // Or use another way to get current user ID
-          if (newMsg.sender && newMsg.sender.id !== userId) {
+          // Read user ID from zustand persisted auth store
+          let currentUserId: string | null = null;
+          try {
+            const authRaw = localStorage.getItem('auth-storage');
+            if (authRaw) {
+              const parsed = JSON.parse(authRaw);
+              currentUserId = parsed?.state?.user?.id || null;
+            }
+          } catch (_) { /* ignore parse errors */ }
+          if (newMsg.sender && currentUserId && newMsg.sender.id !== currentUserId) {
              if (ws.current && ws.current.readyState === WebSocket.OPEN) {
                 ws.current.send(JSON.stringify({ action: 'mark_delivered', message_id: newMsg.id }));
              }
@@ -152,7 +173,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
       if (event.code !== 4403 && reconnectAttempts.current < maxReconnectAttempts) {
         const timeout = Math.pow(2, reconnectAttempts.current) * 1000;
         reconnectAttempts.current += 1;
-        setTimeout(connect, timeout);
+        reconnectTimerRef.current = window.setTimeout(connect, timeout);
       }
     };
 
@@ -173,10 +194,17 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     return () => {
       window.removeEventListener('token_refreshed', handleTokenRefreshed);
       if (ws.current) {
+        ws.current.onclose = null; // Prevent reconnect on intentional close
         ws.current.close();
+        ws.current = null;
+      }
+      if (reconnectTimerRef.current) {
+         window.clearTimeout(reconnectTimerRef.current);
+         reconnectTimerRef.current = null;
       }
       if (typingTimeoutRef.current) {
          window.clearTimeout(typingTimeoutRef.current);
+         typingTimeoutRef.current = null;
       }
     };
   }, [connect]);
