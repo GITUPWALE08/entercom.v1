@@ -222,22 +222,20 @@ REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 if REDIS_URL:
     import ssl
     
-    redis_config = {
-        "hosts": [REDIS_URL],
-        "capacity": 1500,
-        "expiry": 10,
-    }
-    
     if REDIS_URL.startswith("rediss://"):
-        ssl_context = ssl.SSLContext()
-        ssl_context.check_hostname = False
-        ssl_context.verify_mode = ssl.CERT_NONE
-        redis_config["ssl_context"] = ssl_context
+        if "?" in REDIS_URL:
+            REDIS_URL += "&ssl_cert_reqs=none"
+        else:
+            REDIS_URL += "?ssl_cert_reqs=none"
 
     CHANNEL_LAYERS = {
         "default": {
             "BACKEND": "channels_redis.core.RedisChannelLayer",
-            "CONFIG": redis_config,
+            "CONFIG": {
+                "hosts": [REDIS_URL],
+                "capacity": 1500,
+                "expiry": 10,
+            },
         },
     }
 
