@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { chatApi } from '../../../api/chat';
 import type { ChatMessage } from '../../../api/chat';
 import { useChatWebsocket } from '../hooks/useChatWebsocket';
-import { PageContainer } from '../../../shared/components/PageContainer';
+// import { PageContainer } from '../../../shared/components/PageContainer';
 import { ConversationSidebar } from '../components/ConversationSidebar';
 import { ConversationHeader } from '../components/ConversationHeader';
 import { MessageList } from '../components/MessageList';
