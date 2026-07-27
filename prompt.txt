@@ -1,1 +1,383 @@
-I am still hitting the bug
+You are a Senior Django + React + Django Channels architect working on the Entercom platform.
+
+Your task is to FIX the realtime chat synchronization issues.
+
+DO NOT redesign the architecture.
+
+DO NOT replace REST with WebSockets.
+
+DO NOT introduce new business logic.
+
+DO NOT introduce polling.
+
+Use the existing architecture.
+
+---
+
+# OBJECTIVE
+
+Fix every issue causing messages to not appear instantly across all connected clients.
+
+The expected behaviour is identical to WhatsApp, Messenger or Slack.
+
+When any participant sends a message:
+
+• sender sees it instantly
+
+• receiver sees it instantly
+
+• all other connected sessions see it instantly
+
+without refreshing
+
+without leaving and re-entering the conversation
+
+without sending another message
+
+without manual query invalidation by the user.
+
+---
+
+# CURRENT ISSUES
+
+The following production bugs currently exist:
+
+1.
+
+Messages sent by the current user do not immediately appear.
+
+They only appear after:
+
+* leaving and reopening the conversation
+
+OR
+
+* sending another message
+
+---
+
+2.
+
+Incoming messages from another participant are not received immediately.
+
+They only appear after:
+
+* sending another message
+
+OR
+
+* reopening the chat.
+
+---
+
+3.
+
+Read receipts are inconsistent.
+
+---
+
+4.
+
+Delivery receipts are inconsistent.
+
+---
+
+5.
+
+Some websocket payloads contain incomplete data.
+
+---
+
+# ROOT CAUSE ANALYSIS
+
+Audit every layer.
+
+Do NOT assume the frontend is wrong.
+
+Do NOT assume the backend is wrong.
+
+Determine the actual root causes.
+
+Audit:
+
+Backend
+
+* ChatService.send_message()
+
+* transaction handling
+
+* serializer usage
+
+* websocket publishing
+
+* group_send()
+
+* channel layer
+
+* consumers.py
+
+* signals
+
+* notification dispatch
+
+* database commit timing
+
+Frontend
+
+* React Query cache keys
+
+* optimistic updates
+
+* websocket event handling
+
+* duplicate message detection
+
+* stale closures
+
+* useChatWebsocket
+
+* query invalidation
+
+* message ordering
+
+* state synchronization
+
+* rerenders
+
+* race conditions
+
+---
+
+# REQUIRED FIXES
+
+## 1.
+
+Do NOT manually reconstruct ChatMessage objects from websocket payloads.
+
+Instead,
+
+the websocket must send the COMPLETE serialized Message object.
+
+Exactly the same payload returned by:
+
+MessageSerializer(message).data
+
+The frontend should consume that payload directly.
+
+No placeholder sender names.
+
+No partial sender objects.
+
+No fake reply objects.
+
+No manually built ChatMessage.
+
+---
+
+## 2.
+
+Ensure websocket broadcasting happens ONLY AFTER the database transaction commits.
+
+If broadcasting currently occurs before commit,
+
+move it to:
+
+transaction.on_commit(...)
+
+Never broadcast uncommitted messages.
+
+---
+
+## 3.
+
+Audit React Query cache keys.
+
+Ensure websocket updates modify EXACTLY the same query cache used by the conversation page.
+
+If multiple cache keys exist,
+
+standardize them.
+
+Do not update the wrong cache.
+
+---
+
+## 4.
+
+Prevent duplicate messages.
+
+If the same message arrives through:
+
+* optimistic update
+
+* websocket
+
+* query invalidation
+
+the UI must contain ONE message only.
+
+Use message.id as the canonical identifier.
+
+---
+
+## 5.
+
+Synchronize ordering.
+
+The message list must always be:
+
+oldest
+
+↓
+
+newest
+
+Websocket updates must preserve ordering.
+
+REST responses must preserve ordering.
+
+No flickering.
+
+No jumping.
+
+---
+
+## 6.
+
+Synchronize read receipts.
+
+When a participant reads a conversation:
+
+Backend:
+
+* update read_at
+
+* publish websocket event
+
+Frontend:
+
+* immediately update affected messages
+
+No refresh required.
+
+---
+
+## 7.
+
+Synchronize delivered receipts.
+
+When a websocket client receives a message:
+
+Backend updates delivered_at
+
+broadcasts
+
+Frontend immediately reflects:
+
+✓
+
+✓✓
+
+Blue ✓✓
+
+without refresh.
+
+---
+
+## 8.
+
+Typing indicators.
+
+Ensure:
+
+typing_start
+
+typing_stop
+
+work correctly.
+
+Automatically stop typing after inactivity timeout.
+
+Prevent stuck typing indicators.
+
+---
+
+## 9.
+
+Connection lifecycle.
+
+Audit:
+
+Reconnect
+
+Disconnect
+
+Network loss
+
+Tab switching
+
+Token refresh
+
+Conversation switching
+
+Prevent stale websocket subscriptions.
+
+Ensure only one websocket connection exists per active conversation.
+
+---
+
+## 10.
+
+Memory leaks.
+
+Audit:
+
+useEffect cleanup
+
+event listeners
+
+window listeners
+
+WebSocket listeners
+
+timeouts
+
+intervals
+
+refs
+
+Ensure everything is cleaned up correctly.
+
+---
+
+# OUTPUT
+
+For every issue provide:
+
+1.
+
+Root cause
+
+2.
+
+Files involved
+
+3.
+
+Exact fix
+
+4.
+
+Why it fixes the issue
+
+5.
+
+Potential side effects
+
+Then implement the fixes.
+
+Do not generate placeholders.
+
+Do not skip any issue.
+
+The final result should behave like a production-grade messaging platform (WhatsApp, Slack, Messenger) with immediate realtime synchronization.

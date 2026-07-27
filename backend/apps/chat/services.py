@@ -67,19 +67,16 @@ class ChatService:
             conversation.save(update_fields=['updated_at'])
             
             # Broadcast via websockets after transaction commits
+            from .serializers import MessageSerializer
+            # Use request context if we had it, but we don't in service layer easily. 
+            # We will just pass the serialized data.
+            serialized_message = MessageSerializer(message).data
             channel_layer = get_channel_layer()
-            transaction.on_commit(lambda: async_to_sync(channel_layer.group_send)(
+            transaction.on_commit(lambda msg=serialized_message: async_to_sync(channel_layer.group_send)(
                 f"chat_{conversation.id}",
                 {
                     'type': 'chat_message',
-                    'message_id': str(message.id),
-                    'sender_id': str(sender.id) if sender else None,
-                    'body': body,
-                    'message_type': message_type,
-                    'reply_to_id': str(reply_to.id) if reply_to else None,
-                    'created_at': message.created_at.isoformat(),
-                    'delivered_at': message.delivered_at.isoformat() if message.delivered_at else None,
-                    'read_at': message.read_at.isoformat() if message.read_at else None,
+                    'message': msg
                 }
             ))
             

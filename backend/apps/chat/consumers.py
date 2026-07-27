@@ -42,6 +42,10 @@ class ChatConsumer(AsyncWebsocketConsumer):
             
             if action == 'mark_read':
                 await self.mark_conversation_read(self.user, self.conversation_id)
+            elif action == 'mark_delivered':
+                message_id = text_data_json.get('message_id')
+                if message_id:
+                    await self.mark_message_delivered(message_id)
             elif action in ['typing_start', 'typing_stop']:
                 await self.channel_layer.group_send(
                     self.room_group_name,
@@ -69,14 +73,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Send message to WebSocket
         await self.send(text_data=json.dumps({
             'type': 'message',
+            'message': event.get('message')
+        }))
+
+    async def message_delivered(self, event):
+        await self.send(text_data=json.dumps({
+            'type': 'message_delivered',
             'message_id': event.get('message_id'),
-            'sender_id': event.get('sender_id'),
-            'body': event.get('body'),
-            'message_type': event.get('message_type'),
-            'reply_to_id': event.get('reply_to_id'),
-            'created_at': event.get('created_at'),
             'delivered_at': event.get('delivered_at'),
-            'read_at': event.get('read_at'),
         }))
 
     async def user_read(self, event):
@@ -135,4 +139,29 @@ class ChatConsumer(AsyncWebsocketConsumer):
             conversation = Conversation.objects.get(id=conversation_id)
             ChatService.mark_read(conversation, user)
         except Conversation.DoesNotExist:
+            pass
+
+    @database_sync_to_async
+    def mark_message_delivered(self, message_id):
+        from .models import Message
+        from django.utils import timezone
+        from channels.layers import get_channel_layer
+        from asgiref.sync import async_to_sync
+        try:
+            msg = Message.objects.get(id=message_id)
+            if not msg.delivered_at:
+                msg.delivered_at = timezone.now()
+                msg.save(update_fields=['delivered_at'])
+                
+                channel_layer = get_channel_layer()
+                # Broadcast delivered status
+                async_to_sync(channel_layer.group_send)(
+                    f"chat_{msg.conversation.id}",
+                    {
+                        'type': 'message_delivered',
+                        'message_id': str(msg.id),
+                        'delivered_at': msg.delivered_at.isoformat()
+                    }
+                )
+        except Message.DoesNotExist:
             pass

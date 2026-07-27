@@ -17,6 +17,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
 
   const onMessageReceivedRef = useRef(onMessageReceived);
   const onReadReceiptRef = useRef(onReadReceipt);
+  const typingTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     onMessageReceivedRef.current = onMessageReceived;
@@ -60,19 +61,15 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
         const data = JSON.parse(event.data);
         
         if (data.type === 'message') {
-          const newMsg: ChatMessage = {
-            id: data.message_id,
-            conversation: conversationId,
-            sender: data.sender_id ? { id: data.sender_id, first_name: '', last_name: '', email: '' } : null,
-            body: data.body,
-            message_type: data.message_type,
-            created_at: data.created_at,
-            edited_at: null,
-            is_deleted: false,
-            delivered_at: data.delivered_at,
-            read_at: data.read_at,
-            reply_to: data.reply_to_id ? { id: data.reply_to_id, body: '', sender: { id: '', first_name: '', last_name: '', email: '' }, message_type: 'text', created_at: '', is_deleted: false } : null,
-          };
+          const newMsg: ChatMessage = data.message;
+          
+          // Emit mark_delivered if message is from someone else
+          const userId = localStorage.getItem('user_id'); // Or use another way to get current user ID
+          if (newMsg.sender && newMsg.sender.id !== userId) {
+             if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                ws.current.send(JSON.stringify({ action: 'mark_delivered', message_id: newMsg.id }));
+             }
+          }
           
           queryClient.setQueryData(
             ['chat', conversationId, 'messages'], 
@@ -87,14 +84,13 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
               if (exists) return oldData;
               
 
-
               if (oldData.results) {
                 return { ...oldData, results: [...oldData.results, newMsg] };
               }
               if (oldData.pages) {
                 const newPages = [...oldData.pages];
                 if (newPages.length > 0) {
-                  newPages[0].results = [...newPages[0].results, newMsg];
+                  newPages[0] = { ...newPages[0], results: [...newPages[0].results, newMsg] };
                 }
                 return { ...oldData, pages: newPages };
               }
@@ -118,7 +114,22 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
               if (oldData.pages) return { ...oldData, pages: oldData.pages.map((p: any) => ({ ...p, results: p.results.map(updateMsg) })) };
               return oldData.map(updateMsg);
           });
+        } else if (data.type === 'message_delivered') {
+          queryClient.setQueryData(['chat', conversationId, 'messages'], (oldData: any) => {
+              if (!oldData) return oldData;
+              const updateMsg = (msg: ChatMessage) => msg.id === data.message_id && !msg.delivered_at ? { ...msg, delivered_at: data.delivered_at } : msg;
+              if (oldData.results) return { ...oldData, results: oldData.results.map(updateMsg) };
+              if (oldData.pages) return { ...oldData, pages: oldData.pages.map((p: any) => ({ ...p, results: p.results.map(updateMsg) })) };
+              return oldData.map(updateMsg);
+          });
         } else if (data.type === 'read_receipt') {
+          queryClient.setQueryData(['chat', conversationId, 'messages'], (oldData: any) => {
+              if (!oldData) return oldData;
+              const updateMsg = (msg: ChatMessage) => (!msg.read_at && msg.sender?.id !== data.user_id && new Date(msg.created_at) <= new Date(data.read_at)) ? { ...msg, read_at: data.read_at, delivered_at: msg.delivered_at || data.read_at } : msg;
+              if (oldData.results) return { ...oldData, results: oldData.results.map(updateMsg) };
+              if (oldData.pages) return { ...oldData, pages: oldData.pages.map((p: any) => ({ ...p, results: p.results.map(updateMsg) })) };
+              return oldData.map(updateMsg);
+          });
           if (onReadReceiptRef.current) onReadReceiptRef.current(data.user_id, data.read_at);
         } else if (data.type === 'typing_start' || data.type === 'typing_stop') {
           // You could pass this to a callback or manage state here
@@ -164,6 +175,9 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
       if (ws.current) {
         ws.current.close();
       }
+      if (typingTimeoutRef.current) {
+         window.clearTimeout(typingTimeoutRef.current);
+      }
     };
   }, [connect]);
 
@@ -176,12 +190,24 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
   const sendTypingStart = useCallback(() => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ action: 'typing_start' }));
+      
+      if (typingTimeoutRef.current) {
+         window.clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = window.setTimeout(() => {
+         if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({ action: 'typing_stop' }));
+         }
+      }, 3000);
     }
   }, []);
 
   const sendTypingStop = useCallback(() => {
     if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({ action: 'typing_stop' }));
+      if (typingTimeoutRef.current) {
+         window.clearTimeout(typingTimeoutRef.current);
+      }
     }
   }, []);
 
