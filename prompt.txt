@@ -1,3 +1,14 @@
+Request URL
+https://entercom-v1.onrender.com/api/v1/chat/conversations/2dc5bdfa-a200-4175-998f-8d287752c50b/messages/
+Request Method
+POST
+Status Code
+401 Unauthorized
+Remote Address
+216.24.57.15:443
+Referrer Policy
+strict-origin-when-cross-origin
+
 {
     "detail": "Given token not valid for any token type",
     "code": "token_not_valid",
@@ -9,19 +20,4 @@
         }
     ]
 }
-
-
-127.0.0.1:38898 - - [27/Jul/2026:15:04:46] "WSCONNECTING /ws/requests/" - -
-2026-07-27 15:04:57,090 [WARNING] django.request - Unauthorized: /api/v1/chat/conversations/2dc5bdfa-a200-4175-998f-8d287752c50b/messages/
-2026-07-27 15:04:57,771 [INFO] forensic.audit 199b865b-314d-4213-ac08-233d0926b895 AUDIT_EVENT:auth.token_refresh
-2026-07-27 15:04:58,741 [WARNING] celery.backends.redis 0afa2d52-5821-4ba9-a4c9-a1c8479173a4 
-Setting ssl_cert_reqs=CERT_NONE when connecting to redis means that celery will not validate the identity of the redis broker when connecting. This leaves you vulnerable to man in the middle attacks.
-2026-07-27 15:05:07,830 [WARNING] django.request - Unauthorized: /api/v1/chat/conversations/
-2026-07-27 15:05:08,450 [INFO] forensic.audit 0f94fd33-4309-4a39-98ce-2fc94fb24314 AUDIT_EVENT:auth.token_refresh
-2026-07-27 15:05:29,758 [WARNING] celery.backends.redis b9a4bacd-7c5d-4529-a816-e9c88415c09e 
-Setting ssl_cert_reqs=CERT_NONE when connecting to redis means that celery will not validate the identity of the redis broker when connecting. This leaves you vulnerable to man in the middle attacks.
-
-
-
-
 I am still getting same bug, but I think the above log might help
