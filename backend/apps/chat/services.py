@@ -66,9 +66,9 @@ class ChatService:
             conversation.updated_at = timezone.now()
             conversation.save(update_fields=['updated_at'])
             
-            # Broadcast via websockets
+            # Broadcast via websockets after transaction commits
             channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
+            transaction.on_commit(lambda: async_to_sync(channel_layer.group_send)(
                 f"chat_{conversation.id}",
                 {
                     'type': 'chat_message',
@@ -81,7 +81,7 @@ class ChatService:
                     'delivered_at': message.delivered_at.isoformat() if message.delivered_at else None,
                     'read_at': message.read_at.isoformat() if message.read_at else None,
                 }
-            )
+            ))
             
             # Send notification via DispatchOrchestrator
             # Notify all participants except the sender
@@ -129,14 +129,14 @@ class ChatService:
             msg.save(update_fields=['read_at', 'delivered_at'])
             
         channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
+        transaction.on_commit(lambda: async_to_sync(channel_layer.group_send)(
             f"chat_{conversation.id}",
             {
                 'type': 'user_read',
                 'user_id': str(user.id),
                 'read_at': participant.last_read_at.isoformat()
             }
-        )
+        ))
         return participant
 
     @staticmethod
@@ -219,7 +219,7 @@ class ChatService:
             message.save(update_fields=['body', 'edited_at'])
             
             channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
+            transaction.on_commit(lambda: async_to_sync(channel_layer.group_send)(
                 f"chat_{message.conversation.id}",
                 {
                     'type': 'message_updated',
@@ -227,7 +227,7 @@ class ChatService:
                     'body': new_body,
                     'edited_at': message.edited_at.isoformat(),
                 }
-            )
+            ))
             return message
 
     @staticmethod
@@ -240,13 +240,13 @@ class ChatService:
             message.save(update_fields=['is_deleted'])
             
             channel_layer = get_channel_layer()
-            async_to_sync(channel_layer.group_send)(
+            transaction.on_commit(lambda: async_to_sync(channel_layer.group_send)(
                 f"chat_{message.conversation.id}",
                 {
                     'type': 'message_deleted',
                     'message_id': str(message.id),
                 }
-            )
+            ))
             return message
 
     @staticmethod

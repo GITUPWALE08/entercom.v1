@@ -1,23 +1,263 @@
-  raise exc
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 506, in dispatch
-    response = handler(request, *args, **kwargs)
-               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/backend/apps/chat/views.py", line 138, in messages
-    message = ChatService.send_message(conversation, request.user, body or "", message_type, files, reply_to=reply_to)
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/backend/apps/chat/services.py", line 33, in send_message
-    with transaction.atomic():
-         ^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/transaction.py", line 307, in __exit__
-    connection.set_autocommit(True)
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/base/base.py", line 490, in set_autocommit
-    self.run_and_clear_commit_hooks()
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/base/base.py", line 768, in run_and_clear_commit_hooks
-    func()
-  File "/opt/render/project/src/backend/apps/chat/services.py", line 90, in <lambda>
-    transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
-                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/python/Python-3.12.10/lib/python3.12/contextlib.py", line 81, in inner
-    return func(*args, **kwds)
-           ^^^^^^^^^^^^^^^^^^^
-TypeError: DispatchOrchestrator.dispatch_event() got an unexpected keyword argument 'event_name'
+You are a Senior React + Django Channels + WebSocket Engineer.
+
+We have a production bug in the Entercom Support Chat.
+
+DO NOT redesign the architecture.
+
+DO NOT rewrite the chat system.
+
+Find the root cause and fix it.
+
+==================================================
+BUG
+==================================================
+
+Current behavior:
+
+1. User A opens a conversation.
+
+2. User B sends a message.
+
+3. User A DOES NOT immediately see the message.
+
+4. The message only appears when:
+
+- User A leaves the conversation and re-enters
+
+OR
+
+- User A sends another message.
+
+Expected behavior:
+
+Messages must appear instantly on every connected client without requiring navigation or another action.
+
+==================================================
+INVESTIGATION CHECKLIST
+==================================================
+
+Audit the entire realtime pipeline.
+
+Backend
+
+□ ChatConsumer.receive()
+
+□ group_send()
+
+□ chat_message event
+
+□ serialize message
+
+□ save before broadcast
+
+□ broadcast after commit
+
+□ async_to_sync usage
+
+□ transaction.atomic()
+
+□ database_sync_to_async()
+
+□ conversation groups
+
+□ routing
+
+□ authentication
+
+□ channel layer
+
+□ Redis
+
+Verify that:
+
+message saved
+↓
+
+group_send called
+↓
+
+all participants receive event
+
+==================================================
+
+Frontend
+
+Audit:
+
+useChatWebsocket
+
+WebSocketProvider
+
+ChatContext
+
+MessageList
+
+React Query
+
+Zustand
+
+Conversation cache
+
+Message cache
+
+Inspect:
+
+onmessage
+
+message event handler
+
+query invalidation
+
+optimistic updates
+
+cache mutation
+
+stale closures
+
+dependency arrays
+
+conversation switching
+
+subscription cleanup
+
+==================================================
+
+SPECIFIC THINGS TO VERIFY
+==================================================
+
+1.
+
+When websocket receives
+
+chat_message
+
+is the local cache updated?
+
+or
+
+is only invalidateQueries called?
+
+2.
+
+If invalidateQueries is used,
+
+does the current conversation refetch immediately?
+
+or
+
+does it wait until focus/re-render?
+
+3.
+
+Is the websocket updating the cache using
+
+queryClient.setQueryData()
+
+or only invalidating?
+
+4.
+
+Is the active conversation id stale inside websocket callbacks?
+
+5.
+
+Are incoming messages ignored because
+
+conversation_id comparison fails?
+
+6.
+
+Are duplicate suppression checks accidentally rejecting new messages?
+
+7.
+
+Does optimistic update overwrite incoming websocket messages?
+
+8.
+
+Is MessageList memoized incorrectly?
+
+9.
+
+Is React Query configured with
+
+staleTime
+
+refetchOnWindowFocus
+
+enabled
+
+in a way that blocks immediate updates?
+
+==================================================
+
+EXPECTED FIX
+==================================================
+
+The UI should update instantly when a websocket event arrives.
+
+Preferred solution:
+
+chat_message
+
+↓
+
+queryClient.setQueryData()
+
+↓
+
+append message to existing cache
+
+↓
+
+React rerenders immediately
+
+WITHOUT waiting for
+
+refetch
+
+navigation
+
+another outgoing message
+
+or page reload.
+
+==================================================
+
+ALSO VERIFY
+==================================================
+
+Read receipts
+
+Delivered receipts
+
+Typing indicator events
+
+Notification badge updates
+
+Conversation last message preview
+
+Unread counts
+
+Conversation ordering
+
+All should update in realtime.
+
+==================================================
+
+OUTPUT
+==================================================
+
+1. Root cause
+
+2. Files inspected
+
+3. Exact bug
+
+4. Why it only refreshes after navigation/send
+
+5. Fix implemented
+
+6. Any related realtime issues found
+
+Do not stop until the entire realtime flow behaves like WhatsApp/Slack where incoming messages appear instantly.

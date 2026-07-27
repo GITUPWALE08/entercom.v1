@@ -15,6 +15,14 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
   const reconnectAttempts = useRef(0);
   const maxReconnectAttempts = 5;
 
+  const onMessageReceivedRef = useRef(onMessageReceived);
+  const onReadReceiptRef = useRef(onReadReceipt);
+
+  useEffect(() => {
+    onMessageReceivedRef.current = onMessageReceived;
+    onReadReceiptRef.current = onReadReceipt;
+  }, [onMessageReceived, onReadReceipt]);
+
   const connect = useCallback(() => {
     const token = localStorage.getItem('access_token');
     if (!token || !conversationId) return;
@@ -96,7 +104,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
               return [...(oldData || []), newMsg];
             }
           );
-          if (onMessageReceived) onMessageReceived(newMsg);
+          if (onMessageReceivedRef.current) onMessageReceivedRef.current(newMsg);
         } else if (data.type === 'message_updated') {
           queryClient.setQueryData(['chat', conversationId, 'messages'], (oldData: any) => {
               if (!oldData) return oldData;
@@ -114,7 +122,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
               return oldData.map(updateMsg);
           });
         } else if (data.type === 'read_receipt') {
-          if (onReadReceipt) onReadReceipt(data.user_id, data.read_at);
+          if (onReadReceiptRef.current) onReadReceiptRef.current(data.user_id, data.read_at);
         } else if (data.type === 'typing_start' || data.type === 'typing_stop') {
           // You could pass this to a callback or manage state here
           const event = new CustomEvent('chat_typing', { detail: data });
@@ -143,7 +151,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     ws.current.onerror = (error) => {
       console.error('Chat websocket error:', error);
     };
-  }, [conversationId, queryClient, onMessageReceived, onReadReceipt]);
+  }, [conversationId, queryClient]);
 
   useEffect(() => {
     connect();
