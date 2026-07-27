@@ -154,10 +154,15 @@ class ConversationViewSet(viewsets.ModelViewSet):
         staff_id = request.data.get('staff_id')
         
         from apps.users.models import User
-        try:
-            staff_user = User.objects.get(id=staff_id)
-        except User.DoesNotExist:
-            return Response({'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND)
+        from django.core.exceptions import ValidationError
+        
+        if staff_id == 'self':
+            staff_user = request.user
+        else:
+            try:
+                staff_user = User.objects.get(id=staff_id)
+            except (User.DoesNotExist, ValueError, ValidationError):
+                return Response({'error': 'Staff member not found'}, status=status.HTTP_404_NOT_FOUND)
             
         ChatService.assign_staff(conversation, staff_user, request.user)
         return Response({'status': 'assigned'})
