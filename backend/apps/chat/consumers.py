@@ -25,7 +25,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        await self.accept()
+        
+        protocol = dict(self.scope.get('headers', [])).get(b'sec-websocket-protocol', b'').decode('utf-8')
+        if protocol:
+            await self.accept(subprotocol=protocol.split(',')[0].strip())
+        else:
+            await self.accept()
 
     async def disconnect(self, close_code):
         # Leave room group

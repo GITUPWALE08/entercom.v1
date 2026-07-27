@@ -115,6 +115,9 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
               return [...(oldData || []), newMsg];
             }
           );
+          queryClient.invalidateQueries({
+            queryKey: ['chat', conversationId, 'messages']
+          });
           if (onMessageReceivedRef.current) onMessageReceivedRef.current(newMsg);
         } else if (data.type === 'message_updated') {
           queryClient.setQueryData(['chat', conversationId, 'messages'], (oldData: any) => {
