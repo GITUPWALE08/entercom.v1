@@ -152,8 +152,8 @@ export default function StaffInboxPage() {
   const messages = messagesData?.results || [];
 
   return (
-    <PageContainer>
-      <div className="flex h-[calc(100vh-160px)] bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden mt-2">
+    <div className="h-full flex flex-col pt-2 pb-4 px-2 md:px-6">
+      <div className="flex h-full bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
         
         <ConversationSidebar 
           conversations={filteredConversations} 
@@ -163,9 +163,10 @@ export default function StaffInboxPage() {
           onSearchChange={setSearchQuery}
           queueFilter={queueFilter}
           onQueueChange={setQueueFilter}
+          className={id ? 'hidden md:flex' : 'flex'}
         />
         
-        <div className="flex-1 flex flex-col h-full bg-gray-50/30">
+        <div className={`flex-1 flex flex-col h-full bg-gray-50/30 ${!id ? 'hidden md:flex' : 'flex'}`}>
           {!id ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
               <span className="text-6xl mb-4 opacity-50">📬</span>
@@ -210,6 +211,6 @@ export default function StaffInboxPage() {
         </div>
 
       </div>
-    </PageContainer>
+    </div>
   );
 }

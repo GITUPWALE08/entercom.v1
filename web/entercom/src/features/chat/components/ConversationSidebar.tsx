@@ -9,11 +9,12 @@ interface ConversationSidebarProps {
   onSearchChange?: (q: string) => void;
   queueFilter?: string;
   onQueueChange?: (q: string) => void;
+  className?: string;
 }
 
-export function ConversationSidebar({ conversations, activeId, basePath, searchQuery, onSearchChange, queueFilter, onQueueChange }: ConversationSidebarProps) {
+export function ConversationSidebar({ conversations, activeId, basePath, searchQuery, onSearchChange, queueFilter, onQueueChange, className = '' }: ConversationSidebarProps) {
   return (
-    <div className="w-full md:w-80 border-r border-gray-100 bg-white flex flex-col h-full shrink-0">
+    <div className={`w-full md:w-80 border-r border-gray-100 bg-white flex-col h-full shrink-0 ${className}`}>
       <div className="p-4 border-b border-gray-100 flex flex-col gap-3">
         <div className="flex justify-between items-center">
           <h2 className="font-bold text-lg text-gray-900">Conversations</h2>
