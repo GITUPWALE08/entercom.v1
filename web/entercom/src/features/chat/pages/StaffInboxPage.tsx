@@ -51,7 +51,7 @@ export default function StaffInboxPage() {
     conversationId: id || '',
     onMessageReceived: (_msg: ChatMessage) => {
       // Re-fetch conversation list to update last message & unread count instantly
-      queryClient.invalidateQueries({ queryKey: ['chat'] });
+      queryClient.invalidateQueries({ queryKey: ['chat'], exact: true });
     }
   });
 
@@ -106,7 +106,7 @@ export default function StaffInboxPage() {
         }
         return { results: [...(old || []), newMessage] };
       });
-      queryClient.invalidateQueries({ queryKey: ['chat'] });
+      queryClient.invalidateQueries({ queryKey: ['chat'], exact: true });
     },
   });
 
@@ -142,7 +142,7 @@ export default function StaffInboxPage() {
     if (window.confirm('Assign yourself to this conversation?')) {
         chatApi.assignStaff(id!, 'self').then(() => {
             queryClient.invalidateQueries({ queryKey: ['chat', id] });
-            queryClient.invalidateQueries({ queryKey: ['chat'] });
+            queryClient.invalidateQueries({ queryKey: ['chat'], exact: true });
         }).catch(_err => {
             alert('Failed to assign staff.');
         });

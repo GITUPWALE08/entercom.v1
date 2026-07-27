@@ -86,10 +86,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
               
               if (exists) return oldData;
               
-              // We trigger a refetch to get the full message including attachments
-              setTimeout(() => {
-                 queryClient.invalidateQueries({ queryKey: ['chat', conversationId, 'messages'] });
-              }, 100);
+
 
               if (oldData.results) {
                 return { ...oldData, results: [...oldData.results, newMsg] };
