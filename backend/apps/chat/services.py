@@ -87,17 +87,26 @@ class ChatService:
             # Notify all participants except the sender
             participant_ids = list(conversation.participants.exclude(user=sender).values_list('user_id', flat=True))
             if participant_ids:
-                transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
-                    event_name="support_message_received",
-                    context={
-                        "conversation_id": str(conversation.id),
-                        "public_id": conversation.public_id,
-                        "subject": conversation.subject,
-                        "message_body": body[:100] + "..." if len(body) > 100 else body,
-                        "sender_name": sender.get_full_name() if sender else "System"
-                    },
-                    recipients=participant_ids
-                ))
+                def _notify_participants(p_ids, conv, msg_body, s_name):
+                    for p_id in p_ids:
+                        DispatchOrchestrator.dispatch_event(
+                            event_type="support_message_received",
+                            recipient_id=p_id,
+                            context={
+                                "conversation_id": str(conv.id),
+                                "public_id": conv.public_id,
+                                "subject": conv.subject,
+                                "message_body": msg_body[:100] + "..." if len(msg_body) > 100 else msg_body,
+                                "sender_name": s_name
+                            },
+                            resource_type="conversation",
+                            resource_id=str(conv.id),
+                            category="support",
+                            title=f"New message from {s_name}",
+                            message=f"{s_name}: {msg_body[:50]}"
+                        )
+                
+                transaction.on_commit(lambda ids=participant_ids, c=conversation, b=body, s=(sender.get_full_name() if sender else "System"): _notify_participants(ids, c, b, s))
                 
             return message
 

@@ -1,5 +1,23 @@
-src/features/portal/staff/requests/StaffVerification.tsx(1,1): error TS6133: 'ensureArray' is declared but its value is never read.
-src/features/portal/staff/requests/StaffVerification.tsx(8,10): error TS6133: 'Input' is declared but its value is never read.
-src/features/portal/staff/requests/TechnicianVerification.tsx(1,1): error TS6133: 'ensureArray' is declared but its value is never read.
-src/features/portal/staff/requests/TechnicianVerification.tsx(8,10): error TS6133: 'Input' is declared but its value is never read.
-Error: Command "npm run build" exited with 2
+  raise exc
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/rest_framework/views.py", line 506, in dispatch
+    response = handler(request, *args, **kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/chat/views.py", line 138, in messages
+    message = ChatService.send_message(conversation, request.user, body or "", message_type, files, reply_to=reply_to)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/chat/services.py", line 33, in send_message
+    with transaction.atomic():
+         ^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/transaction.py", line 307, in __exit__
+    connection.set_autocommit(True)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/base/base.py", line 490, in set_autocommit
+    self.run_and_clear_commit_hooks()
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/django/db/backends/base/base.py", line 768, in run_and_clear_commit_hooks
+    func()
+  File "/opt/render/project/src/backend/apps/chat/services.py", line 90, in <lambda>
+    transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/python/Python-3.12.10/lib/python3.12/contextlib.py", line 81, in inner
+    return func(*args, **kwds)
+           ^^^^^^^^^^^^^^^^^^^
+TypeError: DispatchOrchestrator.dispatch_event() got an unexpected keyword argument 'event_name'
