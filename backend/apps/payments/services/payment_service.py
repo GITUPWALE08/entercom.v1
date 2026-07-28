@@ -4,7 +4,7 @@ from django.utils import timezone
 from apps.payments.models import Payment, PaymentStatus
 from apps.payments.models import Payment, PaymentStatus
 from core.events import event_publisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from core.permissions import require_permission
 from apps.notification.services import DispatchOrchestrator
 
@@ -18,11 +18,14 @@ class PaymentService:
         require_permission(actor, 'payment.initialize')
         
         payment = Payment.objects.select_for_update().filter(order_id=order_id).first()
+        is_new = False
         if payment:
+            old_payment = Payment.objects.get(pk=payment.pk)
             payment.provider_reference = provider_reference
             payment.status = PaymentStatus.PENDING
             payment.save()
         else:
+            is_new = True
             payment = Payment.objects.create(
                 order_id=order_id,
                 request_id=request_id,
@@ -34,19 +37,33 @@ class PaymentService:
                 correlation_id=correlation_id
             )
             
-        log_action(
-            action='payment.initialized',
-            actor=actor,
-            resource_type='payment',
-            resource_id=str(payment.id),
-            correlation_id=correlation_id,
-            metadata={
-                'order_id': str(order_id),
-                'amount': str(amount),
-                'currency': currency,
-                'paystack_reference': provider_reference
-            }
-        )
+        if is_new:
+            log_creation(
+                action='payment.initialized',
+                actor=actor,
+                instance=payment,
+                metadata={
+                    'order_id': str(order_id),
+                    'amount': str(amount),
+                    'currency': currency,
+                    'paystack_reference': provider_reference,
+                    'correlation_id': correlation_id
+                }
+            )
+        else:
+            log_transition(
+                action='payment.initialized',
+                actor=actor,
+                instance=payment,
+                old_instance=old_payment,
+                metadata={
+                    'order_id': str(order_id),
+                    'amount': str(amount),
+                    'currency': currency,
+                    'paystack_reference': provider_reference,
+                    'correlation_id': correlation_id
+                }
+            )
         
         event_publisher.publish(
             event_name='payment.initialized',
@@ -120,17 +137,18 @@ class PaymentService:
         )
         
         for payment in expired_payments:
+            old_payment = Payment.objects.get(pk=payment.pk)
             payment.status = PaymentStatus.CANCELLED
             payment.save()
             
-            log_action(
+            log_transition(
                 action='payment.expired',
                 actor=actor,
-                resource_type='payment',
-                resource_id=str(payment.id),
-                correlation_id=correlation_id,
+                instance=payment,
+                old_instance=old_payment,
                 metadata={
-                    'order_id': str(payment.order_id)
+                    'order_id': str(payment.order_id),
+                    'correlation_id': correlation_id
                 }
             )
             event_publisher.publish(
@@ -166,17 +184,18 @@ class PaymentService:
         if not payment:
             raise ValidationError("Payment not found.")
             
+        old_payment = Payment.objects.get(pk=payment.pk)
         payment.status = PaymentStatus.CANCELLED
         payment.save()
 
-        audit_logger.log(
+        log_transition(
             action='payment.cancelled',
-            actor_id=actor.id,
-            actor_type=actor.type,
-            correlation_id=correlation_id,
+            actor=actor,
+            instance=payment,
+            old_instance=old_payment,
             metadata={
-                'payment_id': str(payment.id),
-                'order_id': str(payment.order_id)
+                'order_id': str(payment.order_id),
+                'correlation_id': correlation_id
             }
         )
 
@@ -204,18 +223,19 @@ class PaymentService:
         if payment.status != PaymentStatus.PAID:
             raise ValidationError("Only paid payments can be refunded.")
             
+        old_payment = Payment.objects.get(pk=payment.pk)
         payment.status = PaymentStatus.REFUNDED
         payment.save()
 
-        audit_logger.log(
+        log_transition(
             action='payment.refunded',
-            actor_id=actor.id,
-            actor_type=actor.type,
-            correlation_id=correlation_id,
+            actor=actor,
+            instance=payment,
+            old_instance=old_payment,
             metadata={
-                'payment_id': str(payment.id),
                 'order_id': str(payment.order_id),
-                'amount': str(payment.amount)
+                'amount': str(payment.amount),
+                'correlation_id': correlation_id
             }
         )
 
@@ -263,18 +283,19 @@ class PaymentService:
         if not payment:
             raise ValidationError("Payment not found.")
             
+        old_payment = Payment.objects.get(pk=payment.pk)
         payment.status = PaymentStatus.ESCALATED
         payment.save()
 
-        audit_logger.log(
+        log_transition(
             action='payment.escalated',
-            actor_id=actor.id,
-            actor_type=actor.type,
-            correlation_id=correlation_id,
+            actor=actor,
+            instance=payment,
+            old_instance=old_payment,
             metadata={
-                'payment_id': str(payment.id),
                 'order_id': str(payment.order_id),
-                'reason': reason
+                'reason': reason,
+                'correlation_id': correlation_id
             }
         )
 

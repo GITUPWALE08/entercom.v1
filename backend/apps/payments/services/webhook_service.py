@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.payments.models import Payment, PaymentStatus
 from core.events import event_publisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from core.permissions import require_permission
 import hashlib
 import hmac
@@ -85,22 +85,21 @@ class WebhookService:
             return
             
         if event_type == 'charge.success':
+            old_payment = Payment.objects.get(pk=payment.pk)
             payment.status = PaymentStatus.PAID
             payment.save()
             
-            log_action(
+            log_transition(
                 action='payment.paid',
                 actor=actor,
-                resource_type='payment',
-                resource_id=str(payment.id),
-                correlation_id=correlation_id,
+                instance=payment,
+                old_instance=old_payment,
                 metadata={
                     'order_id': str(payment.order_id),
                     'paystack_reference': payment.provider_reference,
                     'amount': str(payment.amount),
                     'currency': payment.currency,
-                    'previous_state': PaymentStatus.PENDING.value,
-                    'new_state': PaymentStatus.PAID.value
+                    'correlation_id': correlation_id
                 }
             )
 
@@ -141,19 +140,20 @@ class WebhookService:
             )
             
         elif event_type == 'charge.failed':
+            old_payment = Payment.objects.get(pk=payment.pk)
             payment.status = PaymentStatus.FAILED
             payment.save()
             failure_reason = payload.get('data', {}).get('gateway_response', 'Failed')
             
-            log_action(
+            log_transition(
                 action='payment.failed',
                 actor=actor,
-                resource_type='payment',
-                resource_id=str(payment.id),
-                correlation_id=correlation_id,
+                instance=payment,
+                old_instance=old_payment,
                 metadata={
                     'order_id': str(payment.order_id),
-                    'failure_reason': failure_reason
+                    'failure_reason': failure_reason,
+                    'correlation_id': correlation_id
                 }
             )
 
