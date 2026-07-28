@@ -19,8 +19,11 @@ class HasAuditViewPermission(BasePermission):
             return True
             
         # Hard fallback for roles in case DB cache is stale
+        if hasattr(request.user, 'role') and request.user.role in ['SUPER_ADMIN', 'MANAGER', 'ADMIN', 'superadmin', 'manager', 'admin', 'super_admin']:
+            return True
+            
         has_role = request.user.role_assignments.filter(
-            role__slug__in=['superadmin', 'manager', 'admin'], 
+            role__slug__in=['superadmin', 'manager', 'admin', 'super_admin'], 
             is_active=True
         ).exists()
         
