@@ -1,5 +1,3 @@
-{"detail":"You do not have permission to perform this action."}
-
 Request URL
 https://entercom-v1.onrender.com/api/v1/audit-logs/
 Request Method
@@ -7,51 +5,32 @@ GET
 Status Code
 403 Forbidden
 Remote Address
-216.24.57.7:443
+216.24.57.15:443
 Referrer Policy
 strict-origin-when-cross-origin
 
+{"detail":"You do not have permission to perform this action."}
+
 render log:
-return await consumer(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 58, in __call__
-    await await_many_dispatch(
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/utils.py", line 50, in await_many_dispatch
-    await dispatch(result)
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 74, in dispatch
-    await handler(message)
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/generic/websocket.py", line 250, in websocket_disconnect
-    await self.disconnect(message["code"])
-  File "/opt/render/project/src/backend/apps/websocket/consumers.py", line 162, in disconnect
-    for group_name in self.subscribed_groups:
-                      ^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'RequestConsumer' object has no attribute 'subscribed_groups'
-2026-07-28 12:33:04,994 [ERROR] daphne.server - Exception inside application: 'RequestConsumer' object has no attribute 'subscribed_groups'
-Traceback (most recent call last):
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/routing.py", line 48, in __call__
-    return await application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/security/websocket.py", line 37, in __call__
-    return await self.application(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/backend/apps/websocket/middleware/jwt_auth.py", line 113, in __call__
-    return await self.inner(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/routing.py", line 118, in __call__
-    return await application(
-           ^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 95, in app
-    return await consumer(scope, receive, send)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 58, in __call__
-    await await_many_dispatch(
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/utils.py", line 50, in await_many_dispatch
-    await dispatch(result)
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 74, in dispatch
-    await handler(message)
-  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/generic/websocket.py", line 250, in websocket_disconnect
-    await self.disconnect(message["code"])
-  File "/opt/render/project/src/backend/apps/websocket/consumers.py", line 162, in disconnect
-    for group_name in self.subscribed_groups:
-                      ^^^^^^^^^^^^^^^^^^^^^^
-AttributeError: 'RequestConsumer' object has no attribute 'subscribed_groups'
+2026-07-28 12:42:10,344 [WARNING] django.request - Not Found: /
+2026-07-28 12:44:41,653 [INFO] forensic.audit 8be619d4-a997-47b0-a32e-ab1b93fb3ca6 AUDIT_EVENT:security.rbac_denied
+2026-07-28 12:44:41,751 [INFO] forensic.audit 8be619d4-a997-47b0-a32e-ab1b93fb3ca6 AUDIT_EVENT:security.permission_denied
+2026-07-28 12:44:41,802 [WARNING] django.request - Forbidden: /api/v1/audit-logs/
+2026-07-28 12:44:43,315 [INFO] forensic.audit fc4a8a93-a15c-4a95-8c59-5d2a3ec8f715 AUDIT_EVENT:security.rbac_denied
+2026-07-28 12:44:43,388 [INFO] forensic.audit fc4a8a93-a15c-4a95-8c59-5d2a3ec8f715 AUDIT_EVENT:security.permission_denied
+2026-07-28 12:44:43,438 [WARNING] django.request - Forbidden: /api/v1/audit-logs/
+2026-07-28 12:44:56,948 [WARNING] django.request - Unauthorized: /api/v1/notifications/
+2026-07-28 12:44:57,003 [WARNING] django.request - Unauthorized: /api/v1/notifications/unread-count/
+2026-07-28 12:44:58,221 [INFO] forensic.audit 57897c69-3dc1-4a91-a0ae-a8b2b7b14b9e AUDIT_EVENT:auth.token_refresh
+==> Detected service running on port 10000
+==> Docs on specifying a port: https://render.com/docs/web-services#port-binding
+2026-07-28 12:51:20,323 [WARNING] django.request - Unauthorized: /api/v1/notifications/
+2026-07-28 12:51:20,327 [WARNING] django.request - Unauthorized: /api/v1/notifications/unread-count/
+2026-07-28 12:51:21,219 [WARNING] django.request - Unauthorized: /api/v1/audit-logs/
+2026-07-28 12:51:21,285 [INFO] forensic.audit eb751d63-12c6-4697-9eef-399e3e92610e AUDIT_EVENT:auth.token_refresh
+2026-07-28 12:51:22,431 [INFO] forensic.audit ab7d76bc-97fb-4b45-bfbe-ad4adc475f15 AUDIT_EVENT:security.rbac_denied
+2026-07-28 12:51:22,508 [INFO] forensic.audit ab7d76bc-97fb-4b45-bfbe-ad4adc475f15 AUDIT_EVENT:security.permission_denied
+2026-07-28 12:51:22,558 [WARNING] django.request - Forbidden: /api/v1/audit-logs/
+2026-07-28 12:51:24,136 [INFO] forensic.audit 28269e6a-1c07-4f53-b9c0-c94771a63b41 AUDIT_EVENT:security.rbac_denied
+2026-07-28 12:51:24,218 [INFO] forensic.audit 28269e6a-1c07-4f53-b9c0-c94771a63b41 AUDIT_EVENT:security.permission_denied
+2026-07-28 12:51:24,274 [WARNING] django.request - Forbidden: /api/v1/audit-logs/
