@@ -40,22 +40,18 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
       reconnectTimerRef.current = null;
     }
 
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    let wsHost = import.meta.env.VITE_WS_URL;
-    if (!wsHost) {
-      // Use VITE_API_URL if set, otherwise use the same default as axios.ts
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
-      try {
-        const url = new URL(apiUrl);
-        wsHost = `${url.protocol === 'https:' ? 'wss:' : 'ws:'}//${url.host}`;
-      } catch (e) {
-        wsHost = `${wsProtocol}//${window.location.host}`;
-      }
+    // Derive WS base URL — same approach as the System WebSocket in useWebsocket.ts
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+    let wsBase: string;
+    try {
+      const url = new URL(apiUrl);
+      wsBase = `${url.protocol === 'https:' ? 'wss:' : 'ws:'}//${url.host}`;
+    } catch (e) {
+      const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      wsBase = `${wsProtocol}//${window.location.host}`;
     }
     
-    // Connect with token in protocol (or query param if server supports it).
-    // Assuming token is passed via protocols array as standard for JWT in websockets
-    const wsUrl = `${wsHost}/ws/chat/${conversationId}/`;
+    const wsUrl = `${wsBase}/ws/chat/${conversationId}/`;
     
     ws.current = new WebSocket(wsUrl, ['access_token', token]);
 
