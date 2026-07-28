@@ -5,7 +5,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import Conversation, ConversationParticipant, Message, ConversationStatus
 from apps.notification.services import DispatchOrchestrator
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition, log_deletion
 
 class ChatService:
     @staticmethod
@@ -25,11 +25,10 @@ class ChatService:
                 user=user
             )
             
-            log_action(
+            log_creation(
                 action="chat.conversation_created",
                 actor=user,
-                resource_type="conversation",
-                resource_id=str(conversation.id),
+                instance=conversation,
                 metadata={"subject": conversation.subject, "type": conversation.conversation_type}
             )
             
@@ -163,6 +162,7 @@ class ChatService:
                 raise ValueError("This conversation is already assigned to another staff member.")
                 
         with transaction.atomic():
+            old_conversation = Conversation.objects.get(pk=conversation.pk)
             conversation.assigned_staff = staff_user
             conversation.save()
             
@@ -179,11 +179,11 @@ class ChatService:
                 message_type='system'
             )
             
-            log_action(
+            log_transition(
                 action="chat.conversation_assigned",
                 actor=assigned_by,
-                resource_type="conversation",
-                resource_id=str(conversation.id),
+                instance=conversation,
+                old_instance=old_conversation,
                 metadata={"assigned_to": str(staff_user.id)}
             )
             
@@ -192,6 +192,7 @@ class ChatService:
     @staticmethod
     def resolve_conversation(conversation, resolved_by):
         with transaction.atomic():
+            old_conversation = Conversation.objects.get(pk=conversation.pk)
             conversation.status = ConversationStatus.RESOLVED
             conversation.resolved_at = timezone.now()
             conversation.save()
@@ -204,11 +205,11 @@ class ChatService:
                 message_type='system'
             )
             
-            log_action(
+            log_transition(
                 action="chat.conversation_resolved",
                 actor=resolved_by,
-                resource_type="conversation",
-                resource_id=str(conversation.id)
+                instance=conversation,
+                old_instance=old_conversation,
             )
             
             return conversation
@@ -216,6 +217,7 @@ class ChatService:
     @staticmethod
     def close_conversation(conversation, closed_by):
         with transaction.atomic():
+            old_conversation = Conversation.objects.get(pk=conversation.pk)
             conversation.status = ConversationStatus.CLOSED
             conversation.save()
             
@@ -227,11 +229,11 @@ class ChatService:
                 message_type='system'
             )
             
-            log_action(
+            log_transition(
                 action="chat.conversation_closed",
                 actor=closed_by,
-                resource_type="conversation",
-                resource_id=str(conversation.id)
+                instance=conversation,
+                old_instance=old_conversation,
             )
             
             return conversation
@@ -239,6 +241,7 @@ class ChatService:
     @staticmethod
     def reopen_conversation(conversation, reopened_by):
         with transaction.atomic():
+            old_conversation = Conversation.objects.get(pk=conversation.pk)
             conversation.status = ConversationStatus.OPEN
             conversation.resolved_at = None
             conversation.save()
@@ -251,11 +254,11 @@ class ChatService:
                 message_type='system'
             )
             
-            log_action(
+            log_transition(
                 action="chat.conversation_reopened",
                 actor=reopened_by,
-                resource_type="conversation",
-                resource_id=str(conversation.id)
+                instance=conversation,
+                old_instance=old_conversation,
             )
             
             return conversation
@@ -298,6 +301,7 @@ class ChatService:
                 raise ValueError("This conversation is currently assigned to another staff member.")
             
         with transaction.atomic():
+            old_message = Message.objects.get(pk=message.pk)
             message.is_deleted = True
             message.save(update_fields=['is_deleted'])
             
@@ -310,11 +314,11 @@ class ChatService:
                 }
             ))
             
-            log_action(
+            log_transition(
                 action="chat.message_deleted",
                 actor=user,
-                resource_type="message",
-                resource_id=str(message.id),
+                instance=message,
+                old_instance=old_message,
                 metadata={"conversation_id": str(message.conversation.id)}
             )
             
@@ -334,6 +338,7 @@ class ChatService:
                 reason=reason
             )
             
+            old_conversation = Conversation.objects.get(pk=conversation.pk)
             conversation.assigned_staff = new_staff
             conversation.save(update_fields=['assigned_staff'])
             
@@ -370,11 +375,11 @@ class ChatService:
                 resource_id=str(conversation.id)
             ))
             
-            log_action(
+            log_transition(
                 action="chat.conversation_transferred",
                 actor=transferred_by,
-                resource_type="conversation",
-                resource_id=str(conversation.id),
+                instance=conversation,
+                old_instance=old_conversation,
                 reason=reason,
                 metadata={
                     "previous_staff": str(previous_staff.id) if previous_staff else None,
