@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.state_machine import RequestStateMachine
 from apps.requests.events.publishers import DomainEventPublisher
@@ -45,6 +45,8 @@ class EscalationService:
         Ref: docs/implementation/request/request-service-design.md (4.7)
         """
         request = Request.objects.select_for_update().get(pk=request_id)
+        
+        old_request = Request.objects.get(pk=request.pk)
         
         # Invariant: At most one ACTIVE/PENDING escalation may exist for a request.
         existing_escalation = Escalation.objects.filter(request=request, status=EscalationStatus.PENDING).first()
@@ -93,10 +95,11 @@ class EscalationService:
             triggered_by=actor,
         )
 
-        log_action(
+        log_transition(
             action="escalation.triggered", 
             actor=actor, 
-            resource_id=str(request.id), 
+            instance=request,
+            old_instance=old_request,
             reason=trigger_type,
             metadata={
                 "previous_state": prev_status,
@@ -176,6 +179,7 @@ class EscalationService:
             target_state=LifecycleState(target_state),
         )
 
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.save()
 
@@ -195,10 +199,11 @@ class EscalationService:
         )
 
         # CORRECTION: Added mandatory state fields
-        log_action(
+        log_transition(
             action="escalation.resolved", 
             actor=actor, 
-            resource_id=str(request.id), 
+            instance=request,
+            old_instance=old_request,
             reason=resolution_type,
             metadata={
                 "previous_state": prev_status,

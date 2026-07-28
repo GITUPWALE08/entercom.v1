@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.state_machine import RequestStateMachine
 from apps.requests.events.publishers import DomainEventPublisher
@@ -63,6 +63,7 @@ class AssignmentService:
             context={"tech_available": True},
         )
 
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.assigned_technician = technician
         request.save()
@@ -80,11 +81,11 @@ class AssignmentService:
             correlation_id=correlation_id,
         )
 
-        log_action(
+        log_transition(
             action="request.assigned",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
             metadata={
                 "technician_id": str(technician.id),
                 "previous_state": prev_status,
@@ -158,6 +159,7 @@ class AssignmentService:
             context={"within_timeout": True},
         )
 
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.save()
 
@@ -177,11 +179,11 @@ class AssignmentService:
             correlation_id=correlation_id,
         )
 
-        log_action(
+        log_transition(
             action="assignment.accepted",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
             metadata={
                 "previous_state": prev_status,
                 "new_state": new_status,
@@ -245,6 +247,7 @@ class AssignmentService:
             context={"decline_count": new_decline_count},
         )
 
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.decline_count = new_decline_count
         request.assigned_technician = None
@@ -268,11 +271,11 @@ class AssignmentService:
             correlation_id=correlation_id,
         )
 
-        log_action(
+        log_transition(
             action="assignment.declined",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
             reason=reason_code,
             metadata={
                 "decline_count": new_decline_count,
@@ -331,6 +334,7 @@ class AssignmentService:
                         context={"decline_count": req.decline_count + 1},
                     )
 
+                    old_request = Request.objects.get(pk=req.pk)
                     prev_status = req.status
                     req.status = new_status
                     req.decline_count += 1
@@ -343,11 +347,11 @@ class AssignmentService:
                     assignment.save()
 
                     correlation_id = str(uuid.uuid4())
-                    log_action(
+                    log_transition(
                         action="assignment.timeout",
                         actor=None,
-                        resource_type="request",
-                        resource_id=str(req.id),
+                        instance=req,
+                        old_instance=old_request,
                         reason="Timeout",
                         metadata={
                             "previous_state": prev_status,

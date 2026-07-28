@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.exceptions import RuleViolationError
 from apps.requests.domain.state_machine import RequestStateMachine
@@ -74,6 +74,7 @@ class QuoteService:
             context={"has_valid_quote_version": True},
         )
 
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.save()
 
@@ -99,11 +100,11 @@ class QuoteService:
             correlation_id=correlation_id,
         )
 
-        log_action(
+        log_transition(
             action="quote.created",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
             metadata={
                 "quote_id": str(quote.id),
                 "version": new_version,
@@ -187,6 +188,8 @@ class QuoteService:
         machine = RequestStateMachine(LifecycleState(request.status))
         user_permissions = [p.value for p in PermissionRegistry.get_permissions_for_role(Role(actor.role))] if hasattr(actor, "role") else []
         correlation_id = str(uuid.uuid4())
+        
+        old_request = Request.objects.get(pk=request.pk)
 
         if action_type == "approve":
             # Canonical payment-required categories — must stay in sync with PolicyContextProvider
@@ -203,6 +206,10 @@ class QuoteService:
                 user_permissions=user_permissions,
                 context={"upfront_payment_required": upfront_req},
             )
+            
+            request.status = new_status
+            request.save()
+            
             latest_quote.status = QuoteStatus.APPROVED
             latest_quote.save()
             
@@ -217,10 +224,11 @@ class QuoteService:
                 )
 
             # CORRECTION: Explicit fields in metadata
-            log_action(
+            log_transition(
                 action="quote.approved",
                 actor=actor,
-                resource_id=str(request.id),
+                instance=request,
+                old_instance=old_request,
                 metadata={
                     "version": latest_quote.version,
                     "amount": str(latest_quote.amount),
@@ -255,13 +263,18 @@ class QuoteService:
                 action=RequestAction.REJECT_QUOTE,
                 user_permissions=user_permissions,
             )
+            
+            request.status = new_status
+            request.save()
+            
             latest_quote.status = QuoteStatus.REJECTED
             latest_quote.save()
 
-            log_action(
+            log_transition(
                 action="quote.rejected",
                 actor=actor,
-                resource_id=str(request.id),
+                instance=request,
+                old_instance=old_request,
                 reason=reason or "Quote rejected",
                 metadata={
                     "version": latest_quote.version,
@@ -298,12 +311,16 @@ class QuoteService:
                 user_permissions=user_permissions,
                 context={"revision_count": latest_quote.version},
             )
+            
+            request.status = new_status
+            request.save()
 
             # CORRECTION: Fixed audit label from 'quote.revision_requested' to 'quote_revised'
-            log_action(
+            log_transition(
                 action="quote.revision_requested",
                 actor=actor,
-                resource_id=str(request.id),
+                instance=request,
+                old_instance=old_request,
                 reason=reason or "Quote revision requested",
                 metadata={
                     "version": latest_quote.version,
@@ -335,9 +352,6 @@ class QuoteService:
             # ))
         else:
             raise ValueError(f"Invalid action type: {action_type}")
-
-        request.status = new_status
-        request.save()
 
         StateHistory.objects.create(
             request=request,
@@ -376,6 +390,7 @@ class QuoteService:
                     action=RequestAction.CANCEL, user_permissions=["system.timeout"]
                 )
 
+                old_request = Request.objects.get(pk=req.pk)
                 prev_status = req.status
                 req.status = new_status
                 req.save()
@@ -384,19 +399,21 @@ class QuoteService:
                 quote.save()
 
                 correlation_id = str(uuid.uuid4())
-                log_action(
+                log_transition(
                     action="quote.expired",
                     actor=None,
-                    resource_id=str(req.id),
+                    instance=req,
+                    old_instance=old_request,
                     metadata={
                         "previous_state": prev_status,
                         "new_state": new_status,
                     },
                 )
-                log_action(
+                log_transition(
                     action="request.cancelled",
                     actor=None,
-                    resource_id=str(req.id),
+                    instance=req,
+                    old_instance=old_request,
                     reason="quote_expired",
                     metadata={
                         "previous_state": prev_status,

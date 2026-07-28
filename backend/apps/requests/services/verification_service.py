@@ -11,7 +11,7 @@ from typing import Any, Dict
 from django.contrib.auth import get_user_model
 from django.db import transaction
 
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.state_machine import RequestStateMachine
 from apps.requests.events.publishers import DomainEventPublisher
@@ -76,6 +76,7 @@ class VerificationService:
             context={"evidence_uploaded": True},
         )
 
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.save()
 
@@ -113,11 +114,11 @@ class VerificationService:
         )
 
         # CORRECTION: Added mandatory state fields and evidence links
-        log_action(
+        log_transition(
             action="verification.submitted",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
             metadata={
                 "verification_id": str(verification.id),
                 "evidence_links": [],  # Will be populated when viewing
@@ -185,19 +186,26 @@ class VerificationService:
         user_permissions = [p.value for p in PermissionRegistry.get_permissions_for_role(Role(actor.role))] if hasattr(actor, "role") else []
         correlation_id = str(uuid.uuid4())
 
+        old_request = Request.objects.get(pk=request.pk)
+
         if action_type == "approve":
             new_status = machine.transition(
                 action=RequestAction.APPROVE_VERIFICATION,
                 user_permissions=user_permissions,
                 context={"qa_pass": True},
             )
+            
+            request.status = new_status
+            request.save()
+            
             verification.status = VerificationStatus.APPROVED
             # CORRECTION: Fixed audit label from 'verification.approved' to 'verification_passed'
             # and added mandatory state fields
-            log_action(
+            log_transition(
                 action="verification.approved", 
                 actor=actor, 
-                resource_id=str(request.id),
+                instance=request,
+                old_instance=old_request,
                 metadata={
                     "previous_state": prev_status,
                     "new_state": new_status,
@@ -213,7 +221,7 @@ class VerificationService:
             # [DEFERRED] Non-MVP event
             # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
             #     event_type="verification_approved",
-            #     recipient_id=request.customer_id,
+            #     recipient_id=request.customer.id,
             #     resource_type="request",
             #     resource_id=str(request.id),
             #     category="updates",
@@ -229,13 +237,18 @@ class VerificationService:
                 user_permissions=user_permissions,
                 context={"qa_fail": True},
             )
+            
+            request.status = new_status
+            request.save()
+            
             verification.status = VerificationStatus.REJECTED
             # CORRECTION: Fixed audit label from 'verification.rejected' to 'verification_rejected'
             # and added mandatory state fields
-            log_action(
+            log_transition(
                 action="verification.rejected", 
                 actor=actor, 
-                resource_id=str(request.id), 
+                instance=request,
+                old_instance=old_request,
                 reason=notes,
                 metadata={
                     "previous_state": prev_status,
@@ -269,14 +282,19 @@ class VerificationService:
                 user_permissions=user_permissions,
                 context={"audit_justification_provided": bool(notes)},
             )
+            
+            request.status = new_status
+            request.save()
+            
             verification.status = VerificationStatus.OVERRIDDEN
             verification.override_reason = notes
             # CORRECTION: Fixed audit label from 'verification.overridden' to 'verification_overridden'
             # and added mandatory state fields
-            log_action(
+            log_transition(
                 action="verification.overridden", 
                 actor=actor, 
-                resource_id=str(request.id), 
+                instance=request,
+                old_instance=old_request,
                 reason=notes,
                 metadata={
                     "previous_state": prev_status,
@@ -293,8 +311,6 @@ class VerificationService:
 
         verification.reviewed_by = actor
         verification.save()
-        request.status = new_status
-        request.save()
 
         StateHistory.objects.create(
             request=request,

@@ -9,7 +9,7 @@ from typing import List
 from django.db import transaction
 from django.utils import timezone
 
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from apps.requests.events.publishers import DomainEventPublisher
 from apps.requests.models import LifecycleState, Request, SLAStatus
 from apps.requests.services.escalation_service import EscalationService
@@ -51,6 +51,7 @@ class SLAService:
                 with transaction.atomic():
                     req = Request.objects.select_for_update().get(pk=request.id)
 
+                    old_request = Request.objects.get(pk=req.pk)
                     req.sla_status = SLAStatus.BREACHED
                     # Architecture rule: Escalation automatically increases priority
                     priority_map = {
@@ -67,11 +68,11 @@ class SLAService:
                     )
 
                     # CORRECTION: Fixed audit label from 'sla.breached' to 'sla_breach_detected'
-                    log_action(
+                    log_transition(
                         action="sla.breached",
                         actor=None,
-                        resource_type="request",
-                        resource_id=str(req.id),
+                        instance=req,
+                        old_instance=old_request,
                         reason=f"Target {req.sla_target_time} exceeded",
                     )
 
