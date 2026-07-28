@@ -22,6 +22,7 @@ export interface User {
   address?: string;
   profile_image?: string;
   mfa_enabled?: boolean;
+  role?: string;
   role_assignments: UserRole[];
 }
 

@@ -44,7 +44,7 @@ export default function UserList() {
     }
   });
 
-  const activeRoles = (user: User) => user.role_assignments.filter(r => r.is_active);
+  const activeRoles = (user: User) => (user.role_assignments || []).filter(r => r.is_active);
 
   return (
     <ErrorBoundary>
@@ -83,7 +83,12 @@ export default function UserList() {
                           {assignment.role.name}
                         </span>
                       ))}
-                      {activeRoles(user).length === 0 && (
+                      {activeRoles(user).length === 0 && user.role && (
+                        <span className="px-2.5 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-md border border-blue-100">
+                          {user.role} (Legacy)
+                        </span>
+                      )}
+                      {activeRoles(user).length === 0 && !user.role && (
                         <span className="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-md">
                           No Roles
                         </span>
@@ -128,6 +133,13 @@ export default function UserList() {
                             </button>
                           </div>
                         ))
+                      ) : selectedUser.role ? (
+                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm font-medium text-gray-900">{selectedUser.role} (Legacy)</span>
+                          </div>
+                        </div>
                       ) : (
                         <p className="text-sm text-gray-500">This user currently has no active roles.</p>
                       )}

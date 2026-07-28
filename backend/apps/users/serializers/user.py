@@ -9,7 +9,7 @@ class UserListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'phone_number', 'address', 'profile_image', 'mfa_enabled', 'is_active', 'created_at', 'role_assignments']
+        fields = ['id', 'email', 'first_name', 'last_name', 'phone_number', 'address', 'profile_image', 'mfa_enabled', 'is_active', 'created_at', 'role', 'role_assignments']
 
 class UserCreateSerializer(serializers.Serializer):
     email = serializers.EmailField()
