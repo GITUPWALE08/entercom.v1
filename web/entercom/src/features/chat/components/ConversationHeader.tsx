@@ -5,6 +5,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { Link, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { TransferModal } from './TransferModal';
+import { useState } from 'react';
 
 interface ConversationHeaderProps {
   conversation: ChatConversation;
@@ -16,6 +18,7 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
   const queryClient = useQueryClient();
   const location = useLocation();
   const basePath = location.pathname.split('/').slice(0, 4).join('/');
+  const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
   const isStaff = user?.role === 'staff' || user?.role === 'manager' || user?.role === 'admin';
   const isResolved = conversation.status === 'resolved';
@@ -83,23 +86,26 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
           </button>
         )}
         {isStaff && conversation.assigned_staff && (conversation.assigned_staff.id === user?.id || user?.role === 'admin' || user?.role === 'manager' || user?.role === 'super_admin') && !isClosed && !isResolved && (
-          <button 
-            onClick={() => {
-                const staffId = window.prompt("Enter new Staff ID to transfer to:");
-                if (staffId) {
-                  const reason = window.prompt("Enter reason for transfer:") || '';
-                  chatApi.transfer(conversation.id, staffId, reason).then(() => {
-                      queryClient.invalidateQueries({ queryKey: ['chat', conversation.id] });
-                      queryClient.invalidateQueries({ queryKey: ['chat'] });
-                  }).catch(() => {
-                      alert('Failed to transfer conversation.');
-                  });
-                }
-            }}
-            className="px-3 py-1.5 text-sm font-medium bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
-          >
-            Transfer
-          </button>
+          <>
+            <button 
+              onClick={() => setIsTransferModalOpen(true)}
+              className="px-3 py-1.5 text-sm font-medium bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+            >
+              Transfer
+            </button>
+            <TransferModal
+              isOpen={isTransferModalOpen}
+              onClose={() => setIsTransferModalOpen(false)}
+              onTransfer={(staffId, reason) => {
+                chatApi.transfer(conversation.id, staffId, reason).then(() => {
+                    queryClient.invalidateQueries({ queryKey: ['chat', conversation.id] });
+                    queryClient.invalidateQueries({ queryKey: ['chat'] });
+                }).catch(() => {
+                    alert('Failed to transfer conversation.');
+                });
+              }}
+            />
+          </>
         )}
         
         {isStaff && (!conversation.assigned_staff || conversation.assigned_staff.id === user?.id || user?.role === 'admin' || user?.role === 'manager' || user?.role === 'super_admin') && !isClosed && !isResolved && (

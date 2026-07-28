@@ -21,10 +21,12 @@ class UserViewSet(viewsets.ModelViewSet):
         queryset = User.objects.all().prefetch_related('role_assignments__role')
         role = self.request.query_params.get('role')
         if role:
-            queryset = queryset.filter(
-                Q(role_assignments__role__slug__iexact=role, role_assignments__is_active=True) |
-                Q(role__iexact=role)
-            ).distinct()
+            roles = [r.strip() for r in role.split(',') if r.strip()]
+            if roles:
+                queryset = queryset.filter(
+                    Q(role_assignments__role__slug__in=roles, role_assignments__is_active=True) |
+                    Q(role__in=roles)
+                ).distinct()
         return queryset
 
     def get_serializer_class(self):
