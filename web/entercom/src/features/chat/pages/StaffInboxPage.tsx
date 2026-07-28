@@ -172,7 +172,7 @@ export default function StaffInboxPage() {
 
   return (
     <div className="h-full flex flex-col pt-2 pb-4 px-2 md:px-6">
-      <div className="flex h-full bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+      <div className="flex h-full bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden w-fit">
         
         <ConversationSidebar 
           conversations={filteredConversations} 
