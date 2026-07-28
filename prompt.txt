@@ -1,19 +1,269 @@
-error on the audit log page
-Something went wrong
-Cannot read properties of undefined (reading 'toLowerCase')
+update every business operation that changes state, security, money, permissions, or data. Each operation should log:
 
-Reload Page
-preview:
-{count: 802, next: "https://entercom-v1.onrender.com/api/v1/audit-logs/?page=2", previous: null,…}
-count
-: 
-802
-next
-: 
-"https://entercom-v1.onrender.com/api/v1/audit-logs/?page=2"
-previous
-: 
-null
-results
-: 
-[{id: "a8f5e303-9c00-4619-91d6-7f4a749856cd", created_at: "2026-07-28T13:23:07.209969+00:00",…},…]
+module
+action
+result
+severity
+target
+old_values
+new_values
+reason (if applicable)
+1. Authentication
+User Registration
+User registered
+Email verification requested
+Email verified
+Email verification failed
+Resend verification email
+Login
+Login success
+Login failed
+Login locked
+Logout
+Refresh token
+Refresh token failed
+Session revoked
+All sessions revoked
+Password
+Password changed
+Password reset requested
+Password reset completed
+Password reset failed
+2. Users
+Profile
+Profile updated
+Avatar updated
+Avatar removed
+Role Management
+Role assigned
+Role changed
+Role removed
+Account
+User activated
+User deactivated
+User suspended
+User reactivated
+User deleted
+3. Recruitment
+Applications
+Application submitted
+Application updated
+Application reviewed
+Application approved
+Application rejected
+Interview scheduled
+Technician activated
+Staff activated
+4. Requests
+Request created
+Request submitted
+Request updated
+Request cancelled
+Request assigned
+Request reassigned
+Assignment accepted
+Assignment declined
+Assignment expired
+Request escalated
+Request resumed
+Request completed
+Request closed
+5. Quotes
+Quote created
+Quote revised
+Quote revision requested
+Quote approved
+Quote rejected
+Quote expired
+Quote cancelled
+6. Payments
+Payment initialized
+Payment pending
+Payment verified
+Payment successful
+Payment failed
+Payment cancelled
+Refund initiated
+Refund completed
+Refund failed
+Webhook received
+Webhook validation failed
+7. Orders
+Order created
+Order updated
+Order fulfilled
+Order shipped
+Order cancelled
+Order refunded
+8. Inventory
+Products
+Product created
+Product updated
+Product archived
+Product restored
+Product deleted
+Stock
+Stock increased
+Stock decreased
+Stock adjusted
+Low stock detected
+Out of stock
+Pricing
+Price changed
+9. Booking
+Booking created
+Booking confirmed
+Booking rescheduled
+Booking cancelled
+Booking completed
+10. Technician
+Job accepted
+Job declined
+Work started
+Work paused
+Work resumed
+Work completed
+Verification submitted
+11. Verification
+Verification started
+Evidence uploaded
+Verification approved
+Verification rejected
+Verification reopened
+12. Chat
+Conversation created
+Conversation assigned
+Conversation transferred
+Conversation resolved
+Conversation reopened
+Message sent
+Message edited
+Message deleted
+Internal note created
+Attachment uploaded
+13. Notifications
+Notification created
+Notification sent
+Notification delivered
+Notification failed
+Notification read
+Notification deleted
+14. AI Assistant (Future)
+AI conversation started
+AI suggestion generated
+AI handoff to human
+AI escalation
+15. Analytics
+Report generated
+Report exported
+Dashboard viewed
+16. Admin Settings
+Setting changed
+System configuration updated
+Feature flag enabled
+Feature flag disabled
+17. Security
+Unauthorized access attempt
+Permission denied
+Invalid token
+Invalid webhook
+Suspicious activity detected
+MFA enabled
+MFA disabled
+18. Background Jobs
+Celery task started
+Celery task completed
+Celery task failed
+Scheduled job executed
+Retry executed
+19. File Management
+File uploaded
+File replaced
+File deleted
+20. System
+System startup
+System shutdown
+Migration executed
+Database backup
+Database restore
+Critical exception
+API error
+External service unavailable
+Suggested module values
+authentication
+users
+roles
+recruitment
+requests
+assignments
+quotes
+orders
+payments
+inventory
+products
+bookings
+verification
+chat
+notifications
+analytics
+settings
+security
+files
+system
+celery
+api
+Suggested action values
+created
+updated
+deleted
+submitted
+approved
+rejected
+assigned
+reassigned
+accepted
+declined
+started
+paused
+resumed
+completed
+verified
+cancelled
+resolved
+reopened
+uploaded
+downloaded
+edited
+transferred
+sent
+received
+delivered
+read
+failed
+initialized
+refunded
+exported
+generated
+activated
+deactivated
+suspended
+restored
+Approximate number of audit points
+
+The platform should end up with roughly:
+
+Authentication: ~12
+Users: ~10
+Recruitment: ~8
+Requests: ~15
+Quotes: ~7
+Payments: ~10
+Orders: ~6
+Inventory: ~10
+Bookings: ~6
+Technicians: ~6
+Verification: ~6
+Chat: ~10
+Notifications: ~6
+Analytics: ~3
+Settings/Security/System: ~15

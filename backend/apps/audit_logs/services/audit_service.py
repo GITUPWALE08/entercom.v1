@@ -172,3 +172,75 @@ def log_permission_denial(
             **(metadata or {}),
         },
     )
+
+from django.db import models
+
+def _model_to_dict(instance: models.Model) -> dict:
+    if not instance:
+        return {}
+    data = {}
+    for field in instance._meta.fields:
+        value = getattr(instance, field.name)
+        if isinstance(value, (int, float, str, bool, type(None))):
+            data[field.name] = value
+        else:
+            data[field.name] = str(value)
+    return data
+
+def log_creation(action: str, actor: Any, instance: models.Model, reason: str = "", metadata: dict = None) -> Optional[AuditLogEntry]:
+    new_values = _model_to_dict(instance)
+    meta = metadata or {}
+    meta["new_values"] = new_values
+    meta["status"] = meta.get("status", "success")
+    resource_type = instance._meta.model_name
+    resource_id = str(instance.pk) if instance.pk else None
+    return log_action(
+        action=action,
+        actor=actor,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        reason=reason,
+        metadata=meta
+    )
+
+def log_transition(action: str, actor: Any, instance: models.Model, old_instance: models.Model, reason: str = "", metadata: dict = None) -> Optional[AuditLogEntry]:
+    new_values = _model_to_dict(instance)
+    old_values = _model_to_dict(old_instance)
+    
+    changed_old = {}
+    changed_new = {}
+    for k, v in new_values.items():
+        if old_values.get(k) != v:
+            changed_old[k] = old_values.get(k)
+            changed_new[k] = v
+            
+    meta = metadata or {}
+    meta["old_values"] = changed_old
+    meta["new_values"] = changed_new
+    meta["status"] = meta.get("status", "success")
+    resource_type = instance._meta.model_name
+    resource_id = str(instance.pk) if instance.pk else None
+    return log_action(
+        action=action,
+        actor=actor,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        reason=reason,
+        metadata=meta
+    )
+
+def log_deletion(action: str, actor: Any, instance: models.Model, reason: str = "", metadata: dict = None) -> Optional[AuditLogEntry]:
+    old_values = _model_to_dict(instance)
+    meta = metadata or {}
+    meta["old_values"] = old_values
+    meta["status"] = meta.get("status", "success")
+    resource_type = instance._meta.model_name
+    resource_id = str(instance.pk) if instance.pk else None
+    return log_action(
+        action=action,
+        actor=actor,
+        resource_type=resource_type,
+        resource_id=resource_id,
+        reason=reason,
+        metadata=meta
+    )
