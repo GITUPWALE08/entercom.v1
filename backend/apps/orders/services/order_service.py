@@ -5,7 +5,7 @@ from apps.orders.models import Order, OrderItem, OrderStatus
 from apps.products.models import Product
 from apps.products.services.inventory_service import InventoryService
 from core.events import event_publisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from core.permissions import require_permission
 
 class OrderService:
@@ -66,16 +66,15 @@ class OrderService:
         order.total_amount = total_amount
         order.save()
         
-        log_action(
+        log_creation(
             action='order.created',
             actor=actor,
-            resource_type='order',
-            resource_id=str(order.id),
-            correlation_id=correlation_id,
+            instance=order,
             metadata={
                 'request_id': str(order.request_id),
                 'customer_id': str(order.customer_id),
-                'total_amount': str(order.total_amount)
+                'total_amount': str(order.total_amount),
+                'correlation_id': correlation_id
             }
         )
 
@@ -107,15 +106,14 @@ class OrderService:
             total_amount=quote_amount
         )
         
-        log_action(
+        log_creation(
             action='order.created_from_quote',
             actor=actor,
-            resource_type='order',
-            resource_id=str(order.id),
-            correlation_id=correlation_id,
+            instance=order,
             metadata={
                 'request_id': str(order.request_id),
-                'total_amount': str(order.total_amount)
+                'total_amount': str(order.total_amount),
+                'correlation_id': correlation_id
             }
         )
 
@@ -140,18 +138,19 @@ class OrderService:
         order = Order.objects.select_for_update().filter(id=order_id).first()
         if not order:
             raise ValidationError("Order not found.")
+        old_order = Order.objects.get(pk=order.pk)
         order.status = OrderStatus.PENDING_PAYMENT
         order.save()
         
-        log_action(
+        log_transition(
             action='order.payment_required',
             actor=actor,
-            resource_type='order',
-            resource_id=str(order.id),
-            correlation_id=correlation_id,
+            instance=order,
+            old_instance=old_order,
             metadata={
                 'payment_id': str(payment_id),
-                'amount': str(amount)
+                'amount': str(amount),
+                'correlation_id': correlation_id
             }
         )
 
@@ -165,8 +164,17 @@ class OrderService:
         if order.status != OrderStatus.PENDING_PAYMENT and order.status != OrderStatus.CREATED:
             raise ValidationError("Order is not in a payable state.")
             
+        old_order = Order.objects.get(pk=order.pk)
         order.status = OrderStatus.PAID
         order.save()
+        
+        log_transition(
+            action='order.paid',
+            actor=actor,
+            instance=order,
+            old_instance=old_order,
+            metadata={'correlation_id': correlation_id}
+        )
         
         reductions = [{'product_id': str(item.product_id), 'quantity': item.quantity} for item in order.items.all()]
         try:
@@ -180,9 +188,9 @@ class OrderService:
                 actor=actor,
                 resource_type='order',
                 resource_id=str(order.id),
-                correlation_id=correlation_id,
                 metadata={
-                    'error': str(e)
+                    'error': str(e),
+                    'correlation_id': correlation_id
                 }
             )
         
@@ -204,6 +212,7 @@ class OrderService:
         if order.status == OrderStatus.PAID and cancellation_reason != "Payment was refunded":
             raise ValidationError("Paid orders cannot be cancelled unless payment is refunded.")
             
+        old_order = Order.objects.get(pk=order.pk)
         previous_status = order.status
         order.status = OrderStatus.CANCELLED
         order.save()
@@ -218,14 +227,14 @@ class OrderService:
                     reason="Order cancelled due to refund"
                 )
         
-        log_action(
+        log_transition(
             action='order.cancelled',
             actor=actor,
-            resource_type='order',
-            resource_id=str(order.id),
-            correlation_id=correlation_id,
+            instance=order,
+            old_instance=old_order,
             metadata={
-                'cancellation_reason': cancellation_reason
+                'cancellation_reason': cancellation_reason,
+                'correlation_id': correlation_id
             }
         )
 
@@ -264,17 +273,18 @@ class OrderService:
         if order.status != OrderStatus.PAID:
             raise ValidationError("Order must be paid before fulfillment.")
             
+        old_order = Order.objects.get(pk=order.pk)
         order.status = OrderStatus.FULFILLED
         order.save()
         
-        log_action(
+        log_transition(
             action='order.fulfilled',
             actor=actor,
-            resource_type='order',
-            resource_id=str(order.id),
-            correlation_id=correlation_id,
+            instance=order,
+            old_instance=old_order,
             metadata={
-                'items_fulfilled': len(order.items.all())
+                'items_fulfilled': len(order.items.all()),
+                'correlation_id': correlation_id
             }
         )
 

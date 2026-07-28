@@ -11,7 +11,7 @@ from django.db import transaction
 from django.core.exceptions import PermissionDenied
 from django.db.models import Q
 
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from apps.requests.domain.actions import RequestAction
 from apps.requests.domain.state_machine import RequestStateMachine
 from apps.requests.events.publishers import DomainEventPublisher
@@ -91,11 +91,10 @@ class RequestService:
         )
 
         # Audit Integration
-        log_action(
+        log_creation(
             action="request.created",
             actor=user,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
             metadata={"category": request.category},
         )
 
@@ -234,12 +233,13 @@ class RequestService:
                 updates_made[field] = data[field]
                 
         if updates_made:
+            old_request = Request.objects.get(pk=request.pk)
             request.save()
-            log_action(
+            log_transition(
                 action="request.updated",
                 actor=user,
-                resource_type="request",
-                resource_id=str(request.id),
+                instance=request,
+                old_instance=old_request,
                 metadata={"fields": list(updates_made.keys())}
             )
             # Emit Domain event.
@@ -288,6 +288,7 @@ class RequestService:
         )
 
         # 2. Persist State Change
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.save()
 
@@ -302,11 +303,11 @@ class RequestService:
         )
 
         # 4. Audit Log (Forensic)
-        log_action(
+        log_transition(
             action="request.submitted",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
             reason="User submitted draft",
             metadata={
                 "previous_state": prev_status,
@@ -378,6 +379,7 @@ class RequestService:
         )
 
         # 2. Persist State Change
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.save()
 
@@ -393,11 +395,11 @@ class RequestService:
         )
 
         # 4. Audit Log
-        log_action(
+        log_transition(
             action="request.cancelled",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
             reason=reason_code,
             metadata={
                 "previous_state": prev_status,
@@ -486,6 +488,7 @@ class RequestService:
             context=context,
         )
         
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.save()
 
@@ -499,11 +502,11 @@ class RequestService:
             reason="Staff picked up request"
         )
         
-        log_action(
+        log_transition(
             action="request.picked_up",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
         )
 
         from apps.requests.events.publishers import DomainEventPublisher
@@ -547,6 +550,7 @@ class RequestService:
             context=context,
         )
         
+        old_request = Request.objects.get(pk=request.pk)
         request.status = new_status
         request.save()
 
@@ -560,11 +564,11 @@ class RequestService:
             reason=f"Staff triage action: {action.value}"
         )
         
-        log_action(
+        log_transition(
             action=f"request.triaged.{action.value}",
             actor=actor,
-            resource_type="request",
-            resource_id=str(request.id),
+            instance=request,
+            old_instance=old_request,
         )
 
         from apps.requests.events.publishers import DomainEventPublisher
