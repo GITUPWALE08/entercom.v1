@@ -1,17 +1,57 @@
-      Types of parameters 'filters' and 'context' are incompatible.
-        Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'AuditLogFilters'.
-  Overload 2 of 3, '(options: UndefinedInitialDataOptions<any, Error, any, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<any, Error>', gave the following error.
-    Type '(filters?: AuditLogFilters) => Promise<any>' is not assignable to type 'unique symbol | QueryFunction<any, string[], never> | undefined'.
-      Type '(filters?: AuditLogFilters) => Promise<any>' is not assignable to type 'QueryFunction<any, string[], never>'.
-        Types of parameters 'filters' and 'context' are incompatible.
-          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'AuditLogFilters'.
-  Overload 3 of 3, '(options: UseQueryOptions<any, Error, any, string[]>, queryClient?: QueryClient | undefined): UseQueryResult<any, Error>', gave the following error.
-    Type '(filters?: AuditLogFilters) => Promise<any>' is not assignable to type 'unique symbol | QueryFunction<any, string[], never> | undefined'.
-      Type '(filters?: AuditLogFilters) => Promise<any>' is not assignable to type 'QueryFunction<any, string[], never>'.
-        Types of parameters 'filters' and 'context' are incompatible.
-          Type '{ client: QueryClient; queryKey: string[]; signal: AbortSignal; meta: Record<string, unknown> | undefined; pageParam?: unknown; direction?: unknown; }' has no properties in common with type 'AuditLogFilters'.
-src/features/portal/admin/AdminDashboard.tsx(36,28): error TS2339: Property 'slice' does not exist on type '{}'.
-src/features/portal/admin/AuditLogList.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
-src/features/portal/admin/AuditLogList.tsx(8,49): error TS6133: 'Monitor' is declared but its value is never read.
-src/features/portal/admin/AuditLogList.tsx(8,58): error TS6133: 'ShieldAlert' is declared but its value is never read.
-Error: Command "npm run build" exited with 2
+{"detail":"You do not have permission to perform this action."}
+
+Request URL
+https://entercom-v1.onrender.com/api/v1/audit-logs/
+Request Method
+GET
+Status Code
+403 Forbidden
+Remote Address
+216.24.57.7:443
+Referrer Policy
+strict-origin-when-cross-origin
+
+render log:
+return await consumer(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 58, in __call__
+    await await_many_dispatch(
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/utils.py", line 50, in await_many_dispatch
+    await dispatch(result)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 74, in dispatch
+    await handler(message)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/generic/websocket.py", line 250, in websocket_disconnect
+    await self.disconnect(message["code"])
+  File "/opt/render/project/src/backend/apps/websocket/consumers.py", line 162, in disconnect
+    for group_name in self.subscribed_groups:
+                      ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RequestConsumer' object has no attribute 'subscribed_groups'
+2026-07-28 12:33:04,994 [ERROR] daphne.server - Exception inside application: 'RequestConsumer' object has no attribute 'subscribed_groups'
+Traceback (most recent call last):
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/routing.py", line 48, in __call__
+    return await application(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/security/websocket.py", line 37, in __call__
+    return await self.application(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/backend/apps/websocket/middleware/jwt_auth.py", line 113, in __call__
+    return await self.inner(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/routing.py", line 118, in __call__
+    return await application(
+           ^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 95, in app
+    return await consumer(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 58, in __call__
+    await await_many_dispatch(
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/utils.py", line 50, in await_many_dispatch
+    await dispatch(result)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/consumer.py", line 74, in dispatch
+    await handler(message)
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels/generic/websocket.py", line 250, in websocket_disconnect
+    await self.disconnect(message["code"])
+  File "/opt/render/project/src/backend/apps/websocket/consumers.py", line 162, in disconnect
+    for group_name in self.subscribed_groups:
+                      ^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'RequestConsumer' object has no attribute 'subscribed_groups'

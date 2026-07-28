@@ -159,8 +159,9 @@ class RequestConsumer(AsyncWebsocketConsumer):
             await self.accept()
 
     async def disconnect(self, close_code):
-        for group_name in self.subscribed_groups:
-            await self.channel_layer.group_discard(group_name, self.channel_name)
+        if hasattr(self, 'subscribed_groups'):
+            for group_name in self.subscribed_groups:
+                await self.channel_layer.group_discard(group_name, self.channel_name)
 
     async def receive(self, text_data=None, bytes_data=None):
         """
