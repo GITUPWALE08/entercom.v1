@@ -13,7 +13,7 @@ class ImmutableManager(models.Manager):
     def get_queryset(self):
         return ImmutableQuerySet(self.model, using=self._db)
 
-class AuditRecord(models.Model):
+class AuditLogEntry(models.Model):
     id = models.BigAutoField(primary_key=True)
     action = models.CharField(max_length=255)
     actor_id = models.CharField(max_length=255)

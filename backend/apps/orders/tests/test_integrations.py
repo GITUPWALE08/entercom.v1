@@ -5,7 +5,7 @@ from apps.orders.services.order_service import OrderService
 from apps.orders.models import OrderStatus
 from apps.products.models.product import ProductStatus
 from apps.common.permissions import Actor, Role
-from apps.audit.models import AuditRecord
+from apps.audit.models import AuditLogEntry
 import uuid
 
 pytestmark = pytest.mark.django_db
@@ -98,7 +98,7 @@ def test_test_ord_031_order__audit_persistence(customer_user, request_obj, produ
         items_data=items_data
     )
     
-    assert AuditRecord.objects.filter(correlation_id=corr_id).exists()
+    assert AuditLogEntry.objects.filter(correlation_id=corr_id).exists()
 
 def test_test_ord_032_order__events_emission(customer_user, request_obj, product):
     """
@@ -143,7 +143,7 @@ def test_test_ord_033_correlation_chain_propagation(customer_user, request_obj, 
         items_data=items_data
     )
     
-    audit = AuditRecord.objects.get(action='order.created', correlation_id=corr_id)
+    audit = AuditLogEntry.objects.get(action='order.created', correlation_id=corr_id)
     assert audit.correlation_id == corr_id
 
 def test_test_ord_034_order_create_rejects_archived_product(customer_user, request_obj, product):

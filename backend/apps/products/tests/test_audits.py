@@ -2,7 +2,7 @@ import pytest
 import uuid
 from decimal import Decimal
 from apps.products.services.product_service import ProductService
-from apps.audit.models import AuditRecord
+from apps.audit.models import AuditLogEntry
 from apps.audit.exceptions import ImmutabilityViolationError
 
 pytestmark = pytest.mark.django_db
@@ -20,7 +20,7 @@ def test_test_prod_029_product_audit_creation_and_metadata(staff_user, category)
         sku="SKU-AUD"
     )
     
-    record = AuditRecord.objects.get(correlation_id=corr_id)
+    record = AuditLogEntry.objects.get(correlation_id=corr_id)
     assert record.action == 'product.created'
     assert record.actor_type == 'Staff'
     assert record.metadata['sku'] == 'SKU-AUD'
@@ -38,7 +38,7 @@ def test_test_prod_030_product_audit_immutability(staff_user, category):
         sku="SKU-IMM"
     )
     
-    record = AuditRecord.objects.get(correlation_id=corr_id)
+    record = AuditLogEntry.objects.get(correlation_id=corr_id)
     record.action = "tampered"
     
     with pytest.raises(ImmutabilityViolationError):

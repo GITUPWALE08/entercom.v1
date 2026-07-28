@@ -4,13 +4,25 @@ import { apiClient } from './axios';
 export interface AuditLogItem {
   id: string;
   actor_id?: string;
+  actor_name?: string;
+  actor_role?: string;
   action: string;
+  module?: string;
+  severity?: string;
+  status?: string;
   resource_type: string;
   resource_id?: string;
+  target_type?: string;
+  target_id?: string;
+  target_display?: string;
+  old_values?: any;
+  new_values?: any;
   metadata?: Record<string, any>;
+  request_method?: string;
+  request_path?: string;
+  source?: string;
   ip_address?: string;
   user_agent?: string;
-  status?: string;
   created_at: string;
 }
 

@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name="AuditRecord",
+            name="AuditLogEntry",
             fields=[
                 ("id", models.BigAutoField(primary_key=True, serialize=False)),
                 ("action", models.CharField(max_length=255)),

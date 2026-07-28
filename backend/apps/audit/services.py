@@ -1,4 +1,4 @@
-from .models import AuditRecord
+from .models import AuditLogEntry
 from .constants import AuditAction, ActorType
 
 def resolve_actor_type(actor) -> str:
@@ -18,14 +18,14 @@ def resolve_actor_type(actor) -> str:
 
 class AuditService:
     @staticmethod
-    def log(action, actor_id: str, actor_type, correlation_id: str, metadata: dict) -> AuditRecord:
+    def log(action, actor_id: str, actor_type, correlation_id: str, metadata: dict) -> AuditLogEntry:
         """
         Logs an immutable audit record.
         """
         action_val = action.value if hasattr(action, 'value') else action
         actor_type_val = actor_type.value if hasattr(actor_type, 'value') else actor_type
 
-        return AuditRecord.objects.create(
+        return AuditLogEntry.objects.create(
             action=action_val,
             actor_id=str(actor_id) if actor_id else None,
             actor_type=actor_type_val,
