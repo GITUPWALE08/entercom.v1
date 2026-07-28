@@ -69,7 +69,7 @@ def run_retention(*, dry_run: bool = False, chunk_size: int = None) -> dict[str,
                         _disable_retention_purge()
                         break
                     
-                    # Note: .update() is blocked by AuditLogQuerySet. 
+                    # Note: .update() is blocked by AuditLogEntryQuerySet. 
                     # We need to bypass it or use raw SQL.
                     with connection.cursor() as cursor:
                         placeholders = ', '.join(['%s'] * len(pks))
@@ -90,7 +90,7 @@ def run_retention(*, dry_run: bool = False, chunk_size: int = None) -> dict[str,
                         _disable_retention_purge()
                         break
                     
-                    # .delete() is blocked by AuditLogQuerySet, using raw SQL
+                    # .delete() is blocked by AuditLogEntryQuerySet, using raw SQL
                     with connection.cursor() as cursor:
                         placeholders = ', '.join(['%s'] * len(pks))
                         cursor.execute(
