@@ -17,7 +17,7 @@ from ..services.booking_service import BookingService
 from ..services.no_show_service import NoShowService
 from ..services.availability_service import AvailabilityService
 
-from apps.roles.models import UserRole
+from apps.users.enums import UserRole
 # from apps.requests.models import Request # Assuming we can filter via joins if needed
 
 from .serializers import (
