@@ -210,17 +210,40 @@ export default function StaffInboxPage() {
                 onDelete={handleDelete}
                 typingUsers={typingUsers}
               />
-              <MessageComposer 
-                onSend={handleSend} 
-                disabled={conversationDetail.status === 'closed' || (!!conversationDetail.assigned_staff && conversationDetail.assigned_staff.id !== user?.id)} 
-                replyToMessage={replyToMessage}
-                onCancelReply={() => setReplyToMessage(null)}
-                editingMessage={editingMessage}
-                onEditSubmit={handleEditSubmit}
-                onCancelEdit={() => setEditingMessage(null)}
-                sendTypingStart={sendTypingStart}
-                sendTypingStop={sendTypingStop}
-              />
+              {conversationDetail.status === 'closed' ? (
+                <div className="p-4 bg-gray-50 border-t border-gray-200 text-center text-gray-500 text-sm">
+                  This conversation is closed.
+                </div>
+              ) : !conversationDetail.assigned_staff ? (
+                <div className="p-4 bg-blue-50 border-t border-blue-100 flex flex-col items-center justify-center text-center gap-2">
+                  <p className="text-sm text-blue-800 font-medium">This conversation is unassigned.</p>
+                  <button 
+                    onClick={handleAssign}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors shadow-sm"
+                  >
+                    Pick up to Reply
+                  </button>
+                </div>
+              ) : conversationDetail.assigned_staff.id !== user?.id ? (
+                <div className="p-4 bg-orange-50 border-t border-orange-100 flex flex-col items-center justify-center text-center gap-1">
+                  <p className="text-sm text-orange-800 font-medium">
+                    This conversation is assigned to {conversationDetail.assigned_staff.first_name} {conversationDetail.assigned_staff.last_name}.
+                  </p>
+                  <p className="text-xs text-orange-600">You must transfer it to yourself to send messages.</p>
+                </div>
+              ) : (
+                <MessageComposer 
+                  onSend={handleSend} 
+                  disabled={false} 
+                  replyToMessage={replyToMessage}
+                  onCancelReply={() => setReplyToMessage(null)}
+                  editingMessage={editingMessage}
+                  onEditSubmit={handleEditSubmit}
+                  onCancelEdit={() => setEditingMessage(null)}
+                  sendTypingStart={sendTypingStart}
+                  sendTypingStop={sendTypingStop}
+                />
+              )}
             </>
           ) : (
              <div className="flex-1 flex items-center justify-center text-gray-500">
