@@ -1,32 +1,19 @@
-I am still same error, so I added python manage.py makemigrations roles to build command and still getting same error
-Request URL
-https://entercom-v1.onrender.com/api/v1/audit-logs/
-Request Method
-GET
-Status Code
-403 Forbidden
-Remote Address
-216.24.57.15:443
-Referrer Policy
-strict-origin-when-cross-origin
+error on the audit log page
+Something went wrong
+Cannot read properties of undefined (reading 'toLowerCase')
 
-{"detail":"You do not have permission to perform this action."}
-
-render log:
-2026-07-28 13:06:24,747 [WARNING] django.request - Not Found: /
-2026-07-28 13:06:32,547 [WARNING] django.request - Unauthorized: /api/v1/notifications/unread-count/
-2026-07-28 13:06:32,547 [WARNING] django.request - Unauthorized: /api/v1/audit-logs/
-2026-07-28 13:06:32,550 [WARNING] django.request - Unauthorized: /api/v1/notifications/
-2026-07-28 13:06:33,842 [INFO] forensic.audit ad0c720a-a5b9-4e16-914b-f6161600fd94 AUDIT_EVENT:auth.token_refresh
-2026-07-28 13:06:35,264 [INFO] forensic.audit 9bae662a-f063-46c3-a107-d89581a202a2 AUDIT_EVENT:security.rbac_denied
-2026-07-28 13:06:35,539 [INFO] forensic.audit 9bae662a-f063-46c3-a107-d89581a202a2 AUDIT_EVENT:security.permission_denied
-2026-07-28 13:06:35,641 [WARNING] django.request - Forbidden: /api/v1/audit-logs/
-2026-07-28 13:06:37,133 [INFO] forensic.audit 5d8f7a5f-3d14-44a3-927e-9371f7b05e01 AUDIT_EVENT:security.rbac_denied
-2026-07-28 13:06:37,207 [INFO] forensic.audit 5d8f7a5f-3d14-44a3-927e-9371f7b05e01 AUDIT_EVENT:security.permission_denied
-2026-07-28 13:06:37,256 [WARNING] django.request - Forbidden: /api/v1/audit-logs/
-2026-07-28 13:06:52,390 [INFO] forensic.audit 1f4297d8-c83e-41b0-94e3-448ba5efd0f0 AUDIT_EVENT:security.rbac_denied
-2026-07-28 13:06:52,465 [INFO] forensic.audit 1f4297d8-c83e-41b0-94e3-448ba5efd0f0 AUDIT_EVENT:security.permission_denied
-2026-07-28 13:06:52,515 [WARNING] django.request - Forbidden: /api/v1/audit-logs/
-2026-07-28 13:06:54,120 [INFO] forensic.audit e56dc2ba-3aea-4e2b-8f23-a39c32b35df2 AUDIT_EVENT:security.rbac_denied
-2026-07-28 13:06:54,192 [INFO] forensic.audit e56dc2ba-3aea-4e2b-8f23-a39c32b35df2 AUDIT_EVENT:security.permission_denied
-2026-07-28 13:06:54,243 [WARNING] django.request - Forbidden: /api/v1/audit-logs/
+Reload Page
+preview:
+{count: 802, next: "https://entercom-v1.onrender.com/api/v1/audit-logs/?page=2", previous: null,…}
+count
+: 
+802
+next
+: 
+"https://entercom-v1.onrender.com/api/v1/audit-logs/?page=2"
+previous
+: 
+null
+results
+: 
+[{id: "a8f5e303-9c00-4619-91d6-7f4a749856cd", created_at: "2026-07-28T13:23:07.209969+00:00",…},…]

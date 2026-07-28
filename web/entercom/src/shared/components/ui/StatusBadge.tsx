@@ -1,11 +1,11 @@
 
 interface StatusBadgeProps {
-  status: string;
+  status?: string;
 }
 
-export function StatusBadge({ status }: StatusBadgeProps) {
+export function StatusBadge({ status = 'unknown' }: StatusBadgeProps) {
   const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase() || 'unknown') {
       case 'pending': return 'bg-yellow-50 text-yellow-700 border-yellow-200';
       case 'approved':
       case 'completed': return 'bg-green-50 text-green-700 border-green-200';
@@ -18,7 +18,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
 
   return (
     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${getStatusColor(status)} uppercase tracking-wider`}>
-      {status.replace('_', ' ')}
+      {status?.replace('_', ' ') || 'UNKNOWN'}
     </span>
   );
 }

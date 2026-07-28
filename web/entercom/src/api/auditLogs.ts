@@ -10,7 +10,7 @@ export interface AuditLogItem {
   metadata?: Record<string, any>;
   ip_address?: string;
   user_agent?: string;
-  status: string;
+  status?: string;
   created_at: string;
 }
 
