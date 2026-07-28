@@ -14,14 +14,27 @@ export interface AuditLogItem {
   created_at: string;
 }
 
+export interface AuditLogFilters {
+  action?: string;
+  actor_email?: string;
+  resource_type?: string;
+  correlation_id?: string;
+  date_from?: string;
+  date_to?: string;
+  page?: number;
+}
+
 export const auditLogsApi = {
-  list: async () => {
-    const { data } = await apiClient.get<AuditLogItem[]>('/audit-logs/');
-    return normalizeData(data);
+  list: async (filters?: AuditLogFilters) => {
+    const { data } = await apiClient.get<any>('/audit-logs/', { params: filters });
+    return normalizeData(data); // Assuming paginated response has results in normalizeData logic or it's standard.
   },
 
-  export: async () => {
-    const { data } = await apiClient.get<any>('/audit-logs/export/', { responseType: 'blob' });
-    return normalizeData(data);
+  export: async (filters?: AuditLogFilters, format: string = 'csv') => {
+    const { data } = await apiClient.get<any>('/audit-logs/export/', { 
+      params: { ...filters, format },
+      responseType: 'blob' 
+    });
+    return data; // Return blob directly for export
   }
 };

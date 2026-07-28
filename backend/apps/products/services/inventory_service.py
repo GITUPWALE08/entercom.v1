@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.products.models import Product
 from core.events import event_publisher
-from apps.audit.services import AuditService as audit_logger, resolve_actor_type
+from apps.audit_logs.services.audit_service import log_action
 from core.permissions import require_permission
 
 class InventoryService:
@@ -32,13 +32,13 @@ class InventoryService:
             product.save()
             quantity_after = product.quantity_available
 
-            audit_logger.log(
+            log_action(
                 action='inventory.reduced',
-                actor_id=actor.id,
-                actor_type=resolve_actor_type(actor),
+                actor=actor,
+                resource_type='product',
+                resource_id=pid,
                 correlation_id=correlation_id,
                 metadata={
-                    'products_affected': [pid],
                     'order_id': str(order_id),
                     'quantity_before': quantity_before,
                     'quantity_after': quantity_after,
@@ -81,13 +81,13 @@ class InventoryService:
         product.save()
         quantity_after = product.quantity_available
 
-        audit_logger.log(
+        log_action(
             action='inventory.adjusted',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='product',
+            resource_id=str(product.id),
             correlation_id=correlation_id,
             metadata={
-                'product_id': str(product.id),
                 'quantity_before': quantity_before,
                 'quantity_after': quantity_after,
                 'adjustment_amount': adjustment_amount,
@@ -125,13 +125,13 @@ class InventoryService:
         product.low_stock_threshold = new_threshold
         product.save()
 
-        audit_logger.log(
+        log_action(
             action='inventory.threshold_updated',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='product',
+            resource_id=str(product.id),
             correlation_id=correlation_id,
             metadata={
-                'product_id': str(product.id),
                 'old_threshold': old_threshold,
                 'new_threshold': new_threshold
             }
@@ -139,13 +139,13 @@ class InventoryService:
 
     @staticmethod
     def _emit_low_stock(actor, correlation_id, product):
-        audit_logger.log(
+        log_action(
             action='inventory.low_stock',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='product',
+            resource_id=str(product.id),
             correlation_id=correlation_id,
             metadata={
-                'product_id': str(product.id),
                 'quantity_available': product.quantity_available,
                 'low_stock_threshold': product.low_stock_threshold
             }

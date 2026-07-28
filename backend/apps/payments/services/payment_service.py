@@ -4,7 +4,7 @@ from django.utils import timezone
 from apps.payments.models import Payment, PaymentStatus
 from apps.payments.models import Payment, PaymentStatus
 from core.events import event_publisher
-from apps.audit.services import AuditService as audit_logger
+from apps.audit_logs.services.audit_service import log_action
 from core.permissions import require_permission
 from apps.notification.services import DispatchOrchestrator
 
@@ -34,13 +34,13 @@ class PaymentService:
                 correlation_id=correlation_id
             )
             
-        audit_logger.log(
+        log_action(
             action='payment.initialized',
-            actor_id=actor.id,
-            actor_type=actor.type,
+            actor=actor,
+            resource_type='payment',
+            resource_id=str(payment.id),
             correlation_id=correlation_id,
             metadata={
-                'payment_id': str(payment.id),
                 'order_id': str(order_id),
                 'amount': str(amount),
                 'currency': currency,
@@ -123,13 +123,13 @@ class PaymentService:
             payment.status = PaymentStatus.CANCELLED
             payment.save()
             
-            audit_logger.log(
+            log_action(
                 action='payment.expired',
-                actor_id=actor.id,
-                actor_type=actor.type,
+                actor=actor,
+                resource_type='payment',
+                resource_id=str(payment.id),
                 correlation_id=correlation_id,
                 metadata={
-                    'payment_id': str(payment.id),
                     'order_id': str(payment.order_id)
                 }
             )

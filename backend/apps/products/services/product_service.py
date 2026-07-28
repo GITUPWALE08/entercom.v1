@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.products.models import Product, ProductImage, ProductCategory, ProductStatus
 from core.events import event_publisher
-from apps.audit.services import AuditService as audit_logger, resolve_actor_type
+from apps.audit_logs.services.audit_service import log_action
 from core.permissions import require_permission
 
 class ProductService:
@@ -42,13 +42,13 @@ class ProductService:
                     order_index=idx
                 )
 
-        audit_logger.log(
+        log_action(
             action='product.created',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='product',
+            resource_id=str(product.id),
             correlation_id=correlation_id,
             metadata={
-                'product_id': str(product.id),
                 'category_id': str(category.id),
                 'sku': sku
             }
@@ -98,13 +98,13 @@ class ProductService:
                 setattr(product, field, changed_fields[field])
         product.save()
 
-        audit_logger.log(
+        log_action(
             action='product.updated',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='product',
+            resource_id=str(product.id),
             correlation_id=correlation_id,
             metadata={
-                'product_id': str(product.id),
                 'changed_fields': list(changed_fields.keys())
             }
         )
@@ -133,14 +133,13 @@ class ProductService:
         product.status = ProductStatus.ARCHIVED
         product.save()
 
-        audit_logger.log(
+        log_action(
             action='product.archived',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='product',
+            resource_id=str(product.id),
             correlation_id=correlation_id,
-            metadata={
-                'product_id': str(product.id)
-            }
+            metadata={}
         )
 
         event_publisher.publish(

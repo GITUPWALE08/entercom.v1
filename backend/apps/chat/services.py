@@ -5,6 +5,7 @@ from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 from .models import Conversation, ConversationParticipant, Message, ConversationStatus
 from apps.notification.services import DispatchOrchestrator
+from apps.audit_logs.services.audit_service import log_action
 
 class ChatService:
     @staticmethod
@@ -23,6 +24,15 @@ class ChatService:
                 conversation=conversation,
                 user=user
             )
+            
+            log_action(
+                action="chat.conversation_created",
+                actor=user,
+                resource_type="conversation",
+                resource_id=str(conversation.id),
+                metadata={"subject": conversation.subject, "type": conversation.conversation_type}
+            )
+            
             return conversation
 
     @staticmethod
@@ -168,6 +178,15 @@ class ChatService:
                 f"Conversation assigned to {staff_user.get_full_name()}.",
                 message_type='system'
             )
+            
+            log_action(
+                action="chat.conversation_assigned",
+                actor=assigned_by,
+                resource_type="conversation",
+                resource_id=str(conversation.id),
+                metadata={"assigned_to": str(staff_user.id)}
+            )
+            
             return conversation
 
     @staticmethod
@@ -184,6 +203,14 @@ class ChatService:
                 f"Conversation resolved by {resolved_by.get_full_name()}.",
                 message_type='system'
             )
+            
+            log_action(
+                action="chat.conversation_resolved",
+                actor=resolved_by,
+                resource_type="conversation",
+                resource_id=str(conversation.id)
+            )
+            
             return conversation
 
     @staticmethod
@@ -199,6 +226,14 @@ class ChatService:
                 f"Conversation closed by {closed_by.get_full_name()}.",
                 message_type='system'
             )
+            
+            log_action(
+                action="chat.conversation_closed",
+                actor=closed_by,
+                resource_type="conversation",
+                resource_id=str(conversation.id)
+            )
+            
             return conversation
 
     @staticmethod
@@ -215,6 +250,14 @@ class ChatService:
                 f"Conversation reopened by {reopened_by.get_full_name()}.",
                 message_type='system'
             )
+            
+            log_action(
+                action="chat.conversation_reopened",
+                actor=reopened_by,
+                resource_type="conversation",
+                resource_id=str(conversation.id)
+            )
+            
             return conversation
 
     @staticmethod
@@ -266,6 +309,15 @@ class ChatService:
                     'message_id': str(message.id),
                 }
             ))
+            
+            log_action(
+                action="chat.message_deleted",
+                actor=user,
+                resource_type="message",
+                resource_id=str(message.id),
+                metadata={"conversation_id": str(message.conversation.id)}
+            )
+            
             return message
 
     @staticmethod
@@ -317,5 +369,17 @@ class ChatService:
                 resource_type="conversation",
                 resource_id=str(conversation.id)
             ))
+            
+            log_action(
+                action="chat.conversation_transferred",
+                actor=transferred_by,
+                resource_type="conversation",
+                resource_id=str(conversation.id),
+                reason=reason,
+                metadata={
+                    "previous_staff": str(previous_staff.id) if previous_staff else None,
+                    "new_staff": str(new_staff.id)
+                }
+            )
             
             return conversation

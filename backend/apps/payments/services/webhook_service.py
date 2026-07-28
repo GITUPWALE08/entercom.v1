@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.payments.models import Payment, PaymentStatus
 from core.events import event_publisher
-from apps.audit.services import AuditService as audit_logger
+from apps.audit_logs.services.audit_service import log_action
 from core.permissions import require_permission
 import hashlib
 import hmac
@@ -31,13 +31,13 @@ class WebhookService:
         is_local_mock = (secret_key == 'sk_test_fake_secret')
         
         if not is_local_mock and computed_hmac != signature:
-            audit_logger.log(
+            log_action(
                 action='webhook.rejected',
-                actor_id=actor.id,
-                actor_type=actor.type,
+                actor=actor,
+                resource_type='payment',
+                resource_id=paystack_reference or 'unknown',
                 correlation_id=correlation_id,
                 metadata={
-                    'paystack_reference': paystack_reference or 'unknown',
                     'rejection_reason': 'HMAC mismatch'
                 }
             )
@@ -54,13 +54,13 @@ class WebhookService:
             )
             raise ValidationError("HMAC verification failed")
             
-        audit_logger.log(
+        log_action(
             action='webhook.received',
-            actor_id=actor.id,
-            actor_type=actor.type,
+            actor=actor,
+            resource_type='payment',
+            resource_id=paystack_reference,
             correlation_id=correlation_id,
             metadata={
-                'paystack_reference': paystack_reference,
                 'event_type': event_type
             }
         )
@@ -88,14 +88,14 @@ class WebhookService:
             payment.status = PaymentStatus.PAID
             payment.save()
             
-            audit_logger.log(
+            log_action(
                 action='payment.paid',
-                actor_id=actor.id,
-                actor_type=actor.type,
+                actor=actor,
+                resource_type='payment',
+                resource_id=str(payment.id),
                 correlation_id=correlation_id,
                 metadata={
                     'order_id': str(payment.order_id),
-                    'payment_id': str(payment.id),
                     'paystack_reference': payment.provider_reference,
                     'amount': str(payment.amount),
                     'currency': payment.currency,
@@ -145,15 +145,14 @@ class WebhookService:
             payment.save()
             failure_reason = payload.get('data', {}).get('gateway_response', 'Failed')
             
-            audit_logger.log(
+            log_action(
                 action='payment.failed',
-                actor_id=actor.id,
-                actor_type=actor.type,
+                actor=actor,
+                resource_type='payment',
+                resource_id=str(payment.id),
                 correlation_id=correlation_id,
                 metadata={
-                    'payment_id': str(payment.id),
                     'order_id': str(payment.order_id),
-                    'paystack_reference': payment.provider_reference,
                     'failure_reason': failure_reason
                 }
             )

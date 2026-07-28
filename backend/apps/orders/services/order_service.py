@@ -5,7 +5,7 @@ from apps.orders.models import Order, OrderItem, OrderStatus
 from apps.products.models import Product
 from apps.products.services.inventory_service import InventoryService
 from core.events import event_publisher
-from apps.audit.services import AuditService as audit_logger, resolve_actor_type
+from apps.audit_logs.services.audit_service import log_action
 from core.permissions import require_permission
 
 class OrderService:
@@ -66,13 +66,13 @@ class OrderService:
         order.total_amount = total_amount
         order.save()
         
-        audit_logger.log(
+        log_action(
             action='order.created',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='order',
+            resource_id=str(order.id),
             correlation_id=correlation_id,
             metadata={
-                'order_id': str(order.id),
                 'request_id': str(order.request_id),
                 'customer_id': str(order.customer_id),
                 'total_amount': str(order.total_amount)
@@ -107,13 +107,13 @@ class OrderService:
             total_amount=quote_amount
         )
         
-        audit_logger.log(
+        log_action(
             action='order.created_from_quote',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='order',
+            resource_id=str(order.id),
             correlation_id=correlation_id,
             metadata={
-                'order_id': str(order.id),
                 'request_id': str(order.request_id),
                 'total_amount': str(order.total_amount)
             }
@@ -143,13 +143,13 @@ class OrderService:
         order.status = OrderStatus.PENDING_PAYMENT
         order.save()
         
-        audit_logger.log(
+        log_action(
             action='order.payment_required',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='order',
+            resource_id=str(order.id),
             correlation_id=correlation_id,
             metadata={
-                'order_id': str(order.id),
                 'payment_id': str(payment_id),
                 'amount': str(amount)
             }
@@ -175,13 +175,13 @@ class OrderService:
             import logging
             from apps.audit.services import resolve_actor_type
             logging.getLogger(__name__).critical(f"Order {order.id} paid but inventory insufficient: {str(e)}")
-            audit_logger.log(
+            log_action(
                 action='order.inventory_shortfall',
-                actor_id=actor.id,
-                actor_type=resolve_actor_type(actor),
+                actor=actor,
+                resource_type='order',
+                resource_id=str(order.id),
                 correlation_id=correlation_id,
                 metadata={
-                    'order_id': str(order.id),
                     'error': str(e)
                 }
             )
@@ -218,13 +218,13 @@ class OrderService:
                     reason="Order cancelled due to refund"
                 )
         
-        audit_logger.log(
+        log_action(
             action='order.cancelled',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='order',
+            resource_id=str(order.id),
             correlation_id=correlation_id,
             metadata={
-                'order_id': str(order.id),
                 'cancellation_reason': cancellation_reason
             }
         )
@@ -267,14 +267,14 @@ class OrderService:
         order.status = OrderStatus.FULFILLED
         order.save()
         
-        audit_logger.log(
+        log_action(
             action='order.fulfilled',
-            actor_id=actor.id,
-            actor_type=resolve_actor_type(actor),
+            actor=actor,
+            resource_type='order',
+            resource_id=str(order.id),
             correlation_id=correlation_id,
             metadata={
-                'order_id': str(order.id),
-                'fulfilled_at': timezone.now().isoformat() + "Z"
+                'items_fulfilled': len(order.items.all())
             }
         )
 
