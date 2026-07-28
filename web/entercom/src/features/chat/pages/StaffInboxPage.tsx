@@ -185,7 +185,7 @@ export default function StaffInboxPage() {
           className={id ? 'hidden md:flex' : 'flex'}
         />
         
-        <div className={`flex-1 flex flex-col h-full bg-gray-50/30 ${!id ? 'hidden md:flex' : 'flex'}`}>
+        <div className={`flex-1 flex flex-col h-full bg-gray-50/30 min-w-0 ${!id ? 'hidden md:flex' : 'flex'}`}>
           {!id ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
               <span className="text-6xl mb-4 opacity-50">📬</span>
