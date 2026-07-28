@@ -3,4 +3,6 @@ the marking of chat messages as read properly:
 
 the interface:
     -> on the staff chat, the compose message and the message is not fitting the mobile/window screen/width(for example when I open the dev console on window I instead of fitting to the current screen it overflow into the side of the developerconsole(so the dev console is overlapping the page))
+    and when I am on mobile I need to scroll sideways to view messages
 
+-> Also for the assignment when a staff picks up the message another worker should not be able to assign themselves again unless the staff hands over the conversation (i.e unable to solve the customer's problem)

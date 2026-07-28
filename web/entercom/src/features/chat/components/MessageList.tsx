@@ -84,7 +84,7 @@ export function MessageList({ messages, isLoading, onReply, onEdit, onDelete, ty
   }
 
   return (
-    <div ref={listRef} onScroll={handleScroll} className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 bg-gray-50/50 relative w-full">
+    <div ref={listRef} onScroll={handleScroll} className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/50 relative">
       {sortedMessages.map((msg, idx) => {
         const isFirstUnread = idx === firstUnreadIndex;
         if (msg.message_type === 'system' || !msg.sender) {

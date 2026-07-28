@@ -79,7 +79,7 @@ export function MessageComposer({ onSend, disabled, replyToMessage, onCancelRepl
   };
 
   return (
-    <div className="bg-white border-t border-gray-100 flex flex-col w-full">
+    <div className="bg-white border-t border-gray-100 flex flex-col">
       {replyToMessage && (
         <div className="flex items-center justify-between px-4 py-2 bg-gray-50 border-b border-gray-200">
           <div className="flex flex-col text-sm truncate opacity-80">
