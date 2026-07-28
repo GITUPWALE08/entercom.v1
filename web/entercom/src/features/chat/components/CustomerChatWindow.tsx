@@ -130,7 +130,7 @@ export function CustomerChatWindow({ conversationId: initialConversationId, onCl
   const isClosed = conversation?.status === 'closed';
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-black overflow-hidden animate-in slide-in-from-right md:relative md:inset-auto md:mb-4 md:w-[400px] md:h-[650px] md:max-h-[85vh] md:rounded-2xl md:shadow-2xl md:border md:border-gray-100 md:slide-in-from-bottom-5">
+    <div className="fixed inset-0 z-50 flex flex-col bg-white overflow-hidden animate-in slide-in-from-right md:fixed md:bottom-4 md:right-4 md:inset-auto md:w-[400px] md:h-[650px] md:max-h-[85vh] md:rounded-2xl md:shadow-2xl md:border md:border-gray-100 md:slide-in-from-bottom-5">
       {/* Header */}
       <div className="bg-ess-purple p-4 text-white flex items-center justify-between shrink-0">
         <div className="flex items-center gap-3">

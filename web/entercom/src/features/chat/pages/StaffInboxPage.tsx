@@ -9,8 +9,10 @@ import { ConversationHeader } from '../components/ConversationHeader';
 import { MessageList } from '../components/MessageList';
 import { MessageComposer } from '../components/MessageComposer';
 import { useParams } from 'react-router-dom';
+import { useAuthStore } from '../../../store/authStore';
 
 export default function StaffInboxPage() {
+  const { user } = useAuthStore();
   const { id } = useParams<{ id: string }>();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
@@ -210,7 +212,7 @@ export default function StaffInboxPage() {
               />
               <MessageComposer 
                 onSend={handleSend} 
-                disabled={conversationDetail.status === 'closed'} 
+                disabled={conversationDetail.status === 'closed' || (!!conversationDetail.assigned_staff && conversationDetail.assigned_staff.id !== user?.id)} 
                 replyToMessage={replyToMessage}
                 onCancelReply={() => setReplyToMessage(null)}
                 editingMessage={editingMessage}
