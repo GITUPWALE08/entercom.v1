@@ -11,11 +11,15 @@ django_asgi_app = get_asgi_application()
 from apps.websocket.middleware.jwt_auth import JWTAuthMiddlewareStack  # noqa: E402
 from config.routing import websocket_urlpatterns  # noqa: E402
 
+from django.conf import settings
+from channels.security.websocket import OriginValidator
+
 application = ProtocolTypeRouter(
     {
         "http": django_asgi_app,
-        "websocket": AllowedHostsOriginValidator(
-            JWTAuthMiddlewareStack(URLRouter(websocket_urlpatterns))
+        "websocket": OriginValidator(
+            JWTAuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
+            [origin for origin in settings.CORS_ALLOWED_ORIGINS] + ["*"]
         ),
     }
 )

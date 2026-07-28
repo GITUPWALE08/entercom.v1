@@ -23,7 +23,9 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS",
                              "127.0.0.1", 
                              ".onrender.com",
                              "https://entercom-v1.onrender.com", 
-                             "entercom-v1.onrender.com"
+                             "entercom-v1.onrender.com",
+                             ".vercel.app",
+                             "entercom-v1.vercel.app",
                              ])
 
 ENABLE_SPECTACULAR = env.bool("ENABLE_SPECTACULAR", default=True)
