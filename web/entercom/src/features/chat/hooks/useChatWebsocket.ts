@@ -12,9 +12,8 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
   const queryClient = useQueryClient();
   const ws = useRef<WebSocket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
-  const reconnectAttempts = useRef(0);
-  const maxReconnectAttempts = 5;
-  const reconnectTimerRef = useRef<number | null>(null);
+  const reconnectDelay = useRef(1000);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const onMessageReceivedRef = useRef(onMessageReceived);
   const onReadReceiptRef = useRef(onReadReceipt);
@@ -37,7 +36,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     }
     // Clear any pending reconnect timer
     if (reconnectTimerRef.current) {
-      window.clearTimeout(reconnectTimerRef.current);
+      clearTimeout(reconnectTimerRef.current);
       reconnectTimerRef.current = null;
     }
 
@@ -63,7 +62,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     ws.current.onopen = () => {
       console.log(`Connected to chat ${conversationId}`);
       setIsConnected(true);
-      reconnectAttempts.current = 0;
+      reconnectDelay.current = 1000;
     };
 
     ws.current.onmessage = (event) => {
@@ -171,14 +170,15 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
       
       // 4403 is our custom unauthorized code, don't reconnect
       if (event.code !== 4403) {
-        const timeout = Math.min(Math.pow(2, reconnectAttempts.current) * 1000, 30000);
-        reconnectAttempts.current += 1;
-        reconnectTimerRef.current = window.setTimeout(connect, timeout);
+        reconnectTimerRef.current = setTimeout(() => {
+          reconnectDelay.current = Math.min(reconnectDelay.current * 2, 30_000);
+          connect();
+        }, reconnectDelay.current);
       }
     };
 
-    ws.current.onerror = (error) => {
-      console.error('Chat websocket error:', error);
+    ws.current.onerror = () => {
+      ws.current?.close();
     };
   }, [conversationId, queryClient]);
 
@@ -199,7 +199,7 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
         ws.current = null;
       }
       if (reconnectTimerRef.current) {
-         window.clearTimeout(reconnectTimerRef.current);
+         clearTimeout(reconnectTimerRef.current);
          reconnectTimerRef.current = null;
       }
       if (typingTimeoutRef.current) {
