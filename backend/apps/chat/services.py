@@ -148,6 +148,10 @@ class ChatService:
 
     @staticmethod
     def assign_staff(conversation, staff_user, assigned_by):
+        if conversation.assigned_staff and conversation.assigned_staff != staff_user and conversation.assigned_staff != assigned_by:
+            if assigned_by.role.lower() not in ['admin', 'manager', 'super_admin']:
+                raise ValueError("This conversation is already assigned to another staff member.")
+                
         with transaction.atomic():
             conversation.assigned_staff = staff_user
             conversation.save()

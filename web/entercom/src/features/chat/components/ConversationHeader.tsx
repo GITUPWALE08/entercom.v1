@@ -82,7 +82,7 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
             Assign Staff
           </button>
         )}
-        {isStaff && conversation.assigned_staff && !isClosed && !isResolved && (
+        {isStaff && conversation.assigned_staff && (conversation.assigned_staff.id === user?.id || user?.role === 'admin' || user?.role === 'manager' || user?.role === 'super_admin') && !isClosed && !isResolved && (
           <button 
             onClick={() => {
                 const staffId = window.prompt("Enter new Staff ID to transfer to:");
@@ -102,7 +102,7 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
           </button>
         )}
         
-        {isStaff && !isClosed && !isResolved && (
+        {isStaff && (!conversation.assigned_staff || conversation.assigned_staff.id === user?.id || user?.role === 'admin' || user?.role === 'manager' || user?.role === 'super_admin') && !isClosed && !isResolved && (
           <button 
             onClick={() => {
                 if (window.confirm('Are you sure you want to resolve this conversation?')) {
@@ -116,7 +116,7 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
           </button>
         )}
         
-        {isStaff && isResolved && !isClosed && (
+        {isStaff && isResolved && !isClosed && (!conversation.assigned_staff || conversation.assigned_staff.id === user?.id || user?.role === 'admin' || user?.role === 'manager' || user?.role === 'super_admin') && (
           <button 
             onClick={() => {
                 if (window.confirm('Are you sure you want to close this conversation?')) {
@@ -130,7 +130,7 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
           </button>
         )}
         
-        {isStaff && (isResolved || isClosed) && (
+        {isStaff && (isResolved || isClosed) && (!conversation.assigned_staff || conversation.assigned_staff.id === user?.id || user?.role === 'admin' || user?.role === 'manager' || user?.role === 'super_admin') && (
           <button 
             onClick={() => {
                 if (window.confirm('Are you sure you want to reopen this conversation?')) {

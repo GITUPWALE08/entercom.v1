@@ -113,6 +113,12 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
           queryClient.invalidateQueries({
             queryKey: ['chat', conversationId, 'messages']
           });
+          
+          // Automatically mark as read since we are actively viewing this conversation
+          if (ws.current?.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({ action: 'mark_read' }));
+          }
+          
           if (onMessageReceivedRef.current) onMessageReceivedRef.current(newMsg);
         } else if (data.type === 'message_updated') {
           queryClient.setQueryData(['chat', conversationId, 'messages'], (oldData: any) => {

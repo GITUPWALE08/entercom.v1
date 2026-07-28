@@ -171,8 +171,8 @@ export default function StaffInboxPage() {
   const messages = messagesData?.results || [];
 
   return (
-    <div className="h-full flex flex-col pt-2 pb-4 px-2 md:px-6 w-full md:w-fit">
-      <div className="flex h-full bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden w-fit">
+    <div className="h-full flex flex-col pt-2 pb-4 px-2 md:px-6 w-full max-w-full overflow-hidden">
+      <div className="flex h-full bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden w-full">
         
         <ConversationSidebar 
           conversations={filteredConversations} 
