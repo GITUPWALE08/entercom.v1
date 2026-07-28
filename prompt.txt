@@ -2,4 +2,5 @@ the marking of chat messages as read properly:
     -> in staff inbox, when a particular is still open then the message should be mark as read, so it should not still be showing unread message on the chat list(this is also applicable to customer too)
 
 the interface:
-    -> on the staff chat, the compose
+    -> on the staff chat, the compose message and the message is not fitting the mobile/window screen/width(for example when I open the dev console on window I instead of fitting to the current screen it overflow into the side of the developerconsole(so the dev console is overlapping the page))
+
