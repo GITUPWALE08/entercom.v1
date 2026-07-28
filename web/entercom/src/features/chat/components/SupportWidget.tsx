@@ -57,6 +57,7 @@ export function SupportWidget() {
         onClose={() => setIsOpen(false)} 
         onBack={() => setActiveConversationId(null)}
         context={context}
+        
       />
     );
   }

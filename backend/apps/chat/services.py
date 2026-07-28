@@ -30,6 +30,10 @@ class ChatService:
         if conversation.status == 'closed':
             raise ValueError("Cannot send messages in a closed conversation.")
             
+        if sender and getattr(sender, 'role', '').lower() in ['admin', 'manager', 'staff', 'super_admin']:
+            if conversation.assigned_staff and conversation.assigned_staff != sender:
+                raise ValueError("This conversation is currently assigned to another staff member.")
+            
         with transaction.atomic():
             message = Message.objects.create(
                 conversation=conversation,
@@ -216,6 +220,10 @@ class ChatService:
         if message.is_deleted:
             raise ValueError("Cannot edit a deleted message.")
             
+        if user and getattr(user, 'role', '').lower() in ['admin', 'manager', 'staff', 'super_admin']:
+            if message.conversation.assigned_staff and message.conversation.assigned_staff != user:
+                raise ValueError("This conversation is currently assigned to another staff member.")
+            
         with transaction.atomic():
             message.body = new_body
             message.edited_at = timezone.now()
@@ -237,6 +245,10 @@ class ChatService:
     def delete_message(message, user):
         if message.sender != user and user.role not in ['admin', 'manager']:
             raise ValueError("Unauthorized to delete this message.")
+            
+        if user and getattr(user, 'role', '').lower() in ['admin', 'manager', 'staff', 'super_admin']:
+            if message.conversation.assigned_staff and message.conversation.assigned_staff != user:
+                raise ValueError("This conversation is currently assigned to another staff member.")
             
         with transaction.atomic():
             message.is_deleted = True
