@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.products.models import Product
 from core.events import event_publisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from core.permissions import require_permission
 
 class InventoryService:
@@ -28,21 +28,22 @@ class InventoryService:
             if product.quantity_available < quantity_reduced:
                 raise ValidationError(f"Insufficient stock for product {pid}.")
                 
+            old_product = Product.objects.get(pk=product.pk)
             product.quantity_available -= quantity_reduced
             product.save()
             quantity_after = product.quantity_available
 
-            log_action(
+            log_transition(
                 action='inventory.reduced',
                 actor=actor,
-                resource_type='product',
-                resource_id=pid,
-                correlation_id=correlation_id,
+                instance=product,
+                old_instance=old_product,
                 metadata={
                     'order_id': str(order_id),
                     'quantity_before': quantity_before,
                     'quantity_after': quantity_after,
-                    'quantity_reduced': quantity_reduced
+                    'quantity_reduced': quantity_reduced,
+                    'correlation_id': correlation_id
                 }
             )
 
@@ -73,6 +74,7 @@ class InventoryService:
             raise ValidationError("Product not found.")
             
         quantity_before = product.quantity_available
+        old_product = Product.objects.get(pk=product.pk)
         product.quantity_available += adjustment_amount
         
         if product.quantity_available < 0:
@@ -81,17 +83,17 @@ class InventoryService:
         product.save()
         quantity_after = product.quantity_available
 
-        log_action(
+        log_transition(
             action='inventory.adjusted',
             actor=actor,
-            resource_type='product',
-            resource_id=str(product.id),
-            correlation_id=correlation_id,
+            instance=product,
+            old_instance=old_product,
             metadata={
                 'quantity_before': quantity_before,
                 'quantity_after': quantity_after,
                 'adjustment_amount': adjustment_amount,
-                'reason': reason
+                'reason': reason,
+                'correlation_id': correlation_id
             }
         )
 
@@ -121,19 +123,20 @@ class InventoryService:
         if not product:
             raise ValidationError("Product not found.")
             
+        old_product = Product.objects.get(pk=product.pk)
         old_threshold = product.low_stock_threshold
         product.low_stock_threshold = new_threshold
         product.save()
 
-        log_action(
+        log_transition(
             action='inventory.threshold_updated',
             actor=actor,
-            resource_type='product',
-            resource_id=str(product.id),
-            correlation_id=correlation_id,
+            instance=product,
+            old_instance=old_product,
             metadata={
                 'old_threshold': old_threshold,
-                'new_threshold': new_threshold
+                'new_threshold': new_threshold,
+                'correlation_id': correlation_id
             }
         )
 

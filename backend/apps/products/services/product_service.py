@@ -3,7 +3,7 @@ from django.core.exceptions import ValidationError
 from django.utils import timezone
 from apps.products.models import Product, ProductImage, ProductCategory, ProductStatus
 from core.events import event_publisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from core.permissions import require_permission
 
 class ProductService:
@@ -42,15 +42,14 @@ class ProductService:
                     order_index=idx
                 )
 
-        log_action(
+        log_creation(
             action='product.created',
             actor=actor,
-            resource_type='product',
-            resource_id=str(product.id),
-            correlation_id=correlation_id,
+            instance=product,
             metadata={
                 'category_id': str(category.id),
-                'sku': sku
+                'sku': sku,
+                'correlation_id': correlation_id
             }
         )
 
@@ -96,16 +95,17 @@ class ProductService:
         for field in allowed_fields:
             if field in changed_fields:
                 setattr(product, field, changed_fields[field])
+        old_product = Product.objects.get(pk=product.pk)
         product.save()
 
-        log_action(
+        log_transition(
             action='product.updated',
             actor=actor,
-            resource_type='product',
-            resource_id=str(product.id),
-            correlation_id=correlation_id,
+            instance=product,
+            old_instance=old_product,
             metadata={
-                'changed_fields': list(changed_fields.keys())
+                'changed_fields': list(changed_fields.keys()),
+                'correlation_id': correlation_id
             }
         )
 
@@ -131,15 +131,17 @@ class ProductService:
             raise ValidationError("Product not found.")
         
         product.status = ProductStatus.ARCHIVED
+        old_product = Product.objects.get(pk=product.pk)
         product.save()
 
-        log_action(
+        log_transition(
             action='product.archived',
             actor=actor,
-            resource_type='product',
-            resource_id=str(product.id),
-            correlation_id=correlation_id,
-            metadata={}
+            instance=product,
+            old_instance=old_product,
+            metadata={
+                'correlation_id': correlation_id
+            }
         )
 
         event_publisher.publish(
