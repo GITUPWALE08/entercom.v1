@@ -73,7 +73,7 @@ function AuditDetailsDrawer({ isOpen, onClose, log }: { isOpen: boolean, onClose
             <div className="grid grid-cols-2 gap-4">
               <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
                 <div className="flex items-center gap-2 text-gray-500 mb-2"><User size={16} /><span className="text-xs font-medium uppercase tracking-wider">Actor</span></div>
-                <p className="font-mono text-sm text-gray-900 break-all">{log.actor_id || 'SYSTEM'}</p>
+                <p className="font-mono text-sm text-gray-900 break-all">{log.actor_name || log.actor_email || log.actor_id || 'SYSTEM'}</p>
               </div>
               <div className="bg-gray-50/50 p-4 rounded-2xl border border-gray-100">
                 <div className="flex items-center gap-2 text-gray-500 mb-2"><Cpu size={16} /><span className="text-xs font-medium uppercase tracking-wider">Resource</span></div>
@@ -137,7 +137,7 @@ export default function AuditLogList() {
     { header: 'Timestamp', accessor: (log: AuditLogItem) => <span className="text-xs text-gray-500">{new Date(log.created_at).toLocaleString()}</span> },
     { header: 'Action', accessor: (log: AuditLogItem) => <span className="font-medium text-gray-900">{log.action}</span> },
     { header: 'Resource', accessor: (log: AuditLogItem) => <span className="text-xs font-mono text-gray-500">{log.resource_type} {log.resource_id ? `/ ${log.resource_id.split('-')[0].toUpperCase()}` : ''}</span> },
-    { header: 'Actor ID', accessor: (log: AuditLogItem) => <span className="text-xs font-mono">{log.actor_id ? log.actor_id.split('-')[0].toUpperCase() : 'SYSTEM'}</span> },
+    { header: 'Actor', accessor: (log: AuditLogItem) => <span className="text-xs font-mono">{log.actor_name || log.actor_email || (log.actor_id ? log.actor_id.split('-')[0].toUpperCase() : 'SYSTEM')}</span> },
     { header: 'Status', accessor: (log: AuditLogItem) => <StatusBadge status={log.status} /> }
   ], []);
 

@@ -5,6 +5,7 @@ export interface AuditLogItem {
   id: string;
   actor_id?: string;
   actor_name?: string;
+  actor_email?: string;
   actor_role?: string;
   action: string;
   module?: string;
