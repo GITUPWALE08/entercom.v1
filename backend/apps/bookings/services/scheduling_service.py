@@ -9,7 +9,7 @@ from ..models.reschedule_record import RescheduleRecord
 from .availability_service import AvailabilityService
 from ..permissions.checkers import BookingPermissionChecker
 from ..events.publishers import BookingEventPublisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 
 logger = logging.getLogger(__name__)
 
@@ -46,17 +46,18 @@ class SchedulingService:
             raise ValidationError("Technician is not available for the requested window.")
 
         # 6. State Change
+        old_booking = Booking.objects.get(pk=booking.pk)
         booking.start_time = start_time
         booking.end_time = end_time
         booking.status = Booking.Status.SCHEDULED
         booking.save()
 
         # 7. Audit
-        log_action(
+        log_transition(
             action="booking.scheduled",
             actor=actor,
-            resource_type="Booking",
-            resource_id=str(booking.id),
+            instance=booking,
+            old_instance=old_booking,
             metadata={
                 "start_time": start_time.isoformat(),
                 "end_time": end_time.isoformat(),
@@ -132,17 +133,18 @@ class SchedulingService:
         )
 
         # 7. State Change
+        old_booking = Booking.objects.get(pk=booking.pk)
         booking.start_time = new_start_time
         booking.end_time = new_end_time
         booking.reschedule_count += 1
         booking.save()
 
         # 8. Audit (Centralized Audit Log)
-        log_action(
+        log_transition(
             action="booking.rescheduled",
             actor=actor,
-            resource_type="Booking",
-            resource_id=str(booking.id),
+            instance=booking,
+            old_instance=old_booking,
             metadata={
                 "previous_window": prev_window,
                 "new_window": new_window,

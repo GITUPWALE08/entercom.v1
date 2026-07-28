@@ -69,7 +69,7 @@ class TestBookingBackgroundJobs:
         assert kwargs['booking_id'] == str(b1.id)
 
     @patch('apps.bookings.tasks.reminder_tasks.BookingEventPublisher.publish_booking_reminder_sent')
-    @patch('apps.bookings.tasks.reminder_tasks.log_action')
+    @patch('apps.bookings.tasks.reminder_tasks.log_transition')
     def test_reminder_dispatcher_idempotency(self, mock_log, mock_publish):
         now = timezone.now()
 
@@ -119,7 +119,7 @@ class TestBookingBackgroundJobs:
         assert mock_log.call_count == 0
 
     @patch('apps.bookings.tasks.reminder_tasks.BookingEventPublisher.publish_booking_reminder_sent')
-    @patch('apps.bookings.tasks.reminder_tasks.log_action')
+    @patch('apps.bookings.tasks.reminder_tasks.log_transition')
     def test_reminder_3h_sent_after_24h(self, mock_log, mock_publish):
         now = timezone.now()
 

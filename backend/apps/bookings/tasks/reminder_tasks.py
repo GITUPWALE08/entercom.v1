@@ -6,7 +6,7 @@ from datetime import timedelta
 
 from ..models.booking import Booking
 from ..events.publishers import BookingEventPublisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 
 logger = logging.getLogger(__name__)
 
@@ -46,12 +46,16 @@ def run_reminder_dispatcher(self):
         for booking in bookings_24h:
             correlation_id = f"job-rem-24h-{booking.id}-{now.strftime('%Y%m%d%H')}"
             
+            old_booking = Booking.objects.get(pk=booking.pk)
+            booking.last_reminder_sent = now
+            booking.save(update_fields=['last_reminder_sent'])
+
             # Audit Requirement: booking-background-jobs.md 5.1.2
-            log_action(
+            log_transition(
                 action="booking.reminder_sent",
                 actor=system_actor,
-                resource_type="Booking",
-                resource_id=str(booking.id),
+                instance=booking,
+                old_instance=old_booking,
                 metadata={
                     "request_id": str(booking.request_id),
                     "reminder_type": "24h",
@@ -71,9 +75,6 @@ def run_reminder_dispatcher(self):
                     recipient_role="BOTH"
                 )
             )
-            
-            booking.last_reminder_sent = now
-            booking.save(update_fields=['last_reminder_sent'])
             sent_count += 1
 
     # Process 3-hour reminders
@@ -88,11 +89,15 @@ def run_reminder_dispatcher(self):
         for booking in bookings_3h:
             correlation_id = f"job-rem-3h-{booking.id}-{now.strftime('%Y%m%d%H')}"
             
-            log_action(
+            old_booking = Booking.objects.get(pk=booking.pk)
+            booking.last_reminder_sent = now
+            booking.save(update_fields=['last_reminder_sent'])
+
+            log_transition(
                 action="booking.reminder_sent",
                 actor=system_actor,
-                resource_type="Booking",
-                resource_id=str(booking.id),
+                instance=booking,
+                old_instance=old_booking,
                 metadata={
                     "request_id": str(booking.request_id),
                     "reminder_type": "3h",
@@ -110,9 +115,6 @@ def run_reminder_dispatcher(self):
                     recipient_role="BOTH"
                 )
             )
-            
-            booking.last_reminder_sent = now
-            booking.save(update_fields=['last_reminder_sent'])
             sent_count += 1
 
     logger.info(f"Reminder Dispatcher complete. Published {sent_count} reminder events.")

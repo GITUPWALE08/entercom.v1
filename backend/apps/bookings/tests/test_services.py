@@ -36,7 +36,7 @@ from apps.bookings.permissions.constants import Roles
 @pytest.mark.django_db(transaction=True)
 class TestBookingServices:
     
-    @patch('apps.bookings.services.booking_service.log_action')
+    @patch('apps.bookings.services.booking_service.log_transition')
     @patch('apps.bookings.services.booking_service.BookingEventPublisher.publish_booking_in_progress')
     def test_start_booking_service(self, mock_event, mock_audit, tech_user, request_obj):
         """
@@ -61,7 +61,7 @@ class TestBookingServices:
         # Verify Event
         mock_event.assert_called_once()
 
-    @patch('apps.bookings.services.booking_service.log_action')
+    @patch('apps.bookings.services.booking_service.log_transition')
     @patch('apps.bookings.services.booking_service.BookingEventPublisher.publish_booking_duration_extended')
     @patch('apps.bookings.services.booking_service.AvailabilityService.has_conflict')
     def test_extend_duration_service(self, mock_conflict, mock_event, mock_audit, tech_user, request_obj):
@@ -77,7 +77,7 @@ class TestBookingServices:
         assert mock_audit.call_args[1]['action'] == "booking.duration_extended"
         mock_event.assert_called_once()
 
-    @patch('apps.bookings.services.booking_service.log_action')
+    @patch('apps.bookings.services.booking_service.log_transition')
     @patch('apps.bookings.services.booking_service.BookingEventPublisher.publish_booking_completed')
     def test_sync_completion_service(self, mock_event, mock_audit, tech_user, request_obj):
         actor = MagicMock(role=Roles.SYSTEM, id="SYSTEM")
@@ -90,7 +90,7 @@ class TestBookingServices:
         assert mock_audit.call_args[1]['action'] == "booking.completed"
         mock_event.assert_called_once()
 
-    @patch('apps.bookings.services.booking_service.log_action')
+    @patch('apps.bookings.services.booking_service.log_transition')
     @patch('apps.bookings.services.booking_service.BookingEventPublisher.publish_booking_cancelled')
     def test_sync_cancellation_service(self, mock_event, mock_audit, tech_user, request_obj):
         actor = MagicMock(role=Roles.SYSTEM, id="SYSTEM")
@@ -138,7 +138,7 @@ class TestBookingServices:
         assert slots[0]['end'].strftime("%H:%M") == "17:00"
 
     @patch('apps.bookings.services.availability_service.WorkingHours.objects.get_or_create')
-    @patch('apps.bookings.services.availability_service.log_action')
+    @patch('apps.bookings.services.availability_service.log_transition')
     @patch('apps.bookings.services.availability_service.BookingEventPublisher.publish_working_hours_updated')
     def test_update_working_hours(self, mock_event, mock_audit, mock_goc, tech_user, request_obj):
         actor = MagicMock(role=Roles.MANAGER)
@@ -153,7 +153,7 @@ class TestBookingServices:
         assert mock_audit.call_args[1]['action'] == "working_hours.updated"
         mock_event.assert_called_once()
 
-    @patch('apps.bookings.services.availability_service.log_action')
+    @patch('apps.bookings.services.availability_service.log_creation')
     @patch('apps.bookings.services.availability_service.BookingEventPublisher.publish_blackout_created')
     def test_create_blackout_date(self, mock_event, mock_audit, tech_user, request_obj):
         actor = MagicMock(role=Roles.MANAGER)
@@ -167,7 +167,7 @@ class TestBookingServices:
         mock_event.assert_called_once()
 
     @patch('apps.bookings.services.availability_service.BlackoutDate.objects.get')
-    @patch('apps.bookings.services.availability_service.log_action')
+    @patch('apps.bookings.services.availability_service.log_deletion')
     @patch('apps.bookings.services.availability_service.BookingEventPublisher.publish_blackout_deleted')
     def test_delete_blackout_date(self, mock_event, mock_audit, mock_get, tech_user, request_obj):
         actor = MagicMock(role=Roles.MANAGER)

@@ -10,7 +10,7 @@ from ..models.blackout_date import BlackoutDate
 from ..models.booking import Booking
 from ..permissions.checkers import BookingPermissionChecker
 from ..events.publishers import BookingEventPublisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition, log_deletion
 
 logger = logging.getLogger(__name__)
 
@@ -126,21 +126,32 @@ class AvailabilityService:
         prev_schedule = working_hours.schedule_blob
         
         # 4. State Change
+        old_working_hours = WorkingHours.objects.get(pk=working_hours.pk) if not created else None
         working_hours.schedule_blob = schedule_blob
         working_hours.save()
 
         # 5. Audit
-        log_action(
-            action="working_hours.updated",
-            actor=actor,
-            resource_type="WorkingHours",
-            resource_id=str(working_hours.id),
-            metadata={
-                "previous_schedule": prev_schedule,
-                "new_schedule": schedule_blob,
-                "active_commitments_checked": True
-            }
-        )
+        if created:
+            log_creation(
+                action="working_hours.created",
+                actor=actor,
+                instance=working_hours,
+                metadata={
+                    "schedule": schedule_blob,
+                }
+            )
+        else:
+            log_transition(
+                action="working_hours.updated",
+                actor=actor,
+                instance=working_hours,
+                old_instance=old_working_hours,
+                metadata={
+                    "previous_schedule": prev_schedule,
+                    "new_schedule": schedule_blob,
+                    "active_commitments_checked": True
+                }
+            )
 
         # 6. Event
         transaction.on_commit(lambda: BookingEventPublisher.publish_working_hours_updated(
@@ -235,11 +246,10 @@ class AvailabilityService:
         )
 
         # 4. Audit
-        log_action(
+        log_creation(
             action="blackout.created",
             actor=actor,
-            resource_type="BlackoutDate",
-            resource_id=str(blackout.id),
+            instance=blackout,
             metadata={
                 "technician_id": str(technician_id),
                 "start_time": start_time.isoformat(),
@@ -279,11 +289,10 @@ class AvailabilityService:
         blackout.delete()
 
         # 3. Audit
-        log_action(
+        log_deletion(
             action="blackout.deleted",
             actor=actor,
-            resource_type="BlackoutDate",
-            resource_id=blackout_id,
+            instance=blackout,
             metadata={
                 "technician_id": technician_id
             }

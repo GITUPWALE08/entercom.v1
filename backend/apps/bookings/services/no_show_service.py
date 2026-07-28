@@ -8,7 +8,7 @@ from ..models.booking import Booking
 from ..models.no_show_record import NoShowRecord
 from ..permissions.checkers import BookingPermissionChecker
 from ..events.publishers import BookingEventPublisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 
 logger = logging.getLogger(__name__)
 
@@ -54,15 +54,16 @@ class NoShowService:
         )
 
         # 6. State Change
+        old_booking = Booking.objects.get(pk=booking.pk)
         booking.status = Booking.Status.NO_SHOW
         booking.save()
 
         # 7. Audit (Centralized Audit Log)
-        log_action(
+        log_transition(
             action="booking.no_show",
             actor=actor,
-            resource_type="Booking",
-            resource_id=str(booking.id),
+            instance=booking,
+            old_instance=old_booking,
             metadata={
                 "absent_party": absent_party,
                 "waiting_period_met": True,

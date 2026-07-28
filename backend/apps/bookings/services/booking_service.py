@@ -10,7 +10,7 @@ from .availability_service import AvailabilityService
 from ..permissions.checkers import BookingPermissionChecker
 from ..permissions.constants import Roles
 from ..events.publishers import BookingEventPublisher
-from apps.audit_logs.services.audit_service import log_action
+from apps.audit_logs.services.audit_service import log_action, log_creation, log_transition
 from apps.notification.services import DispatchOrchestrator
 
 logger = logging.getLogger(__name__)
@@ -46,11 +46,10 @@ class BookingService:
         )
         
         # 4. Audit
-        log_action(
+        log_creation(
             action="booking.created",
             actor=actor,
-            resource_type="Booking",
-            resource_id=str(booking.id),
+            instance=booking,
             metadata={
                 "request_id": str(request_id),
                 "technician_id": str(technician_id),
@@ -101,16 +100,17 @@ class BookingService:
             raise ValidationError(f"Cannot start booking in state: {booking.status}")
 
         # 4. State Change
+        old_booking = Booking.objects.get(pk=booking.pk)
         booking.status = Booking.Status.IN_PROGRESS
         booking.started_at = timezone.now()
         booking.save()
 
         # 5. Audit
-        log_action(
+        log_transition(
             action="booking.in_progress",
             actor=actor,
-            resource_type="Booking",
-            resource_id=str(booking.id),
+            instance=booking,
+            old_instance=old_booking,
             metadata={
                 "started_at": booking.started_at.isoformat(),
                 "location_verified": True  # Requirement from audit-spec
@@ -173,16 +173,17 @@ class BookingService:
         prev_duration = booking.duration_days
         
         # 4. State Change
+        old_booking = Booking.objects.get(pk=booking.pk)
         booking.duration_days = new_duration_days
         booking.end_time = new_end_time
         booking.save()
 
         # 5. Audit
-        log_action(
+        log_transition(
             action="booking.duration_extended",
             actor=actor,
-            resource_type="Booking",
-            resource_id=str(booking.id),
+            instance=booking,
+            old_instance=old_booking,
             metadata={
                 "previous_duration_days": prev_duration,
                 "new_duration_days": new_duration_days
@@ -213,15 +214,16 @@ class BookingService:
         booking = Booking.objects.select_for_update().get(id=booking_id)
         
         # 2. State Change
+        old_booking = Booking.objects.get(pk=booking.pk)
         booking.status = Booking.Status.COMPLETED
         booking.save()
 
         # 3. Audit
-        log_action(
+        log_transition(
             action="booking.completed",
             actor=actor,
-            resource_type="Booking",
-            resource_id=str(booking.id),
+            instance=booking,
+            old_instance=old_booking,
             metadata={
                 "trigger_reason": "request_completed"
             }
@@ -264,15 +266,16 @@ class BookingService:
             return booking # Already terminal
 
         # 2. State Change
+        old_booking = Booking.objects.get(pk=booking.pk)
         booking.status = Booking.Status.CANCELLED
         booking.save()
 
         # 3. Audit
-        log_action(
+        log_transition(
             action="booking.cancelled",
             actor=actor,
-            resource_type="Booking",
-            resource_id=str(booking.id),
+            instance=booking,
+            old_instance=old_booking,
             metadata={
                 "trigger_reason": "request_cancelled",
                 "refund_verified": True  # Requirement from audit-spec
