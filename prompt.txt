@@ -1,23 +1,46 @@
+render log:
+ File "/opt/render/project/python/Python-3.12.10/lib/python3.12/concurrent/futures/_base.py", line 449, in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/python/Python-3.12.10/lib/python3.12/concurrent/futures/_base.py", line 401, in __get_result
+    raise self._exception
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/asgiref/sync.py", line 372, in main_wrap
+    result = await awaitable
+             ^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels_redis/core.py", line 528, in group_send
+    ) = self._map_channel_keys_to_connection(channel_names, message)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels_redis/core.py", line 628, in _map_channel_keys_to_connection
+    channel_key_to_message[key] = self.serialize(value)
+                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels_redis/core.py", line 648, in serialize
+    return self._serializer.serialize(message)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/channels_redis/serializers.py", line 71, in serialize
+    message = self.as_bytes(message)
+              ^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/render/project/src/.venv/lib/python3.12/site-packages/msgpack/__init__.py", line 36, in packb
+    return Packer(**kwargs).pack(o)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "msgpack/_packer.pyx", line 279, in msgpack._cmsgpack.Packer.pack
+  File "msgpack/_packer.pyx", line 276, in msgpack._cmsgpack.Packer.pack
+  File "msgpack/_packer.pyx", line 269, in msgpack._cmsgpack.Packer._pack
+  File "msgpack/_packer.pyx", line 212, in msgpack._cmsgpack.Packer._pack_inner
+  File "msgpack/_packer.pyx", line 269, in msgpack._cmsgpack.Packer._pack
+  File "msgpack/_packer.pyx", line 212, in msgpack._cmsgpack.Packer._pack_inner
+  File "msgpack/_packer.pyx", line 269, in msgpack._cmsgpack.Packer._pack
+  File "msgpack/_packer.pyx", line 256, in msgpack._cmsgpack.Packer._pack_inner
+TypeError: can not serialize 'UUID' object
+
+
+
 Request URL
 https://entercom-v1.onrender.com/api/v1/chat/conversations/2dc5bdfa-a200-4175-998f-8d287752c50b/messages/
 Request Method
 POST
 Status Code
-401 Unauthorized
+500 Internal Server Error
 Remote Address
-216.24.57.15:443
+216.24.57.7:443
 Referrer Policy
 strict-origin-when-cross-origin
-
-{
-    "detail": "Given token not valid for any token type",
-    "code": "token_not_valid",
-    "messages": [
-        {
-            "token_class": "AccessToken",
-            "token_type": "access",
-            "message": "Token is invalid or expired"
-        }
-    ]
-}
-I am still getting same bug, but I think the above log might help
