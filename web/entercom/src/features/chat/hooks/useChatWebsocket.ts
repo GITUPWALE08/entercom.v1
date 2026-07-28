@@ -168,13 +168,18 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
       setIsConnected(false);
       console.log('Chat websocket closed', event.code);
       
-      // 4403 is our custom unauthorized code, don't reconnect
-      if (event.code !== 4403) {
-        reconnectTimerRef.current = setTimeout(() => {
-          reconnectDelay.current = Math.min(reconnectDelay.current * 2, 30_000);
-          connect();
-        }, reconnectDelay.current);
+      // Auth-related close codes — don't reconnect blindly.
+      // The 'token_refreshed' event listener will re-connect after refresh.
+      const authCodes = [4001, 4002, 4003, 4403];
+      if (authCodes.includes(event.code)) {
+        return;
       }
+
+      // Network / server restart — exponential backoff reconnect
+      reconnectTimerRef.current = setTimeout(() => {
+        reconnectDelay.current = Math.min(reconnectDelay.current * 2, 30_000);
+        connect();
+      }, reconnectDelay.current);
     };
 
     ws.current.onerror = () => {
@@ -186,7 +191,8 @@ export function useChatWebsocket({ conversationId, onMessageReceived, onReadRece
     connect();
 
     const handleTokenRefreshed = () => {
-      if (ws.current) ws.current.close();
+      reconnectDelay.current = 1000;
+      // connect() already closes the previous socket cleanly
       connect();
     };
     window.addEventListener('token_refreshed', handleTokenRefreshed);

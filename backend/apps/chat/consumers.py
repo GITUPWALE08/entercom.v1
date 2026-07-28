@@ -9,9 +9,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.room_group_name = f'chat_{self.conversation_id}'
 
         # Check authentication (JWT middleware handles this and sets scope['user'])
-        self.user = self.scope.get('user', AnonymousUser())
-        if self.user.is_anonymous:
-            await self.close(code=4403)
+        self.user = self.scope.get('user')
+        auth_failure = self.scope.get('auth_failure_reason')
+
+        if auth_failure == 'token_expired':
+            await self.close(code=4002)
+            return
+
+        if auth_failure or not self.user or not self.user.is_authenticated:
+            await self.close(code=4001)
             return
 
         # Check participant access
