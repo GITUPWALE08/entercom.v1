@@ -17,6 +17,16 @@ class HasAuditViewPermission(BasePermission):
             return False
         if has_permission(request.user, AUDIT_VIEW_PERMISSION):
             return True
+            
+        # Hard fallback for roles in case DB cache is stale
+        has_role = request.user.role_assignments.filter(
+            role__slug__in=['superadmin', 'manager', 'admin'], 
+            is_active=True
+        ).exists()
+        
+        if has_role:
+            return True
+            
         log_security_denial(
             actor=request.user,
             action=SECURITY_ACTION_RBAC_DENIED,
