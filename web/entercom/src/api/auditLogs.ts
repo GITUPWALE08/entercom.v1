@@ -25,9 +25,9 @@ export interface AuditLogFilters {
 }
 
 export const auditLogsApi = {
-  list: async (filters?: AuditLogFilters) => {
+  list: async (filters?: AuditLogFilters): Promise<AuditLogItem[]> => {
     const { data } = await apiClient.get<any>('/audit-logs/', { params: filters });
-    return normalizeData(data); // Assuming paginated response has results in normalizeData logic or it's standard.
+    return normalizeData<AuditLogItem[]>(data);
   },
 
   export: async (filters?: AuditLogFilters, format: string = 'csv') => {

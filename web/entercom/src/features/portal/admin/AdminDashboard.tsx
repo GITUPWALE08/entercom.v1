@@ -15,7 +15,7 @@ import { Link } from 'react-router-dom';
 export default function AdminDashboard() {
   const { data: logs, isLoading: loadingLogs } = useQuery({
     queryKey: ['audit-logs'],
-    queryFn: auditLogsApi.list,
+    queryFn: () => auditLogsApi.list(),
   });
 
   const { data: requests } = useQuery({

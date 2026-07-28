@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { auditLogsApi } from '../../../api/auditLogs';
 import type { AuditLogItem, AuditLogFilters } from '../../../api/auditLogs';
 import { PageContainer } from '../../../shared/components/PageContainer';
 import { Skeleton } from '../../../shared/components/Skeleton';
 import { ErrorBoundary } from '../../../shared/components/ErrorBoundary';
-import { Download, X, Calendar, User, Activity, Monitor, ShieldAlert, Cpu, Filter, Search } from 'lucide-react';
+import { Download, X, Calendar, User, Activity, Cpu, Filter, Search } from 'lucide-react';
 import { DataTable, StatusBadge } from '../../../shared/components/ui';
 
 // -- Child Components --
