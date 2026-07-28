@@ -68,11 +68,16 @@ class ChatService:
             
             # Broadcast via websockets after transaction commits
             from .serializers import MessageSerializer
+            import json
+            from django.core.serializers.json import DjangoJSONEncoder
             # Use request context if we had it, but we don't in service layer easily. 
             # We will just pass the serialized data.
             serialized_message = MessageSerializer(message).data
+            # Convert UUIDs and DateTimes to strings for msgpack compatibility
+            safe_msg = json.loads(json.dumps(serialized_message, cls=DjangoJSONEncoder))
+            
             channel_layer = get_channel_layer()
-            transaction.on_commit(lambda msg=serialized_message: async_to_sync(channel_layer.group_send)(
+            transaction.on_commit(lambda msg=safe_msg: async_to_sync(channel_layer.group_send)(
                 f"chat_{conversation.id}",
                 {
                     'type': 'chat_message',
