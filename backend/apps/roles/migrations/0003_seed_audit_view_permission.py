@@ -22,6 +22,10 @@ def create_audit_permission(apps, schema_editor):
             permission=audit_perm
         )
 
+    # Clear cache to ensure new permissions are loaded for existing users
+    from django.core.cache import cache
+    cache.clear()
+
 def remove_audit_permission(apps, schema_editor):
     PermissionDefinition = apps.get_model('roles', 'PermissionDefinition')
     PermissionDefinition.objects.filter(codename='audit.view').delete()
