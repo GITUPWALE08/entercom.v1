@@ -30,37 +30,37 @@ export default function AdminDashboard() {
           <Link to="/portal/admin/system-status" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="System Health" 
-              value={kpis.systemHealth || 'Optimal'} 
+              value={kpis.background_jobs_status || 'Optimal'} 
             />
           </Link>
           <Link to="/portal/admin/users" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="Total Users" 
-              value={kpis.totalUsers !== undefined ? kpis.totalUsers : '--'} 
+              value={kpis.active_users !== undefined ? kpis.active_users : '--'} 
             />
           </Link>
           <Link to="/portal/admin/payments?filter=failed" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="Failed Payments" 
-              value={kpis.failedPayments !== undefined ? kpis.failedPayments : '--'} 
+              value={kpis.failed_payments !== undefined ? kpis.failed_payments : '--'} 
             />
           </Link>
           <Link to="/portal/admin/requests?filter=new" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
-              title="New Requests" 
-              value={kpis.newRequests !== undefined ? kpis.newRequests : '--'} 
+              title="Open Requests" 
+              value={kpis.open_requests !== undefined ? kpis.open_requests : '--'} 
             />
           </Link>
           <Link to="/portal/admin/users?role=technician" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="Active Techs" 
-              value={kpis.activeTechs !== undefined ? kpis.activeTechs : '--'} 
+              value={kpis.active_technicians !== undefined ? kpis.active_technicians : '--'} 
             />
           </Link>
           <Link to="/portal/admin/audit-logs?filter=errors" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="API Errors" 
-              value={kpis.apiErrors !== undefined ? kpis.apiErrors : '--'} 
+              value={kpis.api_errors !== undefined ? kpis.api_errors : '--'} 
             />
           </Link>
         </div>

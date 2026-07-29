@@ -21,11 +21,11 @@ export default function ManagerDashboard() {
   const kpis = analytics?.kpis || {};
   const alerts = ensureArray(analytics?.alerts);
 
-  const totalRequests = kpis.totalRequests !== undefined ? kpis.totalRequests : '--';
-  const activeJobs = kpis.activeJobs !== undefined ? kpis.activeJobs : '--';
-  const pendingRecruitment = kpis.pendingRecruitment !== undefined ? kpis.pendingRecruitment : '--';
-  const revenueSummary = kpis.revenueSummary !== undefined ? kpis.revenueSummary : 0;
-  const activeTechnicians = kpis.activeTechnicians !== undefined ? kpis.activeTechnicians : '--';
+  const totalRequests = kpis.total_requests !== undefined ? kpis.total_requests : '--';
+  const activeJobs = kpis.active_jobs !== undefined ? kpis.active_jobs : '--';
+  const pendingRecruitment = kpis.recruitment_applications !== undefined ? kpis.recruitment_applications : '--';
+  const revenueSummary = kpis.revenue_today !== undefined ? kpis.revenue_today : 0;
+  const activeTechnicians = kpis.available_technicians !== undefined ? kpis.available_technicians : '--';
 
   const slaAlerts = alerts.filter(a => a.type === 'sla' || (a.title && a.title.toLowerCase().includes('sla')) || (a.message && a.message.toLowerCase().includes('sla')));
   const inventoryAlerts = alerts.filter(a => a.type === 'inventory' || (a.title && a.title.toLowerCase().includes('inventory')) || (a.message && a.message.toLowerCase().includes('stock')));
@@ -49,7 +49,7 @@ export default function ManagerDashboard() {
             <MetricCard title="Pending Recruitment" value={pendingRecruitment} />
           </Link>
           <Link to="/portal/manager/requests?filter=sla_alerts" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
-            <MetricCard title="SLA Alerts" value={kpis.slaAlerts !== undefined ? kpis.slaAlerts : slaAlerts.length} />
+            <MetricCard title="SLA Alerts" value={kpis.sla_warnings !== undefined ? kpis.sla_warnings : slaAlerts.length} />
           </Link>
           <Link to="/portal/manager/payments" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard title="Revenue Summary" value={`₦${revenueSummary.toLocaleString()}`} />
