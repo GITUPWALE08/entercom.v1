@@ -9,7 +9,8 @@ import { Skeleton } from '../../../shared/components/Skeleton';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 import { Link } from 'react-router-dom';
-import { DashboardFilter, DateRangePeriod } from '../../../shared/components/DashboardFilter';
+import { DashboardFilter } from '../../../shared/components/DashboardFilter';
+import type { DateRangePeriod } from '../../../shared/components/DashboardFilter';
 import { 
   RequestStatusChart, 
   QuoteAnalyticsChart 

@@ -10,7 +10,8 @@ import { MetricCard } from '../../../shared/components/ui/Card';
 import { Skeleton } from '../../../shared/components/Skeleton';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
-import { DashboardFilter, DateRangePeriod } from '../../../shared/components/DashboardFilter';
+import { DashboardFilter } from '../../../shared/components/DashboardFilter';
+import type { DateRangePeriod } from '../../../shared/components/DashboardFilter';
 import { 
   RequestsOverTimeChart, 
   RequestCategoriesChart, 

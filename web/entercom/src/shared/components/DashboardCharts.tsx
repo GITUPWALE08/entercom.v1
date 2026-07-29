@@ -1,4 +1,4 @@
-import React from 'react';
+
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
@@ -39,7 +39,7 @@ export function RequestCategoriesChart({ data }: { data: any[] }) {
             dataKey="value"
             nameKey="name"
           >
-            {data.map((entry, index) => (
+            {data.map((_, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
@@ -64,7 +64,7 @@ export function RequestStatusChart({ data }: { data: any[] }) {
             dataKey="value"
             nameKey="name"
           >
-            {data.map((entry, index) => (
+            {data.map((_, index) => (
               <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
             ))}
           </Pie>
