@@ -24,15 +24,23 @@ function handleEvent(data: any) {
     // Invalidate queries
     if (eventType.startsWith('request.')) {
         globalQueryClient.invalidateQueries({ queryKey: ['requests'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['manager-analytics'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
         if (data.request_id) {
             globalQueryClient.invalidateQueries({ queryKey: ['requests', String(data.request_id)] });
         }
     } else if (eventType.startsWith('quote.')) {
         globalQueryClient.invalidateQueries({ queryKey: ['quotes'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['manager-analytics'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
     } else if (eventType.startsWith('order.')) {
         globalQueryClient.invalidateQueries({ queryKey: ['orders'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['manager-analytics'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
     } else if (eventType.startsWith('booking.')) {
         globalQueryClient.invalidateQueries({ queryKey: ['bookings'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['manager-analytics'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
     } else if (eventType.startsWith('notification.')) {
         globalQueryClient.invalidateQueries({ queryKey: ['notifications'] });
         globalQueryClient.invalidateQueries({ queryKey: ['notifications', 'unreadCount'] });
@@ -42,8 +50,12 @@ function handleEvent(data: any) {
         }
     } else if (eventType.startsWith('verification.')) {
         globalQueryClient.invalidateQueries({ queryKey: ['verifications'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['manager-analytics'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
     } else if (eventType.startsWith('inventory.')) {
         globalQueryClient.invalidateQueries({ queryKey: ['products'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['manager-analytics'] });
+        globalQueryClient.invalidateQueries({ queryKey: ['admin-analytics'] });
     }
 }
 

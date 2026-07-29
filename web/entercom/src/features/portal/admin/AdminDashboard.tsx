@@ -1,4 +1,5 @@
 import { ensureArray } from '../../../utils/arrays';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../../../api/analytics';
 import { PageContainer } from '../../../shared/components/PageContainer';
@@ -8,11 +9,18 @@ import { Skeleton } from '../../../shared/components/Skeleton';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 import { Link } from 'react-router-dom';
+import { DashboardFilter, DateRangePeriod } from '../../../shared/components/DashboardFilter';
+import { 
+  RequestStatusChart, 
+  QuoteAnalyticsChart 
+} from '../../../shared/components/DashboardCharts';
 
 export default function AdminDashboard() {
+  const [period, setPeriod] = useState<DateRangePeriod>('30_days');
+
   const { data: analytics, isLoading } = useQuery({
-    queryKey: ['admin-analytics'],
-    queryFn: analyticsApi.getAdminDashboard,
+    queryKey: ['admin-analytics', period],
+    queryFn: () => analyticsApi.getAdminDashboard({ period }),
   });
 
   const kpis = analytics?.kpis || {};
@@ -21,9 +29,12 @@ export default function AdminDashboard() {
   return (
     <ErrorBoundary>
       <PageContainer>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Admin Dashboard</h1>
-          <p className="mt-2 text-gray-500 text-lg">System health, performance, and security overview.</p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Admin Dashboard</h1>
+            <p className="mt-2 text-gray-500 text-lg">System health, performance, and security overview.</p>
+          </div>
+          <DashboardFilter period={period} onPeriodChange={setPeriod} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
@@ -63,6 +74,29 @@ export default function AdminDashboard() {
               value={kpis.api_errors !== undefined ? kpis.api_errors : '--'} 
             />
           </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">Request Status Distribution</h2>
+            {isLoading ? (
+              <Skeleton className="h-72 w-full rounded-xl" />
+            ) : analytics?.charts?.request_status ? (
+              <RequestStatusChart data={analytics.charts.request_status} />
+            ) : (
+              <EmptyState title="No Chart Data" description="Not enough data to display status distribution." />
+            )}
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">Quote Analytics</h2>
+            {isLoading ? (
+              <Skeleton className="h-72 w-full rounded-xl" />
+            ) : analytics?.charts?.quote_analytics ? (
+              <QuoteAnalyticsChart data={analytics.charts.quote_analytics} />
+            ) : (
+              <EmptyState title="No Chart Data" description="Not enough data to display quote analytics." />
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

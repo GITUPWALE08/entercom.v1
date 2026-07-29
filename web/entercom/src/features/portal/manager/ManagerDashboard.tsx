@@ -1,5 +1,6 @@
 import { ensureArray } from '../../../utils/arrays';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { analyticsApi } from '../../../api/analytics';
 import { useAuthStore } from '../../../store/authStore';
@@ -9,13 +10,20 @@ import { MetricCard } from '../../../shared/components/ui/Card';
 import { Skeleton } from '../../../shared/components/Skeleton';
 import { EmptyState } from '../../../shared/components/EmptyState';
 import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
+import { DashboardFilter, DateRangePeriod } from '../../../shared/components/DashboardFilter';
+import { 
+  RequestsOverTimeChart, 
+  RequestCategoriesChart, 
+  RevenueTrendChart 
+} from '../../../shared/components/DashboardCharts';
 
 export default function ManagerDashboard() {
   const { user } = useAuthStore();
+  const [period, setPeriod] = useState<DateRangePeriod>('30_days');
   
   const { data: analytics, isLoading } = useQuery({
-    queryKey: ['manager-analytics'],
-    queryFn: analyticsApi.getManagerDashboard,
+    queryKey: ['manager-analytics', period],
+    queryFn: () => analyticsApi.getManagerDashboard({ period }),
   });
 
   const kpis = analytics?.kpis || {};
@@ -33,9 +41,12 @@ export default function ManagerDashboard() {
   return (
     <ErrorBoundary>
       <PageContainer>
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Manager Dashboard</h1>
-          <p className="mt-2 text-gray-500 text-lg">Welcome back, {user?.first_name || 'Manager'}. Here is the overview of operations.</p>
+        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Manager Dashboard</h1>
+            <p className="mt-2 text-gray-500 text-lg">Welcome back, {user?.first_name || 'Manager'}. Here is the overview of operations.</p>
+          </div>
+          <DashboardFilter period={period} onPeriodChange={setPeriod} />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
@@ -57,6 +68,39 @@ export default function ManagerDashboard() {
           <Link to="/portal/manager/technicians" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard title="Tech Availability" value={activeTechnicians} />
           </Link>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">Requests Over Time</h2>
+            {isLoading ? (
+              <Skeleton className="h-72 w-full rounded-xl" />
+            ) : analytics?.charts?.requests_over_time ? (
+              <RequestsOverTimeChart data={analytics.charts.requests_over_time} />
+            ) : (
+              <EmptyState title="No Chart Data" description="Not enough data to display requests over time." />
+            )}
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">Request Categories</h2>
+            {isLoading ? (
+              <Skeleton className="h-72 w-full rounded-xl" />
+            ) : analytics?.charts?.request_categories ? (
+              <RequestCategoriesChart data={analytics.charts.request_categories} />
+            ) : (
+              <EmptyState title="No Chart Data" description="Not enough data to display categories." />
+            )}
+          </div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:col-span-2">
+            <h2 className="text-lg font-bold text-gray-900 mb-6">Revenue Trend</h2>
+            {isLoading ? (
+              <Skeleton className="h-72 w-full rounded-xl" />
+            ) : analytics?.charts?.revenue_trend ? (
+              <RevenueTrendChart data={analytics.charts.revenue_trend} />
+            ) : (
+              <EmptyState title="No Chart Data" description="Not enough data to display revenue trend." />
+            )}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

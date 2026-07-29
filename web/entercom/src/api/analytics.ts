@@ -21,16 +21,22 @@ export interface AnalyticsChart {
 export interface AnalyticsResponse {
   kpis: AnalyticsKPIs;
   alerts: AnalyticsAlert[];
-  charts: AnalyticsChart[];
+  charts: any;
+}
+
+export interface AnalyticsParams {
+  period?: 'today' | '7_days' | '30_days' | '90_days' | 'custom';
+  start_date?: string;
+  end_date?: string;
 }
 
 export const analyticsApi = {
-  getAdminDashboard: async (): Promise<AnalyticsResponse> => {
-    const response = await apiClient.get('/analytics/admin/');
+  getAdminDashboard: async (params?: AnalyticsParams): Promise<AnalyticsResponse> => {
+    const response = await apiClient.get('/analytics/admin/', { params });
     return response.data;
   },
-  getManagerDashboard: async (): Promise<AnalyticsResponse> => {
-    const response = await apiClient.get('/analytics/manager/');
+  getManagerDashboard: async (params?: AnalyticsParams): Promise<AnalyticsResponse> => {
+    const response = await apiClient.get('/analytics/manager/', { params });
     return response.data;
   },
 };
