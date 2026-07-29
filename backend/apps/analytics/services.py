@@ -17,10 +17,10 @@ class AnalyticsService:
         
         # Requests
         total_requests = Request.objects.count()
-        open_requests = Request.objects.filter(state__in=['SUBMITTED', 'VERIFIED', 'QUOTED', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED_PENDING_VERIFICATION']).count()
+        open_requests = Request.objects.filter(status__in=['SUBMITTED', 'VERIFIED', 'QUOTED', 'ASSIGNED', 'IN_PROGRESS', 'COMPLETED_PENDING_VERIFICATION']).count()
         
         # Active Jobs (assigned & in progress)
-        active_jobs = Request.objects.filter(state__in=['ASSIGNED', 'IN_PROGRESS']).count()
+        active_jobs = Request.objects.filter(status__in=['ASSIGNED', 'IN_PROGRESS']).count()
         
         # Quotes & Verifications
         pending_quotes = Quote.objects.filter(status='PENDING').count()
