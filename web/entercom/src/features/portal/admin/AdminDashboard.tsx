@@ -1,9 +1,6 @@
 import { ensureArray } from '../../../utils/arrays';
 import { useQuery } from '@tanstack/react-query';
-import { auditLogsApi } from '../../../api/auditLogs';
-import { requestsApi } from '../../../api/requests';
-import { paymentsApi } from '../../../api/payments';
-import { usersApi } from '../../../api/users';
+import { analyticsApi } from '../../../api/analytics';
 import { PageContainer } from '../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../shared/components/ErrorBoundary';
 import { MetricCard } from '../../../shared/components/ui/Card';
@@ -13,39 +10,13 @@ import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 import { Link } from 'react-router-dom';
 
 export default function AdminDashboard() {
-  const { data: logs, isLoading: loadingLogs } = useQuery({
-    queryKey: ['audit-logs'],
-    queryFn: () => auditLogsApi.list(),
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ['admin-analytics'],
+    queryFn: analyticsApi.getAdminDashboard,
   });
 
-  const { data: requests } = useQuery({
-    queryKey: ['requests'],
-    queryFn: requestsApi.list,
-  });
-
-  const { data: payments } = useQuery({
-    queryKey: ['payments'],
-    queryFn: paymentsApi.list,
-  });
-
-  const { data: users } = useQuery({
-    queryKey: ['users'],
-    queryFn: () => usersApi.list(),
-  });
-
-  const recentLogs = logs?.slice(0, 10) || [];
-  
-  // Data processing for cards
-  const allUsers = ensureArray(users);
-  const allRequests = ensureArray(requests);
-  const allPayments = ensureArray(payments);
-  const allLogs = ensureArray(logs);
-
-  const totalUsers = allUsers.length;
-  const failedPayments = allPayments.filter(p => p.status === 'failed').length;
-  const newRequests = allRequests.filter(r => r.status === 'submitted').length;
-  const activeTechs = allUsers.filter(u => u.is_active && u.role_assignments?.some((ra: any) => ra.role.slug === 'technician')).length;
-  const apiErrors = allLogs.filter(log => log.status === 'error' || log.status === 'failed').length;
+  const kpis = analytics?.kpis || {};
+  const alerts = ensureArray(analytics?.alerts);
 
   return (
     <ErrorBoundary>
@@ -59,37 +30,37 @@ export default function AdminDashboard() {
           <Link to="/portal/admin/system-status" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="System Health" 
-              value="Optimal" 
+              value={kpis.systemHealth || 'Optimal'} 
             />
           </Link>
           <Link to="/portal/admin/users" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="Total Users" 
-              value={totalUsers > 0 ? totalUsers : '--'} 
+              value={kpis.totalUsers !== undefined ? kpis.totalUsers : '--'} 
             />
           </Link>
           <Link to="/portal/admin/payments?filter=failed" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="Failed Payments" 
-              value={failedPayments} 
+              value={kpis.failedPayments !== undefined ? kpis.failedPayments : '--'} 
             />
           </Link>
           <Link to="/portal/admin/requests?filter=new" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="New Requests" 
-              value={newRequests} 
+              value={kpis.newRequests !== undefined ? kpis.newRequests : '--'} 
             />
           </Link>
           <Link to="/portal/admin/users?role=technician" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="Active Techs" 
-              value={activeTechs > 0 ? activeTechs : '--'} 
+              value={kpis.activeTechs !== undefined ? kpis.activeTechs : '--'} 
             />
           </Link>
           <Link to="/portal/admin/audit-logs?filter=errors" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard 
               title="API Errors" 
-              value={apiErrors} 
+              value={kpis.apiErrors !== undefined ? kpis.apiErrors : '--'} 
             />
           </Link>
         </div>
@@ -98,34 +69,36 @@ export default function AdminDashboard() {
           <div className="lg:col-span-2 space-y-6">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="p-6 border-b border-gray-100 flex justify-between items-center">
-                <h2 className="text-lg font-bold text-gray-900">Recent Audit Logs</h2>
+                <h2 className="text-lg font-bold text-gray-900">Recent Alerts & Logs</h2>
                 <Link to="/portal/admin/audit-logs" className="text-sm font-medium text-ess-purple hover:underline">View all</Link>
               </div>
               <div className="divide-y divide-gray-100">
-                {loadingLogs ? (
+                {isLoading ? (
                   <div className="p-6 space-y-4">
                     {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                   </div>
-                ) : ensureArray(recentLogs).length > 0 ? (
-                  ensureArray(recentLogs).map(log => (
-                    <div key={log.id} className="p-4 sm:px-6 hover:bg-gray-50 transition-colors">
+                ) : alerts.length > 0 ? (
+                  alerts.slice(0, 10).map((alert, idx) => (
+                    <div key={alert.id || idx} className="p-4 sm:px-6 hover:bg-gray-50 transition-colors">
                       <div className="flex justify-between items-start mb-1">
-                        <span className="font-semibold text-gray-900 truncate mr-4">{log.action}</span>
-                        <span className="text-xs text-gray-500 whitespace-nowrap">
-                          {new Date(log.created_at).toLocaleString()}
-                        </span>
+                        <span className="font-semibold text-gray-900 truncate mr-4">{alert.message || alert.action || alert.title || 'Alert'}</span>
+                        {alert.created_at && (
+                          <span className="text-xs text-gray-500 whitespace-nowrap">
+                            {new Date(alert.created_at).toLocaleString()}
+                          </span>
+                        )}
                       </div>
                       <div className="flex justify-between items-center text-sm mt-2">
                          <span className="text-gray-500 font-mono text-xs">
-                          {log.resource_type} / {log.resource_id ? log.resource_id.split('-')[0].toUpperCase() : 'Global'}
+                          {alert.type || alert.resource_type || 'System'}
                          </span>
-                         <StatusBadge status={log.status} />
+                         <StatusBadge status={alert.severity || alert.status || 'info'} />
                       </div>
                     </div>
                   ))
                 ) : (
                   <div className="p-6">
-                    <EmptyState title="No recent logs" description="No recent audit logs available." />
+                    <EmptyState title="No recent alerts" description="No recent alerts or logs available." />
                   </div>
                 )}
               </div>

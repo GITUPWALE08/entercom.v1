@@ -1,269 +1,404 @@
-update every business operation that changes state, security, money, permissions, or data. Each operation should log:
+You are a Senior Django Architect and Senior React/TypeScript Engineer working on the Entercom platform.
 
-module
-action
-result
-severity
-target
-old_values
-new_values
-reason (if applicable)
-1. Authentication
-User Registration
-User registered
-Email verification requested
-Email verified
-Email verification failed
-Resend verification email
-Login
-Login success
-Login failed
-Login locked
-Logout
-Refresh token
-Refresh token failed
-Session revoked
-All sessions revoked
-Password
-Password changed
-Password reset requested
-Password reset completed
-Password reset failed
-2. Users
-Profile
-Profile updated
-Avatar updated
-Avatar removed
-Role Management
-Role assigned
-Role changed
-Role removed
-Account
-User activated
-User deactivated
-User suspended
-User reactivated
-User deleted
-3. Recruitment
-Applications
-Application submitted
-Application updated
-Application reviewed
-Application approved
-Application rejected
-Interview scheduled
-Technician activated
-Staff activated
-4. Requests
-Request created
-Request submitted
-Request updated
-Request cancelled
-Request assigned
-Request reassigned
-Assignment accepted
-Assignment declined
-Assignment expired
-Request escalated
-Request resumed
-Request completed
-Request closed
-5. Quotes
-Quote created
-Quote revised
-Quote revision requested
-Quote approved
-Quote rejected
-Quote expired
-Quote cancelled
-6. Payments
-Payment initialized
-Payment pending
-Payment verified
-Payment successful
-Payment failed
-Payment cancelled
-Refund initiated
-Refund completed
-Refund failed
-Webhook received
-Webhook validation failed
-7. Orders
-Order created
-Order updated
-Order fulfilled
-Order shipped
-Order cancelled
-Order refunded
-8. Inventory
-Products
-Product created
-Product updated
-Product archived
-Product restored
-Product deleted
-Stock
-Stock increased
-Stock decreased
-Stock adjusted
-Low stock detected
+Your task is to COMPLETE the Admin and Manager Analytics module.
+
+This is an MVP operational dashboard.
+
+DO NOT redesign any existing workflow.
+
+DO NOT modify lifecycle states.
+
+DO NOT invent business rules.
+
+DO NOT change permissions.
+
+Build analytics strictly from existing data.
+
+==========================================
+OBJECTIVE
+==========================================
+
+Implement operational analytics for:
+
+- Manager Portal
+- Admin Portal
+
+These dashboards must use REAL platform data.
+
+No placeholders.
+
+No mocked statistics.
+
+==========================================
+GENERAL REQUIREMENTS
+==========================================
+
+The dashboards must be responsive.
+
+Optimized for:
+
+- Desktop
+- Tablet
+- Mobile
+
+Use existing design system.
+
+Maintain consistency with the existing portals.
+
+Use reusable dashboard widgets.
+
+==========================================
+MANAGER DASHBOARD
+==========================================
+
+Implement:
+
+## KPI Cards
+
+- Total Requests
+- Open Requests
+- Active Jobs
+- Completed Jobs Today
+- Pending Quotes
+- Pending Verifications
+- Recruitment Applications
+- Available Technicians
+- Busy Technicians
+- SLA Warnings
+- SLA Breaches
+- Revenue Today
+- Revenue This Month
+
+Every card must be clickable.
+
+Clicking navigates to the corresponding page with filters applied.
+
+==========================================
+REQUEST ANALYTICS
+==========================================
+
+Show:
+
+Requests by:
+
+- Category
+- Status
+- Priority
+
+Trend:
+
+- Last 7 days
+- Last 30 days
+
+Average:
+
+- Time to assignment
+- Time to quote
+- Time to completion
+
+==========================================
+TECHNICIAN ANALYTICS
+==========================================
+
+Per technician:
+
+- Assigned jobs
+- Accepted jobs
+- Declined jobs
+- Completion rate
+- Average completion time
+- Average verification approval time
+- Active jobs
+- Completed jobs
+
+Manager can click technician to open profile.
+
+==========================================
+QUOTE ANALYTICS
+==========================================
+
+Show:
+
+- Quotes created
+- Approved
+- Rejected
+- Expired
+- Revision requested
+
+Average quote approval time.
+
+==========================================
+PAYMENT ANALYTICS
+==========================================
+
+Show:
+
+Revenue:
+
+Today
+
+This Week
+
+This Month
+
+Payments:
+
+Pending
+
+Completed
+
+Failed
+
+Refunded
+
+Average payment processing time.
+
+==========================================
+BOOKING ANALYTICS
+==========================================
+
+Show:
+
+Today's bookings
+
+Upcoming bookings
+
+Completed bookings
+
+Cancelled bookings
+
+==========================================
+RECRUITMENT ANALYTICS
+==========================================
+
+Show:
+
+Applications:
+
+Pending
+
+Approved
+
+Rejected
+
+Under Review
+
+Average review time.
+
+==========================================
+ALERTS PANEL
+==========================================
+
+Manager dashboard should show:
+
+- High priority requests
+- Emergency requests
+- SLA breaches
+- Pending verifications
+- Pending recruitment approvals
+- Inventory low stock
+
+Every alert clickable.
+
+==========================================
+ADMIN DASHBOARD
+==========================================
+
+Admin sees everything plus:
+
+==========================================
+SYSTEM HEALTH
+==========================================
+
+Cards:
+
+- Active users
+- Active technicians
+- Active staff
+- Active managers
+
+- Total conversations
+
+- Notifications sent today
+
+- WebSocket connections (if available)
+
+- Background jobs status
+
+- Failed jobs
+
+==========================================
+USER ANALYTICS
+==========================================
+
+Show:
+
+Users by role.
+
+New users:
+
+Today
+
+Week
+
+Month
+
+==========================================
+PRODUCT ANALYTICS
+==========================================
+
+Show:
+
+Products:
+
+Available
+
 Out of stock
-Pricing
-Price changed
-9. Booking
-Booking created
-Booking confirmed
-Booking rescheduled
-Booking cancelled
-Booking completed
-10. Technician
-Job accepted
-Job declined
-Work started
-Work paused
-Work resumed
-Work completed
-Verification submitted
-11. Verification
-Verification started
-Evidence uploaded
-Verification approved
-Verification rejected
-Verification reopened
-12. Chat
-Conversation created
-Conversation assigned
-Conversation transferred
-Conversation resolved
-Conversation reopened
-Message sent
-Message edited
-Message deleted
-Internal note created
-Attachment uploaded
-13. Notifications
-Notification created
-Notification sent
-Notification delivered
-Notification failed
-Notification read
-Notification deleted
-14. AI Assistant (Future)
-AI conversation started
-AI suggestion generated
-AI handoff to human
-AI escalation
-15. Analytics
-Report generated
-Report exported
-Dashboard viewed
-16. Admin Settings
-Setting changed
-System configuration updated
-Feature flag enabled
-Feature flag disabled
-17. Security
-Unauthorized access attempt
-Permission denied
-Invalid token
-Invalid webhook
-Suspicious activity detected
-MFA enabled
-MFA disabled
-18. Background Jobs
-Celery task started
-Celery task completed
-Celery task failed
-Scheduled job executed
-Retry executed
-19. File Management
-File uploaded
-File replaced
-File deleted
-20. System
-System startup
-System shutdown
-Migration executed
-Database backup
-Database restore
-Critical exception
-API error
-External service unavailable
-Suggested module values
-authentication
-users
-roles
-recruitment
-requests
-assignments
-quotes
-orders
-payments
-inventory
-products
-bookings
-verification
-chat
-notifications
-analytics
-settings
-security
-files
-system
-celery
-api
-Suggested action values
-created
-updated
-deleted
-submitted
-approved
-rejected
-assigned
-reassigned
-accepted
-declined
-started
-paused
-resumed
-completed
-verified
-cancelled
-resolved
-reopened
-uploaded
-downloaded
-edited
-transferred
-sent
-received
-delivered
-read
-failed
-initialized
-refunded
-exported
-generated
-activated
-deactivated
-suspended
-restored
-Approximate number of audit points
 
-The platform should end up with roughly:
+Low stock
 
-Authentication: ~12
-Users: ~10
-Recruitment: ~8
-Requests: ~15
-Quotes: ~7
-Payments: ~10
-Orders: ~6
-Inventory: ~10
-Bookings: ~6
-Technicians: ~6
-Verification: ~6
-Chat: ~10
-Notifications: ~6
-Analytics: ~3
-Settings/Security/System: ~15
+Best selling products
+
+==========================================
+AUDIT ANALYTICS
+==========================================
+
+Show:
+
+Recent audit events
+
+Critical audit events
+
+Failed operations
+
+Most common actions
+
+==========================================
+CHARTS
+==========================================
+
+Use lightweight charts already available in project.
+
+Charts should include:
+
+Line charts:
+
+Requests over time
+
+Revenue over time
+
+Bar charts:
+
+Requests by category
+
+Requests by priority
+
+Verification outcomes
+
+Pie/Donut charts:
+
+Request status
+
+User roles
+
+Payment status
+
+==========================================
+FILTERS
+==========================================
+
+Support:
+
+Date range
+
+Today
+
+7 days
+
+30 days
+
+90 days
+
+Custom
+
+==========================================
+PERFORMANCE
+==========================================
+
+Use aggregated endpoints.
+
+Do NOT execute dozens of individual queries.
+
+Backend should return dashboard payloads optimized for rendering.
+
+Avoid N+1 queries.
+
+==========================================
+API
+==========================================
+
+Create analytics endpoints only if missing.
+
+Separate:
+
+Manager analytics
+
+Admin analytics
+
+Use serializers.
+
+Apply existing RBAC.
+
+==========================================
+EXPORTS
+==========================================
+
+Support:
+
+CSV
+
+Excel
+
+PDF (summary only)
+
+==========================================
+MOBILE UX
+==========================================
+
+Cards stack correctly.
+
+Charts become horizontally scrollable where needed.
+
+Tables collapse into cards.
+
+==========================================
+OUT OF SCOPE
+==========================================
+
+Do NOT implement predictive analytics.
+
+Do NOT implement AI insights.
+
+Do NOT implement machine learning.
+
+Do NOT implement financial forecasting.
+
+Do NOT implement custom dashboard builders.
+
+==========================================
+SUCCESS CRITERIA
+==========================================
+
+Manager and Admin dashboards display live operational data.
+
+All KPI cards are clickable.
+
+Charts are responsive.
+
+Filters work correctly.
+
+Exports work.
+
+Performance remains acceptable on production-sized datasets.
+
+No placeholders remain.

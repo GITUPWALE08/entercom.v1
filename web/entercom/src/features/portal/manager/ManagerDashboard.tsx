@@ -1,10 +1,7 @@
 import { ensureArray } from '../../../utils/arrays';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { requestsApi } from '../../../api/requests';
-import { productsApi } from '../../../api/products';
-import { paymentsApi } from '../../../api/payments';
-import { usersApi } from '../../../api/users';
+import { analyticsApi } from '../../../api/analytics';
 import { useAuthStore } from '../../../store/authStore';
 import { PageContainer } from '../../../shared/components/PageContainer';
 import { ErrorBoundary } from '../../../shared/components/ErrorBoundary';
@@ -16,50 +13,29 @@ import { StatusBadge } from '../../../shared/components/ui/StatusBadge';
 export default function ManagerDashboard() {
   const { user } = useAuthStore();
   
-  const { data: requests, isLoading: loadingRequests } = useQuery({
-    queryKey: ['requests'],
-    queryFn: requestsApi.list,
+  const { data: analytics, isLoading } = useQuery({
+    queryKey: ['manager-analytics'],
+    queryFn: analyticsApi.getManagerDashboard,
   });
 
-  const { data: products, isLoading: loadingProducts } = useQuery({
-    queryKey: ['products'],
-    queryFn: productsApi.list,
-  });
+  const kpis = analytics?.kpis || {};
+  const alerts = ensureArray(analytics?.alerts);
 
-  const { data: payments } = useQuery({
-    queryKey: ['payments'],
-    queryFn: paymentsApi.list,
-  });
+  const totalRequests = kpis.totalRequests !== undefined ? kpis.totalRequests : '--';
+  const activeJobs = kpis.activeJobs !== undefined ? kpis.activeJobs : '--';
+  const pendingRecruitment = kpis.pendingRecruitment !== undefined ? kpis.pendingRecruitment : '--';
+  const revenueSummary = kpis.revenueSummary !== undefined ? kpis.revenueSummary : 0;
+  const activeTechnicians = kpis.activeTechnicians !== undefined ? kpis.activeTechnicians : '--';
 
-  const { data: users } = useQuery({
-    queryKey: ['users', 'technician'],
-    queryFn: () => usersApi.list('technician'),
-  });
-
-  const allRequests = ensureArray(requests);
-  const totalRequests = allRequests.length;
-  const activeJobs = allRequests.filter(r => ['assigned', 'in_progress', 'pending_verification'].includes(r.status));
-  const slaAlerts = allRequests.filter((r: any) => 
-    (r.status === 'submitted' || r.status === 'unassigned' || r.status === 'awaiting_assignment') && 
-    (r.priority === 'emergency' || r.priority === 'high')
-  );
-
-  const completedPayments = ensureArray(payments).filter(p => p.status === 'completed');
-  const revenueSummary = completedPayments.reduce((acc, curr: any) => acc + parseFloat(curr.amount || 0), 0);
-
-  const inventoryAlerts = ensureArray(products).filter(p => p.quantity_available <= (p.low_stock_threshold || 10));
-
-  // Placeholder for pending recruitment as there's no endpoint bound in frontend yet
-  const pendingRecruitment = 3; 
-
-  const activeTechnicians = ensureArray(users).filter((u: any) => u.is_active).length;
+  const slaAlerts = alerts.filter(a => a.type === 'sla' || (a.title && a.title.toLowerCase().includes('sla')) || (a.message && a.message.toLowerCase().includes('sla')));
+  const inventoryAlerts = alerts.filter(a => a.type === 'inventory' || (a.title && a.title.toLowerCase().includes('inventory')) || (a.message && a.message.toLowerCase().includes('stock')));
 
   return (
     <ErrorBoundary>
       <PageContainer>
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Manager Dashboard</h1>
-          <p className="mt-2 text-gray-500 text-lg">Welcome back, {user?.first_name}. Here is the overview of operations.</p>
+          <p className="mt-2 text-gray-500 text-lg">Welcome back, {user?.first_name || 'Manager'}. Here is the overview of operations.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
@@ -67,13 +43,13 @@ export default function ManagerDashboard() {
             <MetricCard title="Total Requests" value={totalRequests} />
           </Link>
           <Link to="/portal/manager/requests?filter=active" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
-            <MetricCard title="Active Jobs" value={activeJobs.length} />
+            <MetricCard title="Active Jobs" value={activeJobs} />
           </Link>
           <Link to="/portal/manager/recruitment" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard title="Pending Recruitment" value={pendingRecruitment} />
           </Link>
           <Link to="/portal/manager/requests?filter=sla_alerts" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
-            <MetricCard title="SLA Alerts" value={slaAlerts.length} />
+            <MetricCard title="SLA Alerts" value={kpis.slaAlerts !== undefined ? kpis.slaAlerts : slaAlerts.length} />
           </Link>
           <Link to="/portal/manager/payments" className="block focus:outline-none focus:ring-2 focus:ring-ess-purple rounded-2xl">
             <MetricCard title="Revenue Summary" value={`₦${revenueSummary.toLocaleString()}`} />
@@ -90,18 +66,18 @@ export default function ManagerDashboard() {
               <h2 className="text-lg font-bold text-red-900">SLA Alerts</h2>
             </div>
             <div className="divide-y divide-gray-100">
-              {loadingRequests ? (
+              {isLoading ? (
                 <div className="p-6 space-y-4">
                   {[1, 2, 3].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
               ) : slaAlerts.length > 0 ? (
-                slaAlerts.slice(0, 5).map(req => (
-                  <Link key={req.id} to={`/portal/manager/requests/${req.id}`} className="block p-6 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors">
+                slaAlerts.slice(0, 5).map((req, idx) => (
+                  <Link key={req.id || idx} to={req.id ? `/portal/manager/requests/${req.id}` : '#'} className="block p-6 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-gray-900">{req.public_id || req.id.split('-')[0].toUpperCase()}</span>
-                      <StatusBadge status={req.status} />
+                      <span className="font-semibold text-gray-900">{req.title || req.message || 'SLA Alert'}</span>
+                      <StatusBadge status={req.severity || req.status || 'warning'} />
                     </div>
-                    <p className="text-sm text-gray-500 line-clamp-1">{req.description}</p>
+                    {req.description && <p className="text-sm text-gray-500 line-clamp-1">{req.description}</p>}
                   </Link>
                 ))
               ) : (
@@ -118,20 +94,18 @@ export default function ManagerDashboard() {
               <h2 className="text-lg font-bold text-gray-900">Inventory Alerts</h2>
             </div>
             <div className="divide-y divide-gray-100">
-              {loadingProducts ? (
+              {isLoading ? (
                 <div className="p-6 space-y-4">
                   {[1, 2].map(i => <Skeleton key={i} className="h-16 w-full rounded-xl" />)}
                 </div>
               ) : inventoryAlerts.length > 0 ? (
-                inventoryAlerts.slice(0, 5).map(prod => (
-                  <Link key={prod.id} to={`/portal/manager/products/${prod.id}`} className="block p-6 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors">
+                inventoryAlerts.slice(0, 5).map((prod, idx) => (
+                  <Link key={prod.id || idx} to={prod.id ? `/portal/manager/products/${prod.id}` : '#'} className="block p-6 hover:bg-gray-50 focus:bg-gray-50 focus:outline-none transition-colors">
                     <div className="flex justify-between items-start mb-2">
-                      <span className="font-semibold text-gray-900">{prod.name}</span>
-                      <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
-                        {prod.quantity_available} in stock
-                      </span>
+                      <span className="font-semibold text-gray-900">{prod.title || prod.message || 'Inventory Alert'}</span>
+                      <StatusBadge status={prod.severity || prod.status || 'warning'} />
                     </div>
-                    <p className="text-sm text-gray-500">Threshold: {prod.low_stock_threshold || 10}</p>
+                    {prod.description && <p className="text-sm text-gray-500">{prod.description}</p>}
                   </Link>
                 ))
               ) : (

@@ -44,7 +44,7 @@ LOCAL_APPS = [
     "apps.products",
     "apps.orders",
     "apps.payments",
-    #"apps.analytics",
+    "apps.analytics",
     "apps.audit",
     "apps.audit_logs",
     #"apps.technicians",
