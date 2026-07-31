@@ -1,6 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
-import { Eye, Lock, ChevronRight, Server, HomeIcon, HandHeart, MessageSquareMore, Puzzle, ChartColumnIncreasing } from 'lucide-react';
+import { Eye, Lock, ChevronRight, Server, HomeIcon, HandHeart, MessageSquareMore, Puzzle, ChartNoAxesCombined } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import heroImage from '../assets/hero.jpg';
 
@@ -321,7 +321,7 @@ const Home = () => {
             {/* Card 4 */}
             <div className="flex flex-col items-start relative">
               <div className="w-[72px] h-[72px] rounded-full bg-[#7B2FE0] flex items-center justify-center mb-6 shadow-md shadow-purple-900/20">
-                <ChartColumnIncreasing size={32} color="#FFFFFF" strokeWidth={2} />
+                <ChartNoAxesCombined size={32} color="#FFFFFF" strokeWidth={2} />
               </div>
               <h3 className="text-[24px] font-bold text-[#7B2FE0] leading-[1.25] mb-2">Gradual, responsible growth</h3>
               <div className="w-12 h-1 bg-gradient-to-r from-[#7B2FE0] to-transparent mb-4 rounded-sm"></div>
