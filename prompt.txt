@@ -1,7 +1,8 @@
-src/features/portal/admin/AdminDashboard.tsx(12,27): error TS1484: 'DateRangePeriod' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/features/portal/manager/ManagerDashboard.tsx(13,27): error TS1484: 'DateRangePeriod' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
-src/shared/components/DashboardCharts.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
-src/shared/components/DashboardCharts.tsx(42,24): error TS6133: 'entry' is declared but its value is never read.
-src/shared/components/DashboardCharts.tsx(67,24): error TS6133: 'entry' is declared but its value is never read.
-src/shared/components/DashboardFilter.tsx(1,1): error TS6133: 'React' is declared but its value is never read.
-Error: Command "npm run build" exited with 2
+-> on the public pages:
+    - on the careers page, the tags for each of the opportunity should be spaced such that if only tag then it should be in the middle,
+    if two tags one should be on the far left and the other should be on the far right of their div,
+    also if three one should be in the middle, one on the left and the other should be on the right(far).
+
+    -when the a link is clicked to go to another page, the other page should auto scroll back to the top Y axis not the current window scrollY (if you don't understand what I mean by this explicitly ask so I can rephrase)
+
+I am getting too much the #303 error anytime I clicked to go to another page, why is this? this is just a question

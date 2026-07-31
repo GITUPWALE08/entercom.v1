@@ -50,7 +50,7 @@ export default function Careers() {
               <h3 className="text-2xl font-bold text-gray-900 mb-3">{opp.title}</h3>
               <p className="text-gray-600 mb-6 flex-grow">{opp.description}</p>
               
-              <div className="flex flex-wrap gap-2 mb-8">
+              <div className={`flex flex-wrap w-full mb-8 ${opp.tags.length === 1 ? 'justify-center' : 'justify-between'}`}>
                 {opp.tags.map(tag => (
                   <span key={tag} className="px-3 py-1 bg-gray-100 text-gray-700 text-xs font-semibold rounded-full">
                     {tag}
