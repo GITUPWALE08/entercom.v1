@@ -1,8 +1,3 @@
--> on the public pages:
-    - on the careers page, the tags for each of the opportunity should be spaced such that if only tag then it should be in the middle,
-    if two tags one should be on the far left and the other should be on the far right of their div,
-    also if three one should be in the middle, one on the left and the other should be on the right(far).
-
-    -when the a link is clicked to go to another page, the other page should auto scroll back to the top Y axis not the current window scrollY (if you don't understand what I mean by this explicitly ask so I can rephrase)
-
-I am getting too much the #303 error anytime I clicked to go to another page, why is this? this is just a question
+on the home page (why choose entercom):
+instead of the purple bullet points use icons, and the texts should be expartiated
+check why-choose-entercom-security.json file for structure of what I meant

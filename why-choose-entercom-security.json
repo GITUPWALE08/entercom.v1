@@ -1,0 +1,168 @@
+{
+  "section": {
+    "id": "why-choose-entercom-security",
+    "background": {
+      "type": "solid",
+      "color": "#F5F5FA"
+    },
+    "padding": {
+      "top": "64px",
+      "bottom": "64px",
+      "left": "40px",
+      "right": "40px"
+    },
+    "heading": {
+      "text": [
+        { "value": "Why Choose ", "color": "#1A1A2E", "fontWeight": 800 },
+        { "value": "Entercom Security", "color": "#7B2FE0", "fontWeight": 800 },
+        { "value": "?", "color": "#1A1A2E", "fontWeight": 800 }
+      ],
+      "fontSize": "48px",
+      "fontFamily": "system-ui, -apple-system, 'Segoe UI', sans-serif",
+      "textAlign": "center",
+      "lineHeight": 1.2,
+      "underline": {
+        "show": true,
+        "position": "center-below",
+        "width": "100px",
+        "height": "4px",
+        "borderRadius": "2px",
+        "gradient": {
+          "from": "#7B2FE0",
+          "to": "#7B2FE000",
+          "direction": "to right"
+        },
+        "marginTop": "16px"
+      }
+    },
+    "colors": {
+      "primaryPurple": "#7B2FE0",
+      "iconCircleGradientFrom": "#9B4FF0",
+      "iconCircleGradientTo": "#6A1FD0",
+      "iconCircleFallback": "#8A3FE8",
+      "iconColor": "#FFFFFF",
+      "headingText": "#1A1A2E",
+      "cardTitleColor": "#7B2FE0",
+      "bodyTextColor": "#4A4A5A",
+      "underlineAccent": "#7B2FE0"
+    },
+    "layout": {
+      "type": "grid",
+      "columns": 4,
+      "columnsResponsive": {
+        "desktop": 4,
+        "tablet": 2,
+        "mobile": 1
+      },
+      "gap": "32px",
+      "columnDividers": {
+        "show": true,
+        "color": "#DADAE5",
+        "width": "1px",
+        "heightPercent": "80%"
+      },
+      "alignItems": "flex-start"
+    },
+    "cards": [
+      {
+        "id": "service-first-approach",
+        "icon": {
+          "name": "hand-heart",
+          "library": "lucide-react",
+          "alt": "Hand holding a heart",
+          "size": "32px",
+          "strokeWidth": 2,
+          "color": "#FFFFFF"
+        },
+        "iconCircle": {
+          "size": "72px",
+          "backgroundColor": "#7B2FE0",
+          "shape": "circle"
+        },
+        "title": "Service-first approach",
+        "titleColor": "#7B2FE0",
+        "underlineAccent": true,
+        "body": "We put your needs first with a focus on honest advice, quality installation, and long-term support. Installation quality matters—because your security and peace of mind come first."
+      },
+      {
+        "id": "clear-communication",
+        "icon": {
+          "name": "message-circle",
+          "library": "lucide-react",
+          "alt": "Speech bubble with dots",
+          "size": "32px",
+          "strokeWidth": 2,
+          "color": "#FFFFFF"
+        },
+        "iconCircle": {
+          "size": "72px",
+          "backgroundColor": "#7B2FE0",
+          "shape": "circle"
+        },
+        "title": "Clear communication",
+        "titleColor": "#7B2FE0",
+        "underlineAccent": true,
+        "body": "We believe in keeping things simple and straightforward. No confusing tech jargon—just clear explanations, transparent updates, and friendly support every step of the way."
+      },
+      {
+        "id": "right-sized-solutions",
+        "icon": {
+          "name": "puzzle",
+          "library": "lucide-react",
+          "alt": "Puzzle piece",
+          "size": "32px",
+          "strokeWidth": 2,
+          "color": "#FFFFFF"
+        },
+        "iconCircle": {
+          "size": "72px",
+          "backgroundColor": "#7B2FE0",
+          "shape": "circle"
+        },
+        "title": "Right-sized solutions",
+        "titleColor": "#7B2FE0",
+        "underlineAccent": true,
+        "body": "We design solutions that fit your property, your needs, and your budget. No unnecessary extras—just the right technology to keep you secure and in control."
+      },
+      {
+        "id": "gradual-responsible-growth",
+        "icon": {
+          "name": "trending-up",
+          "library": "lucide-react",
+          "alt": "Bar chart with upward trend arrow",
+          "size": "32px",
+          "strokeWidth": 2,
+          "color": "#FFFFFF"
+        },
+        "iconCircle": {
+          "size": "72px",
+          "backgroundColor": "#7B2FE0",
+          "shape": "circle"
+        },
+        "title": "Gradual, responsible growth",
+        "titleColor": "#7B2FE0",
+        "underlineAccent": true,
+        "body": "We build lasting relationships based on trust. Start with what you need today, and scale your system at a pace that's right for you. We're here for the long run."
+      }
+    ],
+    "typography": {
+      "cardTitle": {
+        "fontSize": "24px",
+        "fontWeight": 700,
+        "lineHeight": 1.25
+      },
+      "cardBody": {
+        "fontSize": "16px",
+        "fontWeight": 400,
+        "lineHeight": 1.6
+      }
+    },
+    "notes": [
+      "Icon circle color appears as a purple gradient (light purple top-left to darker purple bottom-right) — use linear-gradient(135deg, #9B4FF0, #6A1FD0) if gradient icons are desired, otherwise flat #7B2FE0 works as a close match.",
+      "Each card title has a short underline/accent bar beneath it in solid purple, roughly 40px wide, positioned directly under the title text.",
+      "Icons in the source image appear to be simple line/outline style icons (rounded stroke, white on purple), consistent with the lucide-react icon set — swap library if a different icon set is preferred, just keep matching glyphs (heart-in-hand, chat bubble, puzzle piece, bar-chart-with-arrow).",
+      "Vertical divider lines between columns are subtle and light gray, roughly 80% of card height, centered vertically relative to the card content.",
+      "On mobile, stack cards vertically as a single column and drop the divider lines."
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 import { Link, Navigate } from 'react-router-dom';
 import { useEffect, useRef } from 'react';
-import { Eye, Lock, ChevronRight, Server, HomeIcon } from 'lucide-react';
+import { Eye, Lock, ChevronRight, Server, HomeIcon, HandHeart, MessageSquareMore, Puzzle, ChartColumnIncreasing } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import heroImage from '../assets/hero.jpg';
 
@@ -272,25 +272,62 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="py-10 lg:py-10 bg-gray-50/50">
-        <div className="bg-slate-50 rounded-3xl p-8 md:p-12 text-center border border-slate-100 mb-1">
-          <h2 className="text-2xl font-bold text-ess-navy mb-8">Why Choose Entercom Security?</h2>
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="text-xl font-bold text-ess-purple mb-2">● Service-first approach</h3>
-              <p className="text-gray-600 text-m">installation quality matters</p>
+      <section className="py-16 bg-[#F5F5FA]">
+        <div className="container mx-auto px-6 md:px-10">
+          <div className="text-center mb-16 flex flex-col items-center">
+            <h2 className="text-4xl md:text-[48px] font-extrabold text-[#1A1A2E] leading-tight">
+              Why Choose <span className="text-[#7B2FE0]">Entercom Security</span>?
+            </h2>
+            <div className="w-[100px] h-1 rounded-sm mt-4 bg-gradient-to-r from-[#7B2FE0] to-transparent"></div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-8 relative">
+            {/* Card 1 */}
+            <div className="flex flex-col items-start relative">
+              <div className="w-[72px] h-[72px] rounded-full bg-[#7B2FE0] flex items-center justify-center mb-6 shadow-md shadow-purple-900/20">
+                <HandHeart size={32} color="#FFFFFF" strokeWidth={2} />
+              </div>
+              <h3 className="text-[24px] font-bold text-[#7B2FE0] leading-[1.25] mb-2">Service-first approach</h3>
+              <div className="w-12 h-1 bg-gradient-to-r from-[#7B2FE0] to-transparent mb-4 rounded-sm"></div>
+              <p className="text-[#4A4A5A] text-[16px] leading-[1.6]">
+                We put your needs first with a focus on honest advice, quality installation, and long-term support. Installation quality matters—because your security and peace of mind come first.
+              </p>
             </div>
-            <div>
-              <h3 className="text-xl font-bold text-ess-purple mb-2">● Clear communication</h3>
-              <p className="text-gray-600 text-m">no confusing tech jargon</p>
+
+            {/* Card 2 */}
+            <div className="flex flex-col items-start relative">
+              <div className="w-[72px] h-[72px] rounded-full bg-[#7B2FE0] flex items-center justify-center mb-6 shadow-md shadow-purple-900/20">
+                <MessageSquareMore size={32} color="#FFFFFF" strokeWidth={2} />
+              </div>
+              <h3 className="text-[24px] font-bold text-[#7B2FE0] leading-[1.25] mb-2">Clear communication</h3>
+              <div className="w-12 h-1 bg-gradient-to-r from-[#7B2FE0] to-transparent mb-4 rounded-sm"></div>
+              <p className="text-[#4A4A5A] text-[16px] leading-[1.6]">
+                We believe in keeping things simple and straightforward. No confusing tech jargon—just clear explanations, transparent updates, and friendly support every step of the way.
+              </p>
             </div>
-            <div>
-              <h3 className="text-xl font-bold text-ess-purple mb-2">● Right-sized solutions</h3>
-              <p className="text-gray-600 text-m">only what you actually need</p>
+
+            {/* Card 3 */}
+            <div className="flex flex-col items-start relative">
+              <div className="w-[72px] h-[72px] rounded-full bg-[#7B2FE0] flex items-center justify-center mb-6 shadow-md shadow-purple-900/20">
+                <Puzzle size={32} color="#FFFFFF" strokeWidth={2} />
+              </div>
+              <h3 className="text-[24px] font-bold text-[#7B2FE0] leading-[1.25] mb-2">Right-sized solutions</h3>
+              <div className="w-12 h-1 bg-gradient-to-r from-[#7B2FE0] to-transparent mb-4 rounded-sm"></div>
+              <p className="text-[#4A4A5A] text-[16px] leading-[1.6]">
+                We design solutions that fit your property, your needs, and your budget. No unnecessary extras—just the right technology to keep you secure and in control.
+              </p>
             </div>
-            <div>
-              <h3 className="text-xl font-bold text-ess-purple mb-2">● Gradual, responsible growth</h3>
-              <p className="text-gray-600 text-m">trust before expansion</p>
+
+            {/* Card 4 */}
+            <div className="flex flex-col items-start relative">
+              <div className="w-[72px] h-[72px] rounded-full bg-[#7B2FE0] flex items-center justify-center mb-6 shadow-md shadow-purple-900/20">
+                <ChartColumnIncreasing size={32} color="#FFFFFF" strokeWidth={2} />
+              </div>
+              <h3 className="text-[24px] font-bold text-[#7B2FE0] leading-[1.25] mb-2">Gradual, responsible growth</h3>
+              <div className="w-12 h-1 bg-gradient-to-r from-[#7B2FE0] to-transparent mb-4 rounded-sm"></div>
+              <p className="text-[#4A4A5A] text-[16px] leading-[1.6]">
+                We build lasting relationships based on trust. Start with what you need today, and scale your system at a pace that's right for you. We're here for the long run.
+              </p>
             </div>
           </div>
         </div>

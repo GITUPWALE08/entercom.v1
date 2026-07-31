@@ -13,15 +13,15 @@ export function SupportWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
-  // Hidden on authentication pages
-  const hiddenPaths = ['/login', '/register', '/forgot-password'];
-  if (hiddenPaths.includes(location.pathname)) return null;
-
   const { data: conversationsResponse } = useQuery({
     queryKey: ['chat-conversations', { role: 'customer' }],
     queryFn: () => chatApi.list(),
     enabled: !!user && isOpen,
   });
+
+  // Hidden on authentication pages
+  const hiddenPaths = ['/login', '/register', '/forgot-password'];
+  if (hiddenPaths.includes(location.pathname)) return null;
 
   const conversations = Array.isArray(conversationsResponse) ? conversationsResponse : [];
   const activeConversations = conversations.filter((c: ChatConversation) => c.status !== 'closed');
