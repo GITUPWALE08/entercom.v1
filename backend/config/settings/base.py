@@ -223,8 +223,10 @@ REDIS_URL = env("REDIS_URL", default="redis://localhost:6379/0")
 
 if REDIS_URL:
     import ssl
+
+    is_secure = REDIS_URL.startswith("rediss://")
     
-    if REDIS_URL.startswith("rediss://"):
+    if is_secure:
         if "?" in REDIS_URL:
             REDIS_URL += "&ssl_cert_reqs=none"
         else:

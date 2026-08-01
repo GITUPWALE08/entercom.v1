@@ -1,3 +1,4 @@
-on the home page (why choose entercom):
-instead of the purple bullet points use icons, and the texts should be expartiated
-check why-choose-entercom-security.json file for structure of what I meant
+now let's go back to the mobile app:
+    -> for the home page add the side bar to be abke to go to several features/pages directly (like payments, checkouts, settings e.t.c)
+    -> the notification have not been fully implemented
+    -> now implement the request using the web request has template same way you used the the web dashboard has template for the mobile home page
