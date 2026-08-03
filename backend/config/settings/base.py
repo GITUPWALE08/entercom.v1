@@ -256,13 +256,14 @@ if REDIS_URL:
     # 3. Set the broker/backend to memory (to satisfy Celery's internal checks)
     CELERY_BROKER_URL = REDIS_URL
     CELERY_RESULT_BACKEND = REDIS_URL
-    CELERY_BROKER_USE_SSL = {
-        "ssl_cert_reqs": ssl.CERT_NONE, #I have to replace with proper certificate later
-    }
+    if is_secure:
+        CELERY_BROKER_USE_SSL = {
+            "ssl_cert_reqs": ssl.CERT_NONE, #I have to replace with proper certificate later
+        }
 
-    CELERY_REDIS_BACKEND_USE_SSL = {
-        "ssl_cert_reqs": ssl.CERT_NONE,
-    }
+        CELERY_REDIS_BACKEND_USE_SSL = {
+            "ssl_cert_reqs": ssl.CERT_NONE,
+        }
     CELERY_TASK_ALWAYS_EAGER = DEBUG
     CELERY_TASK_EAGER_PROPAGATES = DEBUG
     CELERY_ACCEPT_CONTENT = ["json"]

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Image } from 'react-native';
 import { ShieldCheck, Calendar, CheckCircle2, ChevronRight, Bell, Clock, FileText, CreditCard, Star, ArrowRight, Package } from 'lucide-react-native';
-import { useAuthStore } from '../../src/store/authStore';
+import { useAuthStore } from '../../../src/store/authStore';
 import { router } from 'expo-router';
-import { requestsApi } from '../../src/api/requests';
-import { ordersApi } from '../../src/api/orders';
-import { paymentsApi } from '../../src/api/payments';
-import { productsApi } from '../../src/api/products';
-import { ensureArray } from '../../src/utils/arrays';
+import { requestsApi } from '../../../src/api/requests';
+import { ordersApi } from '../../../src/api/orders';
+import { paymentsApi } from '../../../src/api/payments';
+import { productsApi } from '../../../src/api/products';
+import { ensureArray } from '../../../src/utils/arrays';
 
 export default function HomeScreen() {
   const user = useAuthStore((state) => state.user);

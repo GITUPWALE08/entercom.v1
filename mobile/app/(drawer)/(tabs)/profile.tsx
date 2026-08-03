@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
 import { User, Shield, Settings, Wrench, LogOut, ChevronRight, Bell } from 'lucide-react-native';
-import { useAuthStore } from '../../src/store/authStore';
+import { useAuthStore } from '../../../src/store/authStore';
 import { router } from 'expo-router';
 
 export default function ProfileScreen() {
