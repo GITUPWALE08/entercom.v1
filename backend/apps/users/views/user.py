@@ -54,7 +54,33 @@ class UserViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         UserService.deactivate_user(user=instance, actor=self.request.user)
 
-    @extend_schema(summary="Activate a user")
+    @extend_schema(summary="Register a push notification device")
+    @action(detail=False, methods=['post'], url_path='register-device')
+    def register_push_device(self, request):
+        from apps.users.models import PushDevice
+        token = request.data.get('token')
+        device_type = request.data.get('device_type', 'unknown')
+        if not token:
+            return Response({'detail': 'Token is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        device, created = PushDevice.objects.get_or_create(
+            user=request.user,
+            token=token,
+            defaults={'device_type': device_type, 'is_active': True}
+        )
+        if not created and not device.is_active:
+            device.is_active = True
+            device.save(update_fields=['is_active'])
+            
+        return Response({'detail': 'Device registered successfully.'})
+
+    @action(detail=True, methods=['get'])
+    def roles(self, request, pk=None):
+        user = self.get_object()
+        UserService.activate_user(user=user, actor=request.user)
+        return Response({'message': 'User activated successfully.'}, status=status.HTTP_200_OK)
+
+    @extend_schema(summary="Deactivate a user")
     @action(detail=True, methods=['post'])
     def activate(self, request, pk=None):
         user = self.get_object()

@@ -49,5 +49,9 @@ export const usersApi = {
   updateProfile: async (profileData: Partial<User>): Promise<User> => {
     const { data } = await apiClient.patch<User>('/users/me/', profileData);
     return normalizeData(data);
+  },
+  
+  registerPushDevice: async (token: string, deviceType: string): Promise<void> => {
+    await apiClient.post('/users/register-device/', { token, device_type: deviceType });
   }
 };

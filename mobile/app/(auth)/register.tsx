@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, ActivityIndicator, Alert, ScrollView, Image } from 'react-native';
+import { View, Text, Alert, ScrollView, Image, KeyboardAvoidingView, Platform } from 'react-native';
 import { Link, router } from 'expo-router';
 import { authApi } from '../../src/api/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Mail, Lock, User as UserIcon, Phone } from 'lucide-react-native';
+import { Input } from '../../src/components/ui/Input';
+import { Button } from '../../src/components/ui/Button';
 
 export default function RegisterScreen() {
   const [firstName, setFirstName] = useState('');
@@ -15,7 +16,7 @@ export default function RegisterScreen() {
 
   const handleRegister = async () => {
     if (!email || !password || !firstName || !lastName) {
-      Alert.alert('Error', 'Please fill in all fields');
+      Alert.alert('Error', 'Please fill in all required fields');
       return;
     }
 
@@ -25,7 +26,7 @@ export default function RegisterScreen() {
       if (phone) payload.phone_number = phone;
       await authApi.register(payload);
       Alert.alert('Success', 'Registration successful. Please login.', [
-        { text: 'OK', onPress: () => router.replace('/login') }
+        { text: 'OK', onPress: () => router.replace('/(auth)/login') }
       ]);
     } catch (error: any) {
       Alert.alert('Registration Failed', error?.message || 'Something went wrong');
@@ -35,125 +36,99 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }} showsVerticalScrollIndicator={false}>
-        <View className="px-6 py-8">
-          <View className="mb-10">
-            <View className="flex-row justify-center mb-4">
-              <View className="w-12 h-12 bg-blue-900 rounded-lg items-center justify-center">
-                <Image 
-                  source={require('../../assets/logo.png')} 
-                  style={{ width: 40, height: 40, resizeMode: 'contain' }} 
-                />
-              </View>
+    <SafeAreaView className="flex-1 bg-white relative">
+      {/* Premium Background Elements */}
+      <View className="absolute top-0 left-0 w-full h-[300px] bg-ess-softBlue rounded-b-[60px]" />
+      <View className="absolute -top-32 -right-32 w-96 h-96 bg-ess-purple rounded-full opacity-5 blur-[100px]" />
+      <View className="absolute top-40 -left-20 w-72 h-72 bg-ess-green rounded-full opacity-5 blur-[80px]" />
+
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        className="flex-1"
+      >
+        <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 32, paddingVertical: 40 }} showsVerticalScrollIndicator={false}>
+          
+          <View className="mb-10 items-center mt-10">
+            <View className="w-16 h-16 bg-white rounded-[20px] items-center justify-center shadow-lg shadow-black/5 border border-ess-purple/5 mb-6">
+              <Image 
+                source={require('../../assets/logo.png')} 
+                style={{ width: 44, height: 44, resizeMode: 'contain' }} 
+                defaultSource={require('../../assets/logo.png')}
+              />
             </View>
-            <Text className="mt-2 text-center text-sm text-gray-600 mb-6">
-              Entercom Security Systems Portal
+            <Text className="text-4xl font-bold text-ess-darkPurple mb-2 tracking-tight text-center">Create Account</Text>
+            <Text className="text-[15px] font-medium text-gray-500 text-center tracking-wide">
+              Sign up to get started
             </Text>
-            <Text className="text-4xl font-bold text-gray-900 mb-2">Create Account</Text>
-            <Text className="text-lg text-gray-500">Sign up to get started</Text>
           </View>
 
-          <View className="space-y-4">
-            <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1 ml-1">First Name</Text>
-              <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-14">
-                <UserIcon color="#9CA3AF" size={20} />
-                <TextInput
-                  className="flex-1 ml-3 text-base text-gray-900"
-                  placeholder="Enter your first name"
-                  placeholderTextColor="#9CA3AF"
+          <View className="space-y-5">
+            <View className="flex-row space-x-4">
+              <View className="flex-1 mr-2">
+                <Input
+                  label="First Name"
+                  placeholder="John"
                   value={firstName}
                   onChangeText={setFirstName}
                 />
               </View>
-            </View>
-
-            <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1 ml-1">Last Name</Text>
-              <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-14">
-                <UserIcon color="#9CA3AF" size={20} />
-                <TextInput
-                  className="flex-1 ml-3 text-base text-gray-900"
-                  placeholder="Enter your last name"
-                  placeholderTextColor="#9CA3AF"
+              <View className="flex-1 ml-2">
+                <Input
+                  label="Last Name"
+                  placeholder="Doe"
                   value={lastName}
                   onChangeText={setLastName}
                 />
               </View>
             </View>
 
-            <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1 ml-1">Phone Number (Optional)</Text>
-              <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-14">
-                <Phone color="#9CA3AF" size={20} />
-                <TextInput
-                  className="flex-1 ml-3 text-base text-gray-900"
-                  placeholder="Enter your phone number"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="phone-pad"
-                  value={phone}
-                  onChangeText={setPhone}
-                />
-              </View>
-            </View>
+            <Input
+              label="Email Address"
+              placeholder="name@example.com"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
+            />
 
-            <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1 ml-1">Email</Text>
-              <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-14">
-                <Mail color="#9CA3AF" size={20} />
-                <TextInput
-                  className="flex-1 ml-3 text-base text-gray-900"
-                  placeholder="Enter your email"
-                  placeholderTextColor="#9CA3AF"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  value={email}
-                  onChangeText={setEmail}
-                />
-              </View>
-            </View>
+            <Input
+              label="Phone Number (Optional)"
+              placeholder="+1 (555) 000-0000"
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+            />
 
-            <View>
-              <Text className="text-sm font-medium text-gray-700 mb-1 ml-1">Password</Text>
-              <View className="flex-row items-center bg-gray-50 border border-gray-200 rounded-2xl px-4 h-14">
-                <Lock color="#9CA3AF" size={20} />
-                <TextInput
-                  className="flex-1 ml-3 text-base text-gray-900"
-                  placeholder="Create a password"
-                  placeholderTextColor="#9CA3AF"
-                  secureTextEntry
-                  value={password}
-                  onChangeText={setPassword}
-                />
-              </View>
-            </View>
+            <Input
+              label="Password"
+              placeholder="Create a password"
+              secureTextEntry
+              value={password}
+              onChangeText={setPassword}
+            />
           </View>
 
-          <View className="mt-8">
-            <Pressable
+          <View className="mt-10">
+            <Button
+              variant="primary"
+              size="lg"
+              isLoading={isLoading}
               onPress={handleRegister}
-              disabled={isLoading}
-              className={`h-14 rounded-2xl items-center justify-center ${isLoading ? 'bg-indigo-400' : 'bg-indigo-600'} active:bg-indigo-700 shadow-sm`}
+              className="w-full shadow-lg shadow-ess-purple/20"
             >
-              {isLoading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                <Text className="text-white text-lg font-semibold">Sign Up</Text>
-              )}
-            </Pressable>
+              Sign Up
+            </Button>
           </View>
 
-          <View className="mt-6 flex-row justify-center">
-            <Text className="text-gray-500">Already have an account? </Text>
-            <Link href="/login" asChild>
-              <Pressable>
-                <Text className="text-indigo-600 font-semibold">Sign In</Text>
-              </Pressable>
+          <View className="mt-8 flex-row justify-center items-center pb-10">
+            <Text className="text-gray-500 font-medium tracking-wide">Already have an account? </Text>
+            <Link href="/(auth)/login" asChild>
+              <Text className="text-ess-purple font-bold tracking-wide">Sign In</Text>
             </Link>
           </View>
-        </View>
-      </ScrollView>
+          
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

@@ -1,24 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { Platform, View } from 'react-native';
 import { useAuthStore } from '../src/store/authStore';
 // @ts-ignore
 import '../global.css';
 
+// Only import GestureHandlerRootView on native — it breaks web
+let GestureHandlerRootView: any = ({ children, style }: any) => (
+  <View style={[{ flex: 1 }, style]}>{children}</View>
+);
+if (Platform.OS !== 'web') {
+  GestureHandlerRootView = require('react-native-gesture-handler').GestureHandlerRootView;
+}
+
 export default function RootLayout() {
-  const { isAuthenticated, loadStoredToken } = useAuthStore() as any;
+  const { isAuthenticated, isInitialized } = useAuthStore() as any;
   const segments = useSegments();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
-    // @ts-ignore
-    loadStoredToken?.();
   }, []);
 
   useEffect(() => {
-    if (!isMounted) return;
+    if (!isMounted || !isInitialized) return;
 
     const inAuthGroup = segments[0] === '(auth)';
 
@@ -27,7 +33,7 @@ export default function RootLayout() {
     } else if (isAuthenticated && inAuthGroup) {
       router.replace('/(drawer)');
     }
-  }, [isAuthenticated, segments, isMounted]);
+  }, [isAuthenticated, segments, isMounted, isInitialized]);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

@@ -32,11 +32,21 @@ class LoginView(APIView):
             "user_agent": request.META.get("HTTP_USER_AGENT", ""),
         }
 
-        user, refresh = AuthService.login(
+        user, refresh, mfa_session = AuthService.login(
             email=serializer.validated_data["email"],
             password=serializer.validated_data["password"],
             request_metadata=request_metadata,
         )
+
+        if mfa_session:
+            return Response(
+                {
+                    "mfa_required": True,
+                    "mfa_session": mfa_session,
+                    "message": "2FA code sent to your email."
+                },
+                status=status.HTTP_202_ACCEPTED
+            )
 
         return Response(
             {
@@ -216,3 +226,43 @@ class ResetPasswordView(APIView):
             new_password=serializer.validated_data["new_password"]
         )
         return Response({"detail": "Password has been reset successfully."}, status=status.HTTP_200_OK)
+
+class VerifyMfaView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthAnonRateThrottle]
+
+    def post(self, request):
+        mfa_session = request.data.get("mfa_session")
+        otp = request.data.get("otp")
+        if not mfa_session or not otp:
+            return Response({"detail": "mfa_session and otp are required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        request_metadata = {
+            "ip_address": self.get_client_ip(request),
+            "user_agent": request.META.get("HTTP_USER_AGENT", ""),
+        }
+
+        user, refresh = AuthService.verify_mfa(
+            mfa_session=mfa_session,
+            otp=otp,
+            request_metadata=request_metadata,
+        )
+
+        return Response(
+            {
+                "user": UserSummarySerializer(user).data,
+                "tokens": {
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                },
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    def get_client_ip(self, request):
+        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(",")[0]
+        else:
+            ip = request.META.get("REMOTE_ADDR")
+        return ip

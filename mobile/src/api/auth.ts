@@ -5,6 +5,9 @@ import type { User, AuthTokens } from '../types/auth';
 export interface LoginResponse {
   user: User;
   tokens: AuthTokens;
+  mfa_required?: boolean;
+  mfa_session?: string;
+  message?: string;
 }
 
 export interface RegisterResponse {
@@ -15,6 +18,11 @@ export interface RegisterResponse {
 export const authApi = {
   login: async (credentials: Record<string, string>): Promise<LoginResponse> => {
     const { data } = await apiClient.post<LoginResponse>('/auth/login/', credentials);
+    if (data.mfa_required) return data;
+    return normalizeData(data);
+  },
+  verifyMfa: async (mfaSession: string, otp: string): Promise<LoginResponse> => {
+    const { data } = await apiClient.post<LoginResponse>('/auth/verify-mfa/', { mfa_session: mfaSession, otp });
     return normalizeData(data);
   },
   register: async (credentials: Record<string, string>): Promise<RegisterResponse> => {

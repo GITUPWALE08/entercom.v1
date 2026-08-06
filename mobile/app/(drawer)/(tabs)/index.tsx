@@ -1,16 +1,72 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Image } from 'react-native';
-import { ShieldCheck, Calendar, CheckCircle2, ChevronRight, Bell, Clock, FileText, CreditCard, Star, ArrowRight, Package } from 'lucide-react-native';
+import { View, Text, ScrollView, ActivityIndicator, Image, Pressable, Platform, Alert } from 'react-native';
+import { ShieldCheck, Calendar, CheckCircle2, ChevronRight, Bell, Clock, FileText, CreditCard, Star, ArrowRight, Package, MessageCircle, Menu } from 'lucide-react-native';
 import { useAuthStore } from '../../../src/store/authStore';
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
+import { DrawerActions } from '@react-navigation/native';
 import { requestsApi } from '../../../src/api/requests';
 import { ordersApi } from '../../../src/api/orders';
 import { paymentsApi } from '../../../src/api/payments';
 import { productsApi } from '../../../src/api/products';
+import { usersApi } from '../../../src/api/users';
 import { ensureArray } from '../../../src/utils/arrays';
+import { Card, CardContent, MetricCard } from '../../../src/components/ui/Card';
+import { Button } from '../../../src/components/ui/Button';
+import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { Avatar } from '../../../src/components/ui/Avatar';
+import * as ExpoNotifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
+
+ExpoNotifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
+
+async function registerForPushNotificationsAsync() {
+  if (!Device.isDevice) {
+    console.log('Must use physical device for Push Notifications');
+    return 'ExponentPushToken[mock-simulator-token]';
+  }
+  const { status: existingStatus } = await ExpoNotifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+  if (existingStatus !== 'granted') {
+    const { status } = await ExpoNotifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+  if (finalStatus !== 'granted') {
+    return null;
+  }
+  
+  if (Platform.OS === 'android') {
+    ExpoNotifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: ExpoNotifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+  
+  try {
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    if (!projectId) {
+      console.log('No EAS projectId found. Using mock token for development.');
+      return 'ExponentPushToken[mock-dev-token]';
+    }
+    const token = (await ExpoNotifications.getExpoPushTokenAsync({ projectId })).data;
+    return token;
+  } catch (e) {
+    console.error('Failed to get push token:', e);
+    return 'ExponentPushToken[mock-fallback-token]';
+  }
+}
 
 export default function HomeScreen() {
   const user = useAuthStore((state) => state.user);
+  const navigation = useNavigation();
 
   const [requests, setRequests] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -22,6 +78,12 @@ export default function HomeScreen() {
   const [loadingProducts, setLoadingProducts] = useState(true);
 
   useEffect(() => {
+    registerForPushNotificationsAsync().then(token => {
+      if (token) {
+        usersApi.registerPushDevice(token, Platform.OS).catch(console.error);
+      }
+    });
+
     requestsApi.list().then(res => setRequests(ensureArray(res))).catch(console.error).finally(() => setLoadingReqs(false));
     ordersApi.list().then(res => setOrders(ensureArray(res))).catch(console.error).finally(() => setLoadingOrders(false));
     paymentsApi.list().then(res => setPayments(ensureArray(res))).catch(console.error);
@@ -38,166 +100,202 @@ export default function HomeScreen() {
   const recentOrder = orders?.[0];
   const recommendedProducts = products.slice(0, 3);
 
-  const formatStatus = (status: string) => {
-    if (!status) return 'Unknown';
-    return status.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  };
-
   return (
-    <ScrollView className="flex-1 bg-gray-50" showsVerticalScrollIndicator={false}>
-      {/* Hero Section */}
-      <View className="bg-indigo-600 px-6 pt-16 pb-8 rounded-b-3xl">
-        <View className="flex-row justify-between items-center mb-6">
-          <View>
-            <Text className="text-indigo-100 text-sm font-medium">Welcome back,</Text>
-            <Text className="text-white text-2xl font-bold mt-1">
-              {user?.firstName || 'Customer'} {user?.lastName || ''}
-            </Text>
-          </View>
-          <Pressable className="bg-indigo-500/30 p-2 rounded-full">
-            <Bell size={24} color="white" />
-          </Pressable>
-        </View>
-
-        <View className="bg-white/10 p-5 rounded-2xl flex-row items-center border border-white/20">
-          <ShieldCheck size={32} color="#10b981" />
-          <View className="ml-4">
-            <Text className="text-white text-lg font-semibold">System Secured</Text>
-            <Text className="text-indigo-100 text-sm mt-1">All cameras and sensors active</Text>
-          </View>
-        </View>
-      </View>
-
-      <View className="p-6">
-        {/* Metric Cards */}
-        <Text className="text-gray-900 text-lg font-bold mb-4">Overview</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-8" contentContainerStyle={{ gap: 12 }}>
-          <Pressable onPress={() => router.push('/(screens)/requests')} className="bg-white p-4 rounded-2xl w-36 shadow-sm border border-gray-100 items-center">
-            <View className="bg-blue-50 p-3 rounded-full mb-2">
-              <Clock size={24} color="#3b82f6" />
-            </View>
-            <Text className="text-3xl font-bold text-gray-900">{activeRequestsCount}</Text>
-            <Text className="text-gray-500 text-xs font-medium text-center mt-1">Active Requests</Text>
-          </Pressable>
-
-          <Pressable onPress={() => router.push('/(screens)/requests')} className="bg-white p-4 rounded-2xl w-36 shadow-sm border border-gray-100 items-center">
-            <View className="bg-emerald-50 p-3 rounded-full mb-2">
-              <CheckCircle2 size={24} color="#10b981" />
-            </View>
-            <Text className="text-3xl font-bold text-gray-900">{pastRequestsCount}</Text>
-            <Text className="text-gray-500 text-xs font-medium text-center mt-1">Past Requests</Text>
-          </Pressable>
-
-          <Pressable onPress={() => router.push('/(screens)/quotes')} className="bg-white p-4 rounded-2xl w-36 shadow-sm border border-gray-100 items-center">
-            <View className="bg-orange-50 p-3 rounded-full mb-2">
-              <FileText size={24} color="#f97316" />
-            </View>
-            <Text className="text-3xl font-bold text-gray-900">{pendingQuotesCount}</Text>
-            <Text className="text-gray-500 text-xs font-medium text-center mt-1">Pending Quotes</Text>
-          </Pressable>
-
-          <Pressable onPress={() => router.push('/(screens)/payments')} className="bg-white p-4 rounded-2xl w-36 shadow-sm border border-gray-100 items-center">
-            <View className="bg-red-50 p-3 rounded-full mb-2">
-              <CreditCard size={24} color="#ef4444" />
-            </View>
-            <Text className="text-3xl font-bold text-gray-900">{unpaidInvoicesCount}</Text>
-            <Text className="text-gray-500 text-xs font-medium text-center mt-1">Unpaid Invoices</Text>
-          </Pressable>
-
-          <View className="bg-white p-4 rounded-2xl w-36 shadow-sm border border-gray-100 items-center">
-            <View className="bg-purple-50 p-3 rounded-full mb-2">
-              <Star size={24} color="#8b5cf6" />
-            </View>
-            <Text className="text-3xl font-bold text-gray-900">{loyaltyPoints}</Text>
-            <Text className="text-gray-500 text-xs font-medium text-center mt-1">Loyalty Points</Text>
-          </View>
-        </ScrollView>
-
-        {/* Active Request / Quick Action */}
-        <Text className="text-gray-900 text-lg font-bold mb-4">Continue where you left off</Text>
-        <View className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 mb-8">
-          {loadingReqs ? (
-            <ActivityIndicator color="#4f46e5" size="small" className="py-4" />
-          ) : activeRequest ? (
-            <Pressable onPress={() => router.push(`/(screens)/request/${activeRequest.id}`)} className="flex-row items-center justify-between">
-              <View className="flex-1 mr-4">
-                <View className="bg-blue-100 self-start px-2 py-1 rounded mb-2">
-                  <Text className="text-xs font-bold text-blue-700">{formatStatus(activeRequest.status)}</Text>
-                </View>
-                <Text className="text-gray-900 font-bold text-lg mb-1">{activeRequest.title || 'Service Request'}</Text>
-                <Text className="text-gray-500 text-sm">We are reviewing your request details.</Text>
-              </View>
-              <View className="bg-indigo-600 px-4 py-2 rounded-lg">
-                <Text className="text-white font-medium text-sm">View</Text>
-              </View>
-            </Pressable>
-          ) : (
-            <View className="items-center py-4">
-              <View className="bg-indigo-50 p-3 rounded-full mb-3">
-                <ShieldCheck size={28} color="#4f46e5" />
-              </View>
-              <Text className="text-gray-900 font-bold text-base mb-1">Need an installation or service?</Text>
-              <Text className="text-gray-500 text-center text-sm mb-4">Start a new service request and get a quote within 24 hours.</Text>
-              <Pressable onPress={() => router.push('/(screens)/requests')} className="bg-indigo-600 px-6 py-3 rounded-xl flex-row items-center">
-                <Text className="text-white font-medium mr-2">Create Request</Text>
-                <ArrowRight size={16} color="white" />
+    <View className="flex-1 bg-gray-50">
+      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+        {/* Premium Hero Section */}
+        <View className="bg-ess-purple px-7 pt-20 pb-10 rounded-b-[40px] shadow-lg shadow-ess-purple/20 relative overflow-hidden">
+          {/* Subtle background glow effect */}
+          <View className="absolute -top-20 -right-20 w-64 h-64 bg-ess-darkPurple rounded-full opacity-50 blur-3xl" />
+          
+          <View className="flex-row justify-between items-center mb-8 relative z-10">
+            <View className="flex-row items-center">
+              <Pressable 
+                onPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+                className="bg-white/10 p-2.5 rounded-full border border-white/10 backdrop-blur-md mr-3"
+              >
+                <Menu size={24} color="white" />
               </Pressable>
-            </View>
-          )}
-        </View>
-
-        {/* Recent Orders */}
-        <Text className="text-gray-900 text-lg font-bold mb-4">Your Installations & Orders</Text>
-        <View className="mb-8">
-          {loadingOrders ? (
-            <ActivityIndicator color="#4f46e5" size="small" />
-          ) : recentOrder ? (
-            <Pressable onPress={() => router.push(`/(screens)/orders/${recentOrder.id}`)} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex-row justify-between items-center">
+              <Avatar 
+                fallback={user?.first_name || 'C'} 
+                size="md" 
+                className="mr-3 border-2 border-white/20"
+              />
               <View>
-                <Text className="text-gray-500 text-sm mb-1">Order #{recentOrder.id?.split('-')[0]}</Text>
-                <Text className="text-gray-900 font-bold text-lg">${recentOrder.total_amount || '0.00'}</Text>
+                <Text className="text-indigo-100 text-[13px] font-semibold tracking-wider uppercase">Welcome back,</Text>
+                <Text className="text-white text-2xl font-bold mt-0.5 tracking-tight">
+                  {user?.first_name || 'Customer'} {user?.last_name || ''}
+                </Text>
               </View>
-              <View className="items-end">
-                <View className="bg-gray-100 px-3 py-1 rounded-full mb-2">
-                  <Text className="text-gray-700 text-xs font-bold">{formatStatus(recentOrder.status)}</Text>
-                </View>
-                <Text className="text-indigo-600 text-sm font-medium">View Details</Text>
-              </View>
-            </Pressable>
-          ) : (
-            <View className="bg-gray-50 p-5 rounded-2xl border border-gray-200 items-center">
-              <Text className="text-gray-500">You have no recent orders.</Text>
             </View>
-          )}
+            <Pressable className="bg-white/10 p-3 rounded-full border border-white/10 backdrop-blur-md">
+              <Bell size={22} color="white" />
+            </Pressable>
+          </View>
+
+          <View className="bg-white/10 p-5 rounded-[24px] flex-row items-center border border-white/20 backdrop-blur-md relative z-10">
+            <View className="bg-ess-green/20 p-3 rounded-[16px]">
+              <ShieldCheck size={28} color="#25d366" />
+            </View>
+            <View className="ml-4 flex-1">
+              <Text className="text-white text-lg font-bold tracking-tight">System Secured</Text>
+              <Text className="text-indigo-100/80 text-sm mt-0.5 font-medium">All cameras and sensors active</Text>
+            </View>
+          </View>
         </View>
 
-        {/* Recommended Products */}
-        <Text className="text-gray-900 text-lg font-bold mb-4">Recommended for You</Text>
-        <View className="space-y-4 mb-8">
-          {loadingProducts ? (
-            <ActivityIndicator color="#4f46e5" size="small" />
-          ) : recommendedProducts.length > 0 ? (
-            recommendedProducts.map(product => (
-              <Pressable key={product.id} onPress={() => router.push(`/(screens)/product/${product.id}`)} className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex-row items-center mb-3">
-                <View className="h-16 w-16 bg-gray-100 rounded-xl overflow-hidden items-center justify-center mr-4">
-                  {product.images && product.images.length > 0 ? (
-                    <Image source={{ uri: product.images[0].image }} style={{ width: '100%', height: '100%' }} />
-                  ) : (
-                    <Package size={24} color="#9ca3af" />
-                  )}
+        <View className="p-7">
+          {/* Metric Cards */}
+          <Text className="text-gray-900 text-[18px] font-bold mb-5 tracking-tight">Overview</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-10 -mx-7 px-7" contentContainerStyle={{ gap: 16 }}>
+            <Pressable onPress={() => router.push('/(screens)/requests')}>
+              <MetricCard 
+                className="w-40"
+                title="Active Requests" 
+                value={activeRequestsCount} 
+                icon={<Clock size={24} color="#0f4c81" />} 
+              />
+            </Pressable>
+
+            <Pressable onPress={() => router.push('/(screens)/requests')}>
+              <MetricCard 
+                className="w-40"
+                title="Past Requests" 
+                value={pastRequestsCount} 
+                icon={<CheckCircle2 size={24} color="#25d366" />} 
+              />
+            </Pressable>
+
+            <Pressable onPress={() => router.push('/(screens)/quotes')}>
+              <MetricCard 
+                className="w-40"
+                title="Pending Quotes" 
+                value={pendingQuotesCount} 
+                icon={<FileText size={24} color="#f7941d" />} 
+              />
+            </Pressable>
+
+            <Pressable onPress={() => router.push('/(screens)/payments')}>
+              <MetricCard 
+                className="w-40"
+                title="Unpaid Invoices" 
+                value={unpaidInvoicesCount} 
+                icon={<CreditCard size={24} color="#ef4444" />} 
+              />
+            </Pressable>
+          </ScrollView>
+
+          {/* Active Request / Quick Action */}
+          <Text className="text-gray-900 text-[18px] font-bold mb-5 tracking-tight">Continue where you left off</Text>
+          <Card className="mb-10 border-0">
+            {loadingReqs ? (
+              <CardContent className="items-center py-8">
+                <ActivityIndicator color="#081f3d" size="small" />
+              </CardContent>
+            ) : activeRequest ? (
+              <CardContent>
+                <View className="flex-row justify-between items-start mb-4">
+                  <StatusBadge status={activeRequest.status} />
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onPress={() => router.push(`/(screens)/request/${activeRequest.id}`)}
+                  >
+                    View
+                  </Button>
                 </View>
-                <View className="flex-1">
-                  <Text className="text-gray-900 font-bold text-base truncate" numberOfLines={1}>{product.name}</Text>
-                  <Text className="text-indigo-600 font-bold mt-1">${product.price}</Text>
+                <Text className="text-gray-900 font-bold text-xl mb-1 tracking-tight">{activeRequest.title || 'Service Request'}</Text>
+                <Text className="text-gray-500 font-medium leading-relaxed">We are reviewing your request details and will assign a technician shortly.</Text>
+              </CardContent>
+            ) : (
+              <CardContent className="items-center py-6">
+                <View className="bg-ess-softBlue p-4 rounded-[20px] mb-4">
+                  <ShieldCheck size={32} color="#081f3d" />
                 </View>
+                <Text className="text-gray-900 font-bold text-lg mb-1 tracking-tight">Need an installation?</Text>
+                <Text className="text-gray-500 text-center font-medium mb-6 leading-relaxed">Start a new service request and get a quote within 24 hours.</Text>
+                <Button 
+                  variant="primary" 
+                  className="w-full"
+                  rightIcon={<ArrowRight size={18} color="white" />}
+                  onPress={() => router.push('/(screens)/requests')}
+                >
+                  Create Request
+                </Button>
+              </CardContent>
+            )}
+          </Card>
+
+          {/* Recent Orders */}
+          <Text className="text-gray-900 text-[18px] font-bold mb-5 tracking-tight">Your Installations</Text>
+          <View className="mb-10">
+            {loadingOrders ? (
+              <ActivityIndicator color="#081f3d" size="small" />
+            ) : recentOrder ? (
+              <Pressable onPress={() => router.push(`/(screens)/orders/${recentOrder.id}`)}>
+                <Card className="border-0">
+                  <CardContent className="flex-row justify-between items-center">
+                    <View>
+                      <Text className="text-gray-500 font-bold text-[13px] uppercase tracking-wider mb-1">Order #{recentOrder.id?.split('-')[0]}</Text>
+                      <Text className="text-ess-purple font-bold text-2xl tracking-tight">${recentOrder.total_amount || '0.00'}</Text>
+                    </View>
+                    <View className="items-end">
+                      <StatusBadge status={recentOrder.status} className="mb-3" />
+                      <Text className="text-ess-darkPurple font-bold">View Details</Text>
+                    </View>
+                  </CardContent>
+                </Card>
               </Pressable>
-            ))
-          ) : (
-            <Text className="text-gray-500">No recommendations right now.</Text>
-          )}
-        </View>
+            ) : (
+              <Card className="border-0 bg-transparent shadow-none border-2 border-dashed border-gray-200">
+                <CardContent className="items-center py-6">
+                  <Text className="text-gray-400 font-medium">You have no recent orders.</Text>
+                </CardContent>
+              </Card>
+            )}
+          </View>
 
-      </View>
-    </ScrollView>
+          {/* Recommended Products */}
+          <Text className="text-gray-900 text-[18px] font-bold mb-5 tracking-tight">Recommended for You</Text>
+          <View className="space-y-4 mb-24">
+            {loadingProducts ? (
+              <ActivityIndicator color="#081f3d" size="small" />
+            ) : recommendedProducts.length > 0 ? (
+              recommendedProducts.map(product => (
+                <Pressable key={product.id} onPress={() => router.push(`/(screens)/product/${product.id}`)} className="mb-3">
+                  <Card className="border-0">
+                    <CardContent className="flex-row items-center p-4">
+                      <View className="h-16 w-16 bg-ess-softBlue rounded-[16px] overflow-hidden items-center justify-center mr-4">
+                        {product.images && product.images.length > 0 ? (
+                          <Image source={{ uri: product.images[0].image }} style={{ width: '100%', height: '100%' }} />
+                        ) : (
+                          <Package size={24} color="#0f4c81" />
+                        )}
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-gray-900 font-bold text-[16px] tracking-tight truncate" numberOfLines={1}>{product.name}</Text>
+                        <Text className="text-ess-purple font-bold mt-1">${product.price}</Text>
+                      </View>
+                      <ChevronRight size={20} color="#9ca3af" />
+                    </CardContent>
+                  </Card>
+                </Pressable>
+              ))
+            ) : (
+              <Text className="text-gray-500 font-medium">No recommendations right now.</Text>
+            )}
+          </View>
+        </View>
+      </ScrollView>
+
+      {/* Premium Floating Chat Button */}
+      <Pressable 
+        onPress={() => router.push('/(screens)/chat')}
+        className="absolute bottom-28 right-6 bg-ess-purple w-16 h-16 rounded-[24px] items-center justify-center shadow-lg shadow-ess-purple/40 z-50"
+      >
+        <MessageCircle size={28} color="white" />
+        <View className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-ess-purple items-center justify-center" />
+      </Pressable>
+    </View>
   );
 }

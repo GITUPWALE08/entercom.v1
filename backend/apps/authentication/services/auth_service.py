@@ -15,7 +15,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 import secrets
 from apps.audit_logs.services.audit_service import log_action
-from apps.authentication.models import UserSession, EmailVerificationToken, PasswordResetToken
+from apps.authentication.models import UserSession, EmailVerificationToken, PasswordResetToken, MfaToken
 from apps.notification.services import DispatchOrchestrator
 
 User = get_user_model()
@@ -134,6 +134,29 @@ class AuthService:
         user.last_login_ip = request_metadata.get("ip_address")
         user.save()
 
+        if user.mfa_enabled:
+            import uuid
+            # Clear old tokens
+            MfaToken.objects.filter(user=user, is_used=False).update(is_used=True)
+            
+            otp = f"{secrets.randbelow(1000000):06d}"
+            mfa_session = str(uuid.uuid4())
+            MfaToken.objects.create(user=user, token=otp, mfa_session=mfa_session)
+
+            from apps.notification.providers import ProviderFactory
+            provider = ProviderFactory.get_provider()
+            html_body = f"<p>Hello {user.first_name},</p><p>Your 2FA login code is: <strong>{otp}</strong>. It will expire in 10 minutes.</p>"
+            text_body = f"Hello {user.first_name},\n\nYour 2FA login code is: {otp}. It will expire in 10 minutes."
+            
+            provider.send_email(
+                to_email=user.email,
+                subject="Your Two-Factor Authentication Code",
+                html_body=html_body,
+                plain_text_body=text_body
+            )
+            
+            return user, None, mfa_session
+
         refresh = RefreshToken.for_user(user)
         refresh["role_version"] = user.role_version
         refresh.access_token["role_version"] = user.role_version
@@ -144,6 +167,40 @@ class AuthService:
             action="auth.login_success",
             resource_type="user",
             resource_id=str(user.id),
+        )
+
+        return user, refresh, None
+
+    @staticmethod
+    def verify_mfa(mfa_session: str, otp: str, request_metadata: dict[str, Any]) -> tuple[User, RefreshToken]:
+        try:
+            mfa_token = MfaToken.objects.get(mfa_session=mfa_session, token=otp, is_used=False)
+        except MfaToken.DoesNotExist:
+            raise AuthenticationFailed("Invalid or expired 2FA code.")
+
+        if not mfa_token.is_valid():
+            raise AuthenticationFailed("Invalid or expired 2FA code.")
+
+        mfa_token.is_used = True
+        mfa_token.save(update_fields=["is_used"])
+
+        user = mfa_token.user
+
+        user.last_login = timezone.now()
+        user.last_login_ip = request_metadata.get("ip_address")
+        user.save()
+
+        refresh = RefreshToken.for_user(user)
+        refresh["role_version"] = user.role_version
+        refresh.access_token["role_version"] = user.role_version
+        AuthService.track_session(user, refresh, request_metadata)
+
+        log_action(
+            actor=user,
+            action="auth.login_success",
+            resource_type="user",
+            resource_id=str(user.id),
+            metadata={"method": "2fa"}
         )
 
         return user, refresh

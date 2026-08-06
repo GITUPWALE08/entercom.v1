@@ -6,31 +6,41 @@ export default function TabLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#0f4c81', // ess.darkPurple
-        tabBarInactiveTintColor: '#94a3b8', // slate-400
+        tabBarActiveTintColor: '#4f46e5', // ess-purple
+        tabBarInactiveTintColor: '#9ca3af', // gray-400
+        tabBarShowLabel: true,
         tabBarStyle: {
-          backgroundColor: '#ffffff',
-          borderTopWidth: 1,
-          borderTopColor: '#e2e8f0',
-          height: 80,
-          paddingBottom: 20,
-          paddingTop: 10,
+          position: 'absolute',
+          bottom: 24,
+          left: 24,
+          right: 24,
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          borderRadius: 32, // Premium squircle
+          height: 72,
+          paddingBottom: 12,
+          paddingTop: 12,
+          borderTopWidth: 0,
           elevation: 10,
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 10,
+          shadowColor: '#4f46e5',
+          shadowOffset: { width: 0, height: 10 },
+          shadowOpacity: 0.15,
+          shadowRadius: 20,
         },
         tabBarLabelStyle: {
           fontFamily: 'System',
-          fontSize: 12,
-          fontWeight: '500',
+          fontSize: 10,
+          fontWeight: '700',
+          marginTop: 4,
         },
+        // Remove background for active tab item to avoid square highlighting on floating bar
+        tabBarItemStyle: {
+          backgroundColor: 'transparent',
+        }
       }}>
       <Tabs.Screen
         name="index"
         options={{
-          title: 'My Home',
+          title: 'Home',
           tabBarIcon: ({ color }) => <Home size={24} color={color} />,
         }}
       />
@@ -44,7 +54,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="explore"
         options={{
-          title: 'Explore',
+          title: 'Shop',
           tabBarIcon: ({ color }) => <ShoppingBag size={24} color={color} />,
         }}
       />

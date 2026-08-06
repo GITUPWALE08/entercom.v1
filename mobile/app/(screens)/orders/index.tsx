@@ -1,62 +1,69 @@
-import React from 'react';
-import { View, Text, ScrollView, Pressable, FlatList } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Package, Clock, CheckCircle2, ChevronRight, XCircle } from 'lucide-react-native';
-
-const MOCK_ORDERS = [
-  { id: 'ORD-1234', date: '2023-10-15', status: 'delivered', total: 499.99, items: 2 },
-  { id: 'ORD-5678', date: '2023-11-02', status: 'processing', total: 129.50, items: 1 },
-  { id: 'ORD-9012', date: '2023-11-28', status: 'cancelled', total: 899.00, items: 3 },
-];
+import { ArrowLeft, Package, Clock, CheckCircle2, ChevronRight, XCircle, AlertCircle } from 'lucide-react-native';
+import { ordersApi, OrderItem } from '../../../src/api/orders';
+import { ensureArray } from '../../../src/utils/arrays';
 
 export default function OrdersScreen() {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'delivered': return { bg: 'bg-green-100', text: 'text-green-800', icon: <CheckCircle2 size={16} color="#166534" /> };
-      case 'processing': return { bg: 'bg-blue-100', text: 'text-blue-800', icon: <Clock size={16} color="#1e40af" /> };
-      case 'cancelled': return { bg: 'bg-red-100', text: 'text-red-800', icon: <XCircle size={16} color="#991b1b" /> };
-      default: return { bg: 'bg-gray-100', text: 'text-gray-800', icon: <Package size={16} color="#1f2937" /> };
+  const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchOrders = useCallback(async () => {
+    try {
+      setError(null);
+      const data = await ordersApi.list();
+      setOrders(ensureArray(data));
+    } catch (err: any) {
+      setError('Failed to load orders. Pull down to retry.');
+      console.error('Orders fetch error:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchOrders().finally(() => setLoading(false));
+  }, [fetchOrders]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchOrders();
+    setRefreshing(false);
+  }, [fetchOrders]);
+
+  const getStatusStyle = (status: string) => {
+    switch (status?.toLowerCase()) {
+      case 'delivered':
+      case 'fulfilled':
+      case 'completed':
+        return { bg: 'bg-green-100', text: 'text-green-800', icon: <CheckCircle2 size={16} color="#166534" /> };
+      case 'processing':
+      case 'pending':
+      case 'confirmed':
+        return { bg: 'bg-blue-100', text: 'text-blue-800', icon: <Clock size={16} color="#1e40af" /> };
+      case 'cancelled':
+      case 'canceled':
+        return { bg: 'bg-red-100', text: 'text-red-800', icon: <XCircle size={16} color="#991b1b" /> };
+      default:
+        return { bg: 'bg-gray-100', text: 'text-gray-800', icon: <Package size={16} color="#1f2937" /> };
     }
   };
 
-  const renderOrder = ({ item }: { item: any }) => {
-    const status = getStatusColor(item.status);
-    
-    return (
-      <Pressable 
-        onPress={() => router.push(`/orders/${item.id}`)}
-        className="bg-white p-5 rounded-2xl mb-4 shadow-sm border border-gray-100"
-      >
-        <View className="flex-row justify-between items-center mb-3">
-          <View>
-            <Text className="text-gray-900 font-bold text-lg">{item.id}</Text>
-            <Text className="text-gray-500 text-sm">{item.date}</Text>
-          </View>
-          <View className={`px-3 py-1.5 rounded-full flex-row items-center space-x-1 ${status.bg}`}>
-            {status.icon}
-            <Text className={`text-xs font-bold capitalize ml-1 ${status.text}`}>{item.status}</Text>
-          </View>
-        </View>
-        
-        <View className="flex-row justify-between items-center pt-3 border-t border-gray-50 mt-1">
-          <View>
-            <Text className="text-gray-500 text-sm">Total</Text>
-            <Text className="text-gray-900 font-bold text-base">${item.total.toFixed(2)}</Text>
-          </View>
-          <View>
-            <Text className="text-gray-500 text-sm">Items</Text>
-            <Text className="text-gray-900 font-bold text-base">{item.items}</Text>
-          </View>
-          <View className="bg-gray-50 p-2 rounded-full">
-            <ChevronRight size={20} color="#6b7280" />
-          </View>
-        </View>
-      </Pressable>
-    );
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const formatAmount = (amount?: string | number) => {
+    if (!amount) return '0.00';
+    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    return isNaN(num) ? '0.00' : num.toFixed(2);
   };
 
   return (
     <View className="flex-1 bg-gray-50">
+      {/* Header */}
       <View className="bg-white pt-16 pb-4 px-6 flex-row items-center justify-between border-b border-gray-100">
         <Pressable onPress={() => router.back()} className="p-2 -ml-2 bg-gray-50 rounded-full">
           <ArrowLeft size={24} color="#1f2937" />
@@ -65,28 +72,91 @@ export default function OrdersScreen() {
         <View className="w-10" />
       </View>
 
-      <FlatList
-        data={MOCK_ORDERS}
-        keyExtractor={(item) => item.id}
-        renderItem={renderOrder}
-        contentContainerStyle={{ padding: 24 }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={() => (
-          <View className="items-center justify-center py-20 mt-10">
-            <View className="bg-gray-100 p-6 rounded-full mb-6">
-              <Package size={48} color="#9ca3af" />
-            </View>
-            <Text className="text-xl font-bold text-gray-900 mb-2">No orders yet</Text>
-            <Text className="text-gray-500 text-center mb-8 px-8">You haven't placed any orders yet. Start exploring our products!</Text>
-            <Pressable 
-              onPress={() => router.replace('/(tabs)/explore')}
-              className="bg-blue-600 px-8 py-4 rounded-xl"
-            >
-              <Text className="text-white font-bold text-lg">Browse Products</Text>
-            </Pressable>
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#081f3d" />
+          <Text className="text-gray-500 mt-4 font-medium">Loading orders...</Text>
+        </View>
+      ) : error ? (
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
+        >
+          <View className="flex-1 items-center justify-center py-20">
+            <AlertCircle size={48} color="#ef4444" />
+            <Text className="text-red-500 text-center font-medium mt-4 px-8">{error}</Text>
           </View>
-        )}
-      />
+        </ScrollView>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
+        >
+          {orders.length === 0 ? (
+            <View className="items-center justify-center py-20 mt-10">
+              <View className="bg-gray-100 p-6 rounded-full mb-6">
+                <Package size={48} color="#9ca3af" />
+              </View>
+              <Text className="text-xl font-bold text-gray-900 mb-2">No orders yet</Text>
+              <Text className="text-gray-500 text-center mb-8 px-8">
+                You haven't placed any orders yet. Start exploring our products!
+              </Text>
+              <Pressable
+                onPress={() => router.replace('/(drawer)/(tabs)/explore')}
+                className="bg-ess-purple px-8 py-4 rounded-xl"
+              >
+                <Text className="text-white font-bold text-lg">Browse Products</Text>
+              </Pressable>
+            </View>
+          ) : (
+            orders.map((item) => {
+              const statusStyle = getStatusStyle(item.status);
+              return (
+                <Pressable
+                  key={item.id}
+                  onPress={() => router.push(`/(screens)/orders/${item.id}`)}
+                  className="bg-white p-5 rounded-2xl mb-4 shadow-sm border border-gray-100"
+                >
+                  <View className="flex-row justify-between items-center mb-3">
+                    <View>
+                      <Text className="text-gray-900 font-bold text-lg">
+                        #{item.id?.split('-')[0]?.toUpperCase()}
+                      </Text>
+                      <Text className="text-gray-500 text-sm">{formatDate(item.created_at)}</Text>
+                    </View>
+                    <View className={`px-3 py-1.5 rounded-full flex-row items-center ${statusStyle.bg}`}>
+                      {statusStyle.icon}
+                      <Text className={`text-xs font-bold capitalize ml-1 ${statusStyle.text}`}>
+                        {item.status?.replace(/_/g, ' ')}
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View className="flex-row justify-between items-center pt-3 border-t border-gray-50 mt-1">
+                    <View>
+                      <Text className="text-gray-500 text-sm">Total</Text>
+                      <Text className="text-gray-900 font-bold text-base">
+                        ${formatAmount(item.total_amount)}
+                      </Text>
+                    </View>
+                    <View>
+                      <Text className="text-gray-500 text-sm">Items</Text>
+                      <Text className="text-gray-900 font-bold text-base">
+                        {item.items?.length ?? '—'}
+                      </Text>
+                    </View>
+                    <View className="bg-gray-50 p-2 rounded-full">
+                      <ChevronRight size={20} color="#6b7280" />
+                    </View>
+                  </View>
+                </Pressable>
+              );
+            })
+          )}
+        </ScrollView>
+      )}
     </View>
   );
 }

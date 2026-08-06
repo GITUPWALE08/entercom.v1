@@ -1,8 +1,11 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
-import { User, Shield, Settings, Wrench, LogOut, ChevronRight, Bell } from 'lucide-react-native';
+import { User, Shield, Settings, Wrench, LogOut, ChevronRight, Bell, CreditCard, FileText } from 'lucide-react-native';
 import { useAuthStore } from '../../../src/store/authStore';
 import { router } from 'expo-router';
+import { Avatar } from '../../../src/components/ui/Avatar';
+import { Card } from '../../../src/components/ui/Card';
+import { Button } from '../../../src/components/ui/Button';
 
 export default function ProfileScreen() {
   const { user, logout } = useAuthStore();
@@ -13,122 +16,127 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScrollView className="flex-1 bg-gray-50">
-      {/* Header */}
-      <View className="bg-white pt-16 pb-6 px-6 border-b border-gray-100">
-        <Text className="text-3xl font-bold text-gray-900">Profile</Text>
+    <ScrollView className="flex-1 bg-gray-50" showsVerticalScrollIndicator={false}>
+      {/* Premium Header */}
+      <View className="bg-ess-purple pt-20 pb-16 px-7 rounded-b-[40px] shadow-lg shadow-ess-purple/20 relative overflow-hidden">
+        <View className="absolute -top-20 -left-20 w-64 h-64 bg-ess-darkPurple rounded-full opacity-50 blur-3xl" />
+        <View className="absolute bottom-0 right-0 w-40 h-40 bg-ess-softBlue rounded-full opacity-10 blur-2xl" />
         
-        <View className="flex-row items-center mt-6">
-          <View className="w-16 h-16 bg-blue-100 rounded-full items-center justify-center border-2 border-white shadow-sm">
-            <User size={32} color="#2563eb" />
-          </View>
-          <View className="ml-4 flex-1">
-            <Text className="text-xl font-bold text-gray-900">
-              {user?.firstName || 'John'} {user?.lastName || 'Doe'}
+        <Text className="text-3xl font-bold text-white tracking-tight relative z-10 mb-8">Profile</Text>
+        
+        <View className="flex-row items-center relative z-10">
+          <Avatar 
+            fallback={user?.first_name || 'US'} 
+            size="xl" 
+            className="border-4 border-white/20"
+          />
+          <View className="ml-5 flex-1">
+            <Text className="text-2xl font-bold text-white tracking-tight mb-1">
+              {user?.first_name || 'John'} {user?.last_name || 'Doe'}
             </Text>
-            <Text className="text-gray-500 mt-1">{user?.email || 'user@example.com'}</Text>
+            <Text className="text-indigo-100/90 font-medium tracking-wide">
+              {user?.email || 'user@example.com'}
+            </Text>
+            
+            <View className="bg-white/20 self-start px-3 py-1 rounded-full mt-3 backdrop-blur-md border border-white/10">
+              <Text className="text-white text-[11px] font-bold uppercase tracking-widest">Premium Member</Text>
+            </View>
           </View>
         </View>
       </View>
 
-      <View className="p-6">
+      <View className="p-10 -mt-8">
         {/* Account Group */}
-        <Text className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-3 ml-2">Account</Text>
-        <View className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <Text className="text-gray-500 text-[13px] font-bold uppercase tracking-widest mb-3 ml-2">Account</Text>
+        <Card className="mb-8 border-0 shadow-sm shadow-black/5 p-0 overflow-hidden">
           <Pressable onPress={() => router.push('/(screens)/orders')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
             <View className="flex-row items-center">
-              <View className="bg-blue-50 p-2 rounded-xl mr-3">
-                <User size={20} color="#2563eb" />
+              <View className="bg-ess-softBlue p-2.5 rounded-[12px] mr-4">
+                <User size={20} color="#0f4c81" />
               </View>
-              <Text className="text-gray-800 text-base font-medium">My Orders</Text>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">My Installations</Text>
             </View>
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
           
           <Pressable onPress={() => router.push('/(screens)/quotes')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
             <View className="flex-row items-center">
-              <View className="bg-emerald-50 p-2 rounded-xl mr-3">
-                <Shield size={20} color="#059669" />
+              <View className="bg-ess-softOrange/30 p-2.5 rounded-[12px] mr-4">
+                <FileText size={20} color="#f7941d" />
               </View>
-              <Text className="text-gray-800 text-base font-medium">My Quotes</Text>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">My Quotes</Text>
             </View>
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
           
           <Pressable onPress={() => router.push('/(screens)/payments')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
             <View className="flex-row items-center">
-              <View className="bg-purple-50 p-2 rounded-xl mr-3">
-                <Bell size={20} color="#7c3aed" />
+              <View className="bg-red-50 p-2.5 rounded-[12px] mr-4">
+                <CreditCard size={20} color="#ef4444" />
               </View>
-              <Text className="text-gray-800 text-base font-medium">Payment History</Text>
-            </View>
-            <ChevronRight size={20} color="#9ca3af" />
-          </Pressable>
-          <Pressable className="p-4 flex-row items-center justify-between border-b border-gray-50">
-            <View className="flex-row items-center">
-              <View className="bg-blue-50 p-2 rounded-xl mr-3">
-                <User size={20} color="#2563eb" />
-              </View>
-              <Text className="text-gray-800 text-base font-medium">Edit Profile</Text>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">Payment History</Text>
             </View>
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
           
           <Pressable className="p-4 flex-row items-center justify-between border-b border-gray-50">
             <View className="flex-row items-center">
-              <View className="bg-emerald-50 p-2 rounded-xl mr-3">
-                <Shield size={20} color="#059669" />
+              <View className="bg-ess-green/10 p-2.5 rounded-[12px] mr-4">
+                <Shield size={20} color="#25d366" />
               </View>
-              <Text className="text-gray-800 text-base font-medium">Warranty Status</Text>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">Warranty Status</Text>
             </View>
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
           
           <View className="p-4 flex-row items-center justify-between">
             <View className="flex-row items-center">
-              <View className="bg-gray-100 p-2 rounded-xl mr-3">
+              <View className="bg-gray-100 p-2.5 rounded-[12px] mr-4">
                 <Bell size={20} color="#4b5563" />
               </View>
-              <Text className="text-gray-800 text-base font-medium">Notifications</Text>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">Notifications</Text>
             </View>
-            <Switch value={true} trackColor={{ false: '#d1d5db', true: '#3b82f6' }} />
+            <Switch value={true} trackColor={{ false: '#d1d5db', true: '#081f3d' }} />
           </View>
-        </View>
+        </Card>
 
         {/* Support Group */}
-        <Text className="text-gray-500 text-sm font-semibold uppercase tracking-wider mb-3 ml-2">Support & Services</Text>
-        <View className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+        <Text className="text-gray-500 text-[13px] font-bold uppercase tracking-widest mb-3 ml-2">Support & Services</Text>
+        <Card className="mb-8 border-0 shadow-sm shadow-black/5 p-0 overflow-hidden">
           <Pressable onPress={() => router.push('/(screens)/technician')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
             <View className="flex-row items-center">
-              <View className="bg-orange-50 p-2 rounded-xl mr-3">
-                <Wrench size={20} color="#ea580c" />
+              <View className="bg-ess-softOrange/30 p-2.5 rounded-[12px] mr-4">
+                <Wrench size={20} color="#f7941d" />
               </View>
-              <Text className="text-gray-800 text-base font-medium">Technician Application Portal</Text>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">Technician Portal</Text>
             </View>
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
 
           <Pressable className="p-4 flex-row items-center justify-between">
             <View className="flex-row items-center">
-              <View className="bg-gray-100 p-2 rounded-xl mr-3">
+              <View className="bg-gray-100 p-2.5 rounded-[12px] mr-4">
                 <Settings size={20} color="#4b5563" />
               </View>
-              <Text className="text-gray-800 text-base font-medium">App Settings</Text>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">App Settings</Text>
             </View>
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
-        </View>
+        </Card>
 
         {/* Logout */}
-        <Pressable 
+        <Button 
+          variant="outline" 
           onPress={handleLogout}
-          className="bg-white rounded-2xl p-4 flex-row items-center justify-center shadow-sm border border-red-100 mt-2 mb-8"
+          className="border-red-200 bg-red-50/50 mb-8 py-4"
         >
-          <LogOut size={20} color="#ef4444" />
-          <Text className="text-red-500 text-base font-bold ml-2">Log Out</Text>
-        </Pressable>
+          <View className="flex-row items-center ">
+            <LogOut size={25} color="#ef4444" />
+            <Text className="text-red-500 text-[16px] font-bold ml-2 tracking-wide mb-0">Log Out</Text>
+          </View>
+        </Button>
         
-        <Text className="text-center text-gray-400 text-sm pb-10">Version 1.0.0</Text>
+        <Text className="text-center text-gray-400 text-xs font-bold tracking-widest uppercase pb-10">Entercom Version 2.0.0</Text>
       </View>
     </ScrollView>
   );

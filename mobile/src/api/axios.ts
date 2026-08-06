@@ -7,7 +7,7 @@ const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://entercom-v1.onrende
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
-  timeout: 10000,
+  timeout: 60000,
   headers: {
     'Content-Type': 'application/json',
   },
@@ -53,7 +53,7 @@ apiClient.interceptors.response.use(
         })
           .then((token) => {
             originalRequest.headers.Authorization = 'Bearer ' + token;
-            return apiClient(originalRequest);
+            return apiClient({ ...originalRequest, baseURL: undefined });
           })
           .catch((err) => Promise.reject(err));
       }
@@ -81,7 +81,7 @@ apiClient.interceptors.response.use(
         originalRequest.headers.Authorization = `Bearer ${data.access}`;
 
         processQueue(null, data.access);
-        return apiClient(originalRequest);
+        return apiClient({ ...originalRequest, baseURL: undefined });
       } catch (refreshError) {
         processQueue(refreshError, null);
         useAuthStore.getState().logout();

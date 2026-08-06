@@ -1,93 +1,102 @@
 import React from 'react';
-import { View, Text, ScrollView, Pressable, FlatList } from 'react-native';
+import { View, Text, Pressable, FlatList, Image } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, CreditCard, Clock, CheckCircle2, ChevronRight, RefreshCw, FileText } from 'lucide-react-native';
+import { ArrowLeft, CreditCard, ChevronRight, FileText, Plus } from 'lucide-react-native';
+import { Card, CardContent } from '../../../src/components/ui/Card';
+import { Button } from '../../../src/components/ui/Button';
+import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 
 const MOCK_PAYMENTS = [
-  { id: 'PAY-1234', date: '2023-10-15', status: 'completed', amount: 499.99, method: 'Visa ending in 4242' },
-  { id: 'PAY-5678', date: '2023-11-02', status: 'processing', amount: 129.50, method: 'MasterCard ending in 8899' },
-  { id: 'PAY-9012', date: '2023-11-28', status: 'refunded', amount: 899.00, method: 'PayPal' },
+  { id: 'INV-1234', date: '2023-10-15', status: 'completed', amount: 1299.00, method: 'Visa •••• 4242', type: 'Ultimate Smart Home Bundle' },
+  { id: 'INV-5678', date: '2023-11-02', status: 'pending', amount: 249.50, method: 'MasterCard •••• 8899', type: 'Smart Lock Pro' },
+  { id: 'INV-9012', date: '2023-11-28', status: 'cancelled', amount: 899.00, method: 'PayPal', type: 'Camera System Maintenance' },
 ];
 
 export default function PaymentsScreen() {
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return { bg: 'bg-green-100', text: 'text-green-800', icon: <CheckCircle2 size={16} color="#166534" /> };
-      case 'processing': return { bg: 'bg-blue-100', text: 'text-blue-800', icon: <Clock size={16} color="#1e40af" /> };
-      case 'refunded': return { bg: 'bg-purple-100', text: 'text-purple-800', icon: <RefreshCw size={16} color="#6b21a8" /> };
-      default: return { bg: 'bg-gray-100', text: 'text-gray-800', icon: <CreditCard size={16} color="#1f2937" /> };
-    }
-  };
-
   const renderPayment = ({ item }: { item: any }) => {
-    const status = getStatusColor(item.status);
-    
     return (
-      <View className="bg-white p-5 rounded-2xl mb-4 shadow-sm border border-gray-100">
-        <View className="flex-row justify-between items-center mb-4">
-          <View className="flex-row items-center">
-            <View className="w-10 h-10 bg-blue-50 rounded-full items-center justify-center mr-3">
-              <CreditCard size={20} color="#2563eb" />
+      <Card className="mb-4 border-0 p-0 shadow-sm shadow-black/5 overflow-hidden">
+        <CardContent className="p-5">
+          <View className="flex-row justify-between items-start mb-4">
+            <View className="flex-row items-center flex-1 pr-4">
+              <View className="w-12 h-12 bg-ess-softBlue rounded-[16px] items-center justify-center mr-4">
+                <CreditCard size={24} color="#0f4c81" />
+              </View>
+              <View>
+                <Text className="text-gray-900 font-bold text-[16px] tracking-tight">{item.type}</Text>
+                <Text className="text-gray-500 text-[13px] mt-0.5 font-medium">{item.id} • {item.date}</Text>
+              </View>
             </View>
-            <View>
-              <Text className="text-gray-900 font-bold text-base">{item.id}</Text>
-              <Text className="text-gray-500 text-xs mt-0.5">{item.date}</Text>
+            <View className="items-end">
+              <Text className="text-ess-darkPurple font-extrabold text-[18px] tracking-tight">${item.amount.toFixed(2)}</Text>
             </View>
           </View>
-          <View className="items-end">
-            <Text className="text-gray-900 font-bold text-lg">${item.amount.toFixed(2)}</Text>
-            <View className={`px-2 py-1 rounded-full flex-row items-center mt-1 ${status.bg}`}>
-              <Text className={`text-[10px] font-bold capitalize ${status.text}`}>{item.status}</Text>
+          
+          <View className="flex-row justify-between items-center pt-4 border-t border-gray-100">
+            <View className="flex-row items-center">
+              <StatusBadge status={item.status} />
+              <Text className="text-gray-500 text-[13px] ml-3 font-semibold">{item.method}</Text>
             </View>
+            <Pressable className="flex-row items-center bg-gray-50 px-3 py-2 rounded-xl">
+              <FileText size={14} color="#4f46e5" className="mr-1.5" />
+              <Text className="text-ess-purple text-[12px] font-bold tracking-wide">Receipt</Text>
+            </Pressable>
           </View>
-        </View>
-        
-        <View className="flex-row justify-between items-center pt-3 border-t border-gray-50">
-          <Text className="text-gray-500 text-sm flex-1">{item.method}</Text>
-          <Pressable className="flex-row items-center bg-gray-50 px-3 py-1.5 rounded-lg">
-            <FileText size={14} color="#4b5563" className="mr-1" />
-            <Text className="text-gray-700 text-xs font-semibold">Receipt</Text>
-          </Pressable>
-        </View>
-      </View>
+        </CardContent>
+      </Card>
     );
   };
 
   return (
     <View className="flex-1 bg-gray-50">
-      <View className="bg-white pt-16 pb-4 px-6 flex-row items-center justify-between border-b border-gray-100">
-        <Pressable onPress={() => router.back()} className="p-2 -ml-2 bg-gray-50 rounded-full">
-          <ArrowLeft size={24} color="#1f2937" />
-        </Pressable>
-        <Text className="text-xl font-bold text-gray-900">Payment History</Text>
-        <View className="w-10" />
+      {/* Premium Header */}
+      <View className="bg-ess-purple pt-16 pb-6 px-7 rounded-b-[40px] shadow-lg shadow-ess-purple/20 relative overflow-hidden z-10">
+        <View className="absolute -top-20 -left-20 w-64 h-64 bg-ess-darkPurple rounded-full opacity-50 blur-3xl" />
+        <View className="absolute bottom-0 right-0 w-40 h-40 bg-ess-softBlue rounded-full opacity-10 blur-2xl" />
+        
+        <View className="flex-row items-center justify-between relative z-10 mb-6">
+          <Pressable onPress={() => router.back()} className="w-10 h-10 bg-white/10 rounded-full items-center justify-center backdrop-blur-md border border-white/20">
+            <ArrowLeft size={20} color="white" />
+          </Pressable>
+          <Text className="text-[17px] font-bold text-white tracking-wide">Billing & Payments</Text>
+          <View className="w-10" />
+        </View>
+
+        {/* Current Balance Card */}
+        <View className="bg-white/10 backdrop-blur-md rounded-[24px] p-6 border border-white/20 relative z-10">
+          <Text className="text-indigo-100 text-[13px] font-bold tracking-widest uppercase mb-1">Total Outstanding</Text>
+          <Text className="text-white font-extrabold text-[36px] tracking-tighter mb-5">$249.50</Text>
+          
+          <Button variant="primary" className="bg-white" textClassName="text-ess-darkPurple">
+            Pay Balance Now
+          </Button>
+        </View>
       </View>
 
       <FlatList
         data={MOCK_PAYMENTS}
         keyExtractor={(item) => item.id}
         renderItem={renderPayment}
-        contentContainerStyle={{ padding: 24 }}
+        contentContainerStyle={{ padding: 24, paddingBottom: 100 }}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={() => (
-          <View className="bg-blue-600 rounded-2xl p-6 mb-6 shadow-sm">
-            <Text className="text-blue-100 font-medium mb-1">Total Spent</Text>
-            <Text className="text-white font-bold text-3xl">$1,528.49</Text>
-            <View className="mt-4 pt-4 border-t border-white/20 flex-row justify-between items-center">
-              <Text className="text-blue-100 text-sm">Manage Payment Methods</Text>
-              <View className="bg-white/20 rounded-full p-1">
-                <ChevronRight size={16} color="white" />
-              </View>
-            </View>
+          <View className="mb-6 flex-row items-center justify-between">
+            <Text className="text-[20px] font-bold text-gray-900 tracking-tight">Recent Transactions</Text>
+            <Pressable className="flex-row items-center bg-ess-softBlue px-3 py-1.5 rounded-full">
+              <Plus size={14} color="#081f3d" />
+              <Text className="text-[12px] font-bold text-ess-darkPurple ml-1 tracking-wide">Add Card</Text>
+            </Pressable>
           </View>
         )}
         ListEmptyComponent={() => (
-          <View className="items-center justify-center py-10">
-            <View className="bg-gray-100 p-6 rounded-full mb-6">
-              <CreditCard size={48} color="#9ca3af" />
+          <View className="items-center justify-center py-16">
+            <View className="bg-white w-24 h-24 rounded-full items-center justify-center shadow-sm shadow-black/5 mb-6">
+              <CreditCard size={40} color="#9ca3af" />
             </View>
-            <Text className="text-xl font-bold text-gray-900 mb-2">No payments yet</Text>
-            <Text className="text-gray-500 text-center px-8">You haven't made any payments yet. They will appear here once your orders are processed.</Text>
+            <Text className="text-[20px] font-bold text-gray-900 tracking-tight mb-2">No payments yet</Text>
+            <Text className="text-gray-500 text-center px-8 text-[15px] leading-relaxed">
+              You haven't made any payments yet. They will appear here once your orders are processed.
+            </Text>
           </View>
         )}
       />

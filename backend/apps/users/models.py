@@ -136,3 +136,14 @@ class TechnicianApplicationActivity(models.Model):
     class Meta:
         db_table = "users_technician_application_activity"
         ordering = ["-created_at"]
+
+class PushDevice(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='push_devices')
+    token = models.CharField(max_length=255, unique=True)
+    device_type = models.CharField(max_length=50) # 'ios', 'android', 'web'
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'users_push_device'

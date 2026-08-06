@@ -1,6 +1,15 @@
 import React, { forwardRef } from 'react';
-import { Pressable, Text, View, ActivityIndicator, PressableProps } from 'react-native';
+import { Text, View, ActivityIndicator, PressableProps, Platform } from 'react-native';
 import { twMerge } from 'tailwind-merge';
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
+import { Pressable } from 'react-native';
+
+const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
 export type ButtonVariant = 'primary' | 'secondary' | 'danger' | 'outline' | 'ghost' | 'link';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -17,43 +26,66 @@ export interface ButtonProps extends Omit<PressableProps, 'className'> {
 }
 
 export const Button = forwardRef<View, ButtonProps>(
-  ({ className = '', textClassName = '', variant = 'primary', size = 'md', isLoading = false, leftIcon, rightIcon, children, disabled, ...props }, ref) => {
-    const baseStyles = 'flex-row items-center justify-center rounded-xl';
+  ({ className = '', textClassName = '', variant = 'primary', size = 'md', isLoading = false, leftIcon, rightIcon, children, disabled, onPressIn, onPressOut, ...props }, ref) => {
+    const scale = useSharedValue(1);
+    const opacity = useSharedValue(1);
+
+    const handlePressIn = (e: any) => {
+      scale.value = withSpring(0.96, { damping: 15, stiffness: 300 });
+      opacity.value = withTiming(0.85, { duration: 150 });
+      if (onPressIn) onPressIn(e);
+    };
+
+    const handlePressOut = (e: any) => {
+      scale.value = withSpring(1, { damping: 15, stiffness: 300 });
+      opacity.value = withTiming(1, { duration: 150 });
+      if (onPressOut) onPressOut(e);
+    };
+
+    const animatedStyle = useAnimatedStyle(() => ({
+      transform: [{ scale: scale.value }],
+      opacity: opacity.value,
+    }));
+
+    // Premium styling
+    const baseStyles = 'flex-row items-center justify-center rounded-[20px] shadow-sm';
     
     const variants: Record<ButtonVariant, string> = {
-      primary: 'bg-indigo-600',
-      secondary: 'bg-gray-100',
-      danger: 'bg-red-600',
-      outline: 'border-2 border-gray-200 bg-transparent',
-      ghost: 'bg-transparent',
-      link: 'bg-transparent p-0 h-auto',
+      primary: 'bg-ess-purple border border-ess-purple/10',
+      secondary: 'bg-ess-softBlue border border-white',
+      danger: 'bg-red-500',
+      outline: 'border-2 border-ess-purple/20 bg-transparent',
+      ghost: 'bg-transparent shadow-none',
+      link: 'bg-transparent p-0 h-auto shadow-none',
     };
 
     const sizes: Record<ButtonSize, string> = {
-      sm: 'h-9 px-4 gap-1.5',
-      md: 'h-11 px-6 gap-2',
-      lg: 'h-14 px-8 gap-2.5',
+      sm: 'h-10 px-5 gap-2',
+      md: 'h-14 px-7 gap-2.5',
+      lg: 'h-16 px-9 gap-3',
     };
 
     const textVariants: Record<ButtonVariant, string> = {
-      primary: 'text-white font-medium',
-      secondary: 'text-gray-900 font-medium',
-      danger: 'text-white font-medium',
-      outline: 'text-gray-700 font-medium',
-      ghost: 'text-gray-700 font-medium',
-      link: 'text-indigo-600 font-medium underline',
+      primary: 'text-white font-semibold tracking-wide',
+      secondary: 'text-ess-darkPurple font-semibold tracking-wide',
+      danger: 'text-white font-semibold tracking-wide',
+      outline: 'text-ess-purple font-semibold tracking-wide',
+      ghost: 'text-ess-purple font-semibold tracking-wide',
+      link: 'text-ess-darkPurple font-semibold underline tracking-wide',
     };
 
     const textSizes: Record<ButtonSize, string> = {
       sm: 'text-sm',
-      md: 'text-sm',
-      lg: 'text-base',
+      md: 'text-base',
+      lg: 'text-lg',
     };
 
     return (
-      <Pressable
+      <AnimatedPressable
         ref={ref}
         disabled={disabled || isLoading}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
         className={twMerge(
           baseStyles,
           variants[variant],
@@ -61,14 +93,15 @@ export const Button = forwardRef<View, ButtonProps>(
           (disabled || isLoading) ? 'opacity-50' : '',
           className
         )}
-        style={({ pressed }) => [
-          { opacity: pressed ? 0.8 : 1 }
-        ]}
+        style={[animatedStyle, {
+          elevation: variant === 'primary' ? 4 : 0,
+          shadowColor: variant === 'primary' ? '#081f3d' : 'transparent',
+        }]}
         {...props}
       >
         {isLoading && (
           <ActivityIndicator 
-            color={variant === 'outline' || variant === 'ghost' || variant === 'secondary' ? '#374151' : '#FFFFFF'} 
+            color={variant === 'outline' || variant === 'ghost' || variant === 'secondary' ? '#081f3d' : '#FFFFFF'} 
             size="small" 
             className="mr-2"
           />
@@ -82,7 +115,7 @@ export const Button = forwardRef<View, ButtonProps>(
           children
         )}
         {!isLoading && rightIcon && <View className="ml-2 flex-row items-center justify-center">{rightIcon}</View>}
-      </Pressable>
+      </AnimatedPressable>
     );
   }
 );

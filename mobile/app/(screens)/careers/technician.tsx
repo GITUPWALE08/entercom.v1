@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Pressable, TextInput, Switch } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, Wrench, Briefcase, FileText, Upload, CheckCircle2 } from 'lucide-react-native';
+import { careersApi } from '../../../src/api/careers';
 
 export default function TechnicianCareerScreen() {
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     experience: '',
     certifications: '',
@@ -12,9 +14,17 @@ export default function TechnicianCareerScreen() {
     about: ''
   });
 
-  const handleSubmit = () => {
-    // Submit logic
-    setSuccess(true);
+  const handleSubmit = async () => {
+    try {
+      setLoading(true);
+      await careersApi.applyTechnician(form);
+      setSuccess(true);
+    } catch (error) {
+      console.error(error);
+      alert('Failed to submit application. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (success) {
@@ -115,9 +125,10 @@ export default function TechnicianCareerScreen() {
 
         <Pressable 
           onPress={handleSubmit}
-          className="bg-blue-600 py-4 rounded-xl items-center mb-10 shadow-sm"
+          disabled={loading}
+          className={`py-4 rounded-xl items-center mb-10 shadow-sm ${loading ? 'bg-blue-400' : 'bg-blue-600'}`}
         >
-          <Text className="text-white font-bold text-lg">Submit Application</Text>
+          <Text className="text-white font-bold text-lg">{loading ? 'Submitting...' : 'Submit Application'}</Text>
         </Pressable>
       </ScrollView>
     </View>
