@@ -1,3 +1,22 @@
--> the push notification is not working 
--> the biometric authentication is not working
--> Also 2fa is not on account settings (add all the account setting on web app to the account settings on the mobile and they should be fully integrated to the api and working)
+on the web app (production):
+{
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+        {
+            "token_class": "AccessToken",
+            "token_type": "access",
+            "message": "Token is invalid or expired"
+        }
+    ]
+}
+
+
+
+notifications/?offset=0&limit=20	401	xhr	index-Clzf9OO0.js:15	0.3 kB	2.52 s
+unread-count/	401	xhr	index-Clzf9OO0.js:15	0.4 kB	2.51 s
+orders/	200	preflight	Preflight
+0.0 kB	1.40 s
+requests/	Finished	websocket	index-Clzf9OO0.js:22	0.0 kB	1.37 s
+orders/	401	xhr	index-Clzf9OO0.js:15	0.3 kB	283 ms
+refresh/	200	pref
