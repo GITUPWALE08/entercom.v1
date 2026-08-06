@@ -31,6 +31,10 @@ async function registerForPushNotificationsAsync() {
     console.log('Must use physical device for Push Notifications');
     return 'ExponentPushToken[mock-simulator-token]';
   }
+  if (Constants.appOwnership === 'expo') {
+    console.log('Expo Go does not support remote push notifications.');
+    return null;
+  }
   const { status: existingStatus } = await ExpoNotifications.getPermissionsAsync();
   let finalStatus = existingStatus;
   if (existingStatus !== 'granted') {

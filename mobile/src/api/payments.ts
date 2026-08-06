@@ -4,6 +4,7 @@ import { apiClient } from './axios';
 export interface PaymentItem {
   id: string;
   order_id: string;
+  request_id?: string;
   status: string;
   amount: string;
   currency: string;

@@ -7,6 +7,8 @@ export interface OrderItem {
   total_amount: string;
   created_at: string;
   items?: any[];
+  request_id?: string;
+  payment_id?: string;
 }
 
 export const ordersApi = {

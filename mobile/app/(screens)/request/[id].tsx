@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, AlertCircle, FileText, CheckCircle2, Clock, Circle, MessageCircle } from 'lucide-react-native';
+import { ArrowLeft, AlertCircle, FileText, CheckCircle2, Clock, Circle, MessageCircle, CreditCard } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { requestsApi, RequestItem } from '../../../src/api/requests';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import * as ImagePicker from 'expo-image-picker';
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base64-arraybuffer';
+import { supabase } from '../../../src/lib/supabase';
+import { Camera, UploadCloud } from 'lucide-react-native';
 
 export default function RequestDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -13,6 +18,60 @@ export default function RequestDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [verifying, setVerifying] = useState(false);
+  const [verificationPhoto, setVerificationPhoto] = useState<string | null>(null);
+
+  const handlePickVerificationPhoto = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setVerifying(true);
+        const asset = result.assets[0];
+        
+        const base64 = await FileSystem.readAsStringAsync(asset.uri, { encoding: 'base64' });
+        const filePath = `verifications/${Date.now()}_job_${id}.jpg`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('entercom-media')
+          .upload(filePath, decode(base64), { contentType: 'image/jpeg' });
+          
+        if (uploadError) throw uploadError;
+        
+        const { data: publicUrlData } = supabase.storage
+          .from('entercom-media')
+          .getPublicUrl(filePath);
+          
+        setVerificationPhoto(publicUrlData.publicUrl);
+        setVerifying(false);
+      }
+    } catch (err) {
+      console.error(err);
+      // Alert imported implicitly or just use console
+      setVerifying(false);
+    }
+  };
+
+  const handleCompleteJob = async () => {
+    if (!verificationPhoto) return;
+    try {
+      setVerifying(true);
+      await requestsApi.submit_verification(id as string, { 
+        photos: [verificationPhoto],
+        notes: 'Job completed successfully.' 
+      });
+      fetchRequest();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setVerifying(false);
+    }
+  };
 
   const fetchRequest = useCallback(async () => {
     if (!id) return;
@@ -104,13 +163,37 @@ export default function RequestDetailScreen() {
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
         >
           {/* Status Card */}
-          <View className={`${getStatusBgColor(request.status)} mx-5 mt-5 p-5 rounded-2xl`}>
+          <View className={`${getStatusBgColor(request.status)} mx-5 mt-5 p-5 rounded-2xl mb-4`}>
             <Text className="text-white/80 font-medium mb-1 text-sm">Current Status</Text>
             <StatusBadge status={request.status} />
             <Text className="text-white/70 text-xs mt-3">
               Last updated: {formatDate(request.updated_at)}
             </Text>
           </View>
+
+          {request.order_id && (
+            <Pressable onPress={() => router.push(`/(screens)/orders/${request.order_id}`)} className="mx-5 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex-row justify-between items-center">
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 rounded-full bg-blue-50 items-center justify-center">
+                  <FileText size={16} color="#0f4c81" />
+                </View>
+                <Text className="ml-3 font-semibold text-gray-900">View Order Details</Text>
+              </View>
+              <ArrowLeft size={16} color="#9ca3af" className="rotate-180" />
+            </Pressable>
+          )}
+
+          {request.payment_id && (
+            <Pressable onPress={() => router.push(`/(screens)/payment/${request.payment_id}`)} className="mx-5 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex-row justify-between items-center">
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 rounded-full bg-green-50 items-center justify-center">
+                  <CreditCard size={16} color="#16a34a" />
+                </View>
+                <Text className="ml-3 font-semibold text-gray-900">View Payment Details</Text>
+              </View>
+              <ArrowLeft size={16} color="#9ca3af" className="rotate-180" />
+            </Pressable>
+          )}
 
           {/* Request Details */}
           <View className="mx-5 mt-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
@@ -160,6 +243,51 @@ export default function RequestDetailScreen() {
               )}
             </View>
           </View>
+
+          {/* Technician Completion Verification Panel */}
+          {request?.status === 'in_progress' && (
+            <View className="mx-5 mt-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
+              <Text className="text-lg font-bold text-gray-900 mb-4">Job Verification</Text>
+              
+              {verificationPhoto ? (
+                <View className="mb-4 bg-green-50 rounded-xl p-4 flex-row items-center">
+                  <CheckCircle2 size={24} color="#16a34a" />
+                  <Text className="ml-3 text-green-800 font-semibold flex-1">Photo Uploaded Successfully</Text>
+                </View>
+              ) : (
+                <Pressable 
+                  onPress={handlePickVerificationPhoto}
+                  disabled={verifying}
+                  className="mb-4 bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 items-center justify-center"
+                >
+                  {verifying ? (
+                    <ActivityIndicator color="#0f4c81" />
+                  ) : (
+                    <>
+                      <Camera size={32} color="#9ca3af" />
+                      <Text className="text-gray-600 font-medium mt-3">Upload Completion Photo</Text>
+                    </>
+                  )}
+                </Pressable>
+              )}
+
+              <Pressable 
+                onPress={handleCompleteJob}
+                disabled={verifying || !verificationPhoto}
+                className={`p-4 rounded-xl items-center justify-center flex-row shadow-sm ${
+                  verificationPhoto ? 'bg-ess-purple' : 'bg-gray-200'
+                }`}
+              >
+                {verifying ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className={`font-bold text-base ${verificationPhoto ? 'text-white' : 'text-gray-400'}`}>
+                    Submit & Complete Job
+                  </Text>
+                )}
+              </Pressable>
+            </View>
+          )}
 
           {/* Timeline */}
           {timeline.length > 0 && (

@@ -49,10 +49,20 @@ export default function ProfileScreen() {
         {/* Account Group */}
         <Text className="text-gray-500 text-[13px] font-bold uppercase tracking-widest mb-3 ml-2">Account</Text>
         <Card className="mb-8 border-0 shadow-sm shadow-black/5 p-0 overflow-hidden">
-          <Pressable onPress={() => router.push('/(screens)/orders')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
+          <Pressable onPress={() => router.push('/(screens)/account-settings')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
             <View className="flex-row items-center">
               <View className="bg-ess-softBlue p-2.5 rounded-[12px] mr-4">
                 <User size={20} color="#0f4c81" />
+              </View>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">Account Settings</Text>
+            </View>
+            <ChevronRight size={20} color="#9ca3af" />
+          </Pressable>
+
+          <Pressable onPress={() => router.push('/(drawer)/(tabs)/bookings?type=installation')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
+            <View className="flex-row items-center">
+              <View className="bg-ess-green/10 p-2.5 rounded-[12px] mr-4">
+                <Wrench size={20} color="#25d366" />
               </View>
               <Text className="text-gray-800 text-[16px] font-bold tracking-tight">My Installations</Text>
             </View>
@@ -113,7 +123,7 @@ export default function ProfileScreen() {
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
 
-          <Pressable className="p-4 flex-row items-center justify-between">
+          <Pressable onPress={() => router.push('/(screens)/app-settings')} className="p-4 flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View className="bg-gray-100 p-2.5 rounded-[12px] mr-4">
                 <Settings size={20} color="#4b5563" />
@@ -132,7 +142,7 @@ export default function ProfileScreen() {
         >
           <View className="flex-row items-center ">
             <LogOut size={25} color="#ef4444" />
-            <Text className="text-red-500 text-[16px] font-bold ml-2 tracking-wide mb-0">Log Out</Text>
+            <Text className="text-red-500 text-[16px] font-bold ml-2 tracking-wide mb-0">LOG OUT</Text>
           </View>
         </Button>
         

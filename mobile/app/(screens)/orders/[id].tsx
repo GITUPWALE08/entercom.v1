@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Package, MapPin, CreditCard, AlertCircle, CheckCircle2, Clock, Circle } from 'lucide-react-native';
+import { ArrowLeft, Package, MapPin, CreditCard, AlertCircle, CheckCircle2, Clock, Circle, FileText } from 'lucide-react-native';
 import { ordersApi, OrderItem } from '../../../src/api/orders';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 
@@ -105,6 +105,30 @@ export default function OrderDetailsScreen() {
               <Package size={32} color="white" />
             </View>
           </View>
+
+          {order.request_id && (
+            <Pressable onPress={() => router.push(`/(screens)/request/${order.request_id}`)} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex-row justify-between items-center">
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 rounded-full bg-orange-50 items-center justify-center">
+                  <FileText size={16} color="#f59e0b" />
+                </View>
+                <Text className="ml-3 font-semibold text-gray-900">View Service Request</Text>
+              </View>
+              <ArrowLeft size={16} color="#9ca3af" className="rotate-180" />
+            </Pressable>
+          )}
+          
+          {order.payment_id && (
+            <Pressable onPress={() => router.push(`/(screens)/payment/${order.payment_id}`)} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex-row justify-between items-center">
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 rounded-full bg-green-50 items-center justify-center">
+                  <CreditCard size={16} color="#16a34a" />
+                </View>
+                <Text className="ml-3 font-semibold text-gray-900">View Payment Details</Text>
+              </View>
+              <ArrowLeft size={16} color="#9ca3af" className="rotate-180" />
+            </Pressable>
+          )}
 
           {/* Order Items */}
           {order.items && order.items.length > 0 && (
