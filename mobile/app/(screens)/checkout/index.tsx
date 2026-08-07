@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert, TouchableOpacity, Modal, FlatList } from 'react-native';
+import { ChevronDown, X } from 'lucide-react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, CheckCircle2, Wrench, Receipt, Circle, CheckCircle } from 'lucide-react-native';
 import * as WebBrowser from 'expo-web-browser';
@@ -20,6 +21,7 @@ export default function CheckoutScreen() {
   const [loadingRequests, setLoadingRequests] = useState(true);
   const [selectedRequestId, setSelectedRequestId] = useState<string>('');
   const [requiresTechnician, setRequiresTechnician] = useState<boolean>(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   
   const subtotal = items.reduce((sum, item) => sum + (parseFloat(item.product.price) * item.quantity), 0);
   const tax = subtotal * 0.1; // Kept only for display if needed, but web sets total = subtotal
@@ -161,32 +163,77 @@ export default function CheckoutScreen() {
                 </View>
               ) : (
                 <View>
-                  {/* Option: Direct Purchase */}
                   <TouchableOpacity 
-                    onPress={() => setSelectedRequestId('')}
-                    className={`flex-row items-center p-4 border rounded-xl mb-3 ${selectedRequestId === '' ? 'border-ess-purple bg-ess-purple/5' : 'border-gray-200 bg-gray-50'}`}
+                    onPress={() => setIsDropdownOpen(true)}
+                    className="flex-row items-center justify-between p-4 border border-gray-200 rounded-xl bg-gray-50"
                   >
-                    {selectedRequestId === '' ? <CheckCircle color="#0A0F1C" size={20} className="mr-3" /> : <Circle color="#9ca3af" size={20} className="mr-3" />}
-                    <Text className={`font-medium ${selectedRequestId === '' ? 'text-ess-purple' : 'text-gray-700'}`}>
-                      No request (Direct Purchase)
-                    </Text>
+                    <View className="flex-1">
+                      {selectedRequestId === '' ? (
+                        <Text className="font-medium text-gray-700">No request (Direct Purchase)</Text>
+                      ) : (
+                        <View>
+                          <Text className="font-medium text-ess-purple">
+                            {activeRequests.find(r => r.id === selectedRequestId)?.title || activeRequests.find(r => r.id === selectedRequestId)?.service_type?.replace('_', ' ')}
+                          </Text>
+                          <Text className="text-gray-500 text-xs mt-1">
+                            {activeRequests.find(r => r.id === selectedRequestId)?.address || 'No location specified'}
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                    <ChevronDown size={20} color="#9ca3af" />
                   </TouchableOpacity>
 
-                  {/* Active Requests */}
-                  {activeRequests.map(req => (
-                    <TouchableOpacity 
-                      key={req.id}
-                      onPress={() => setSelectedRequestId(req.id)}
-                      className={`flex-row items-center p-4 border rounded-xl mb-3 ${selectedRequestId === req.id ? 'border-ess-purple bg-ess-purple/5' : 'border-gray-200 bg-gray-50'}`}
-                    >
-                      {selectedRequestId === req.id ? <CheckCircle color="#0A0F1C" size={20} className="mr-3" /> : <Circle color="#9ca3af" size={20} className="mr-3" />}
-                      <View className="flex-1">
-                        <Text className={`font-medium ${selectedRequestId === req.id ? 'text-ess-purple' : 'text-gray-700'}`}>
-                          {req.public_id || req.id.split('-')[0]} - {req.title || req.service_type?.replace('_', ' ')}
-                        </Text>
+                  <Modal visible={isDropdownOpen} animationType="slide" transparent={true}>
+                    <View className="flex-1 justify-end bg-black/50">
+                      <View className="bg-white rounded-t-3xl h-[60%]">
+                        <View className="flex-row justify-between items-center p-6 border-b border-gray-100">
+                          <Text className="text-lg font-bold text-gray-900">Select Service Request</Text>
+                          <TouchableOpacity onPress={() => setIsDropdownOpen(false)}>
+                            <X size={24} color="#9ca3af" />
+                          </TouchableOpacity>
+                        </View>
+                        
+                        <FlatList
+                          data={[{ id: '' } as any, ...activeRequests]}
+                          keyExtractor={(item) => item.id || 'none'}
+                          contentContainerStyle={{ padding: 24 }}
+                          renderItem={({ item: req }) => (
+                            <TouchableOpacity 
+                              onPress={() => {
+                                setSelectedRequestId(req.id);
+                                setIsDropdownOpen(false);
+                              }}
+                              className={`flex-row items-center p-4 border rounded-xl mb-3 ${selectedRequestId === req.id ? 'border-ess-purple bg-ess-purple/5' : 'border-gray-200 bg-gray-50'}`}
+                            >
+                              {selectedRequestId === req.id ? <CheckCircle color="#0A0F1C" size={20} className="mr-3" /> : <Circle color="#9ca3af" size={20} className="mr-3" />}
+                              <View className="flex-1">
+                                {req.id === '' ? (
+                                  <Text className={`font-medium ${selectedRequestId === '' ? 'text-ess-purple' : 'text-gray-700'}`}>
+                                    No request (Direct Purchase)
+                                  </Text>
+                                ) : (
+                                  <>
+                                    <Text className={`font-medium ${selectedRequestId === req.id ? 'text-ess-purple' : 'text-gray-700'}`}>
+                                      {req.title || req.service_type?.replace('_', ' ')}
+                                    </Text>
+                                    <View className="flex-row items-center mt-1">
+                                      <Text className="text-xs text-gray-500 mr-2 capitalize">
+                                        {req.status.replace('_', ' ')}
+                                      </Text>
+                                      <Text className="text-xs text-gray-400" numberOfLines={1}>
+                                        • {req.address || 'No location'}
+                                      </Text>
+                                    </View>
+                                  </>
+                                )}
+                              </View>
+                            </TouchableOpacity>
+                          )}
+                        />
                       </View>
-                    </TouchableOpacity>
-                  ))}
+                    </View>
+                  </Modal>
                 </View>
               )}
             </View>

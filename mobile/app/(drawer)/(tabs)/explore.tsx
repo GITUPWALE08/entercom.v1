@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, Image, ActivityIndicator, SafeAreaView, ScrollView } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, TextInput, Pressable, Image, ActivityIndicator, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
 import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { router } from 'expo-router';
 import { Search, ShoppingCart, ChevronRight, Star, Shield, Wifi, Home, Tv, X } from 'lucide-react-native';
@@ -37,12 +37,31 @@ export default function ExploreScreen() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { addItem, items } = useCartStore();
-  const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const cartItemCount = items.length;
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  useEffect(() => {
-    productsApi.list().then(res => setProducts(res || [])).catch(console.error).finally(() => setLoading(false));
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = useCallback(async () => {
+    try {
+      const res = await productsApi.list();
+      setProducts(res || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
 
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -98,7 +117,10 @@ export default function ExploreScreen() {
       )}
 
       <AppScrollView 
-        className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        className="flex-1" 
+        showsVerticalScrollIndicator={false}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
+        contentContainerStyle={{ paddingBottom: 120 }}>
         
         {/* Featured Hero */}
         <View className="px-7 py-4">

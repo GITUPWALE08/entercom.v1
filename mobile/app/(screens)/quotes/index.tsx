@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, Pressable, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, FileText, ChevronRight } from 'lucide-react-native';
 import { Card, CardContent } from '../../../src/components/ui/Card';
@@ -10,14 +10,15 @@ import { requestsApi } from '../../../src/api/requests';
 export default function QuotesScreen() {
   const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
     fetchQuotes();
   }, []);
 
-  const fetchQuotes = async () => {
+  const fetchQuotes = async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       const reqs = await requestsApi.list();
       const reqsWithQuotes = reqs.filter(r => ['awaiting_customer_approval', 'awaiting_payment', 'in_progress', 'completed'].includes(r.status));
       
@@ -42,7 +43,13 @@ export default function QuotesScreen() {
       console.error('Failed to fetch quotes:', error);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchQuotes(true);
   };
 
   const renderQuote = ({ item }: { item: any }) => {
@@ -97,6 +104,9 @@ export default function QuotesScreen() {
           renderItem={renderQuote}
           contentContainerStyle={{ padding: 28 }}
           showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />
+          }
           ListEmptyComponent={() => (
             <View className="items-center justify-center py-20 mt-10">
               <View className="bg-white w-24 h-24 rounded-full items-center justify-center shadow-sm shadow-black/5 mb-6">

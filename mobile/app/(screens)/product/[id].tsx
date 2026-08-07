@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, Image, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, ShoppingCart, Star, Minus, Plus } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,18 +11,34 @@ export default function ProductDetailScreen() {
   const router = useRouter();
   const [product, setProduct] = useState<ProductItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const { addItem, items } = useCartStore();
-  const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const cartItemCount = items.length;
   const [quantity, setQuantity] = useState(1);
 
-  useEffect(() => {
+  const fetchProduct = async (isRefresh = false) => {
     if (id) {
-      productsApi.get(id as string)
-        .then(res => setProduct(res))
-        .catch(console.error)
-        .finally(() => setLoading(false));
+      if (!isRefresh) setLoading(true);
+      try {
+        const res = await productsApi.get(id as string);
+        setProduct(res);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
+  };
+
+  useEffect(() => {
+    fetchProduct();
   }, [id]);
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchProduct(true);
+  };
 
   if (loading) {
     return (
@@ -45,7 +61,10 @@ export default function ProductDetailScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <ScrollView className="flex-1">
+      <ScrollView 
+        className="flex-1"
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
+      >
         <View className="relative">
           {product.images && product.images.length > 0 ? (
             <Image
@@ -117,9 +136,8 @@ export default function ProductDetailScreen() {
             </Pressable>
             <Text className="px-5 font-bold text-[16px] text-gray-900 min-w-[50px] text-center">{quantity}</Text>
             <Pressable 
-              onPress={() => setQuantity(q => Math.min(product.quantity_available, q + 1))}
-              disabled={quantity >= product.quantity_available}
-              className={`p-3 bg-white rounded-r-xl ${quantity >= product.quantity_available ? 'opacity-50' : ''}`}
+              onPress={() => setQuantity(q => q + 1)}
+              className={`p-3 bg-white rounded-r-xl`}
             >
               <Plus size={18} color="#4b5563" />
             </Pressable>

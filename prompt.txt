@@ -1,1 +1,1 @@
--> is it possible to get revert/redirected back to the app after payment on paystack?
+-> the loader and preloader (using the logo) you implemented earlier isn't universal i.e it's not on all required pages

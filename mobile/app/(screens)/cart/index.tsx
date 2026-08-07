@@ -15,7 +15,7 @@ export default function CartScreen() {
         <Pressable onPress={() => router.back()} className="p-2 -ml-2 bg-gray-50 rounded-full">
           <ArrowLeft size={24} color="#1f2937" />
         </Pressable>
-        <Text className="text-xl font-bold text-gray-900">Your Cart</Text>
+        <Text className="text-xl font-bold text-gray-900">Your Cart ({items.length})</Text>
         <View className="w-10" />
       </View>
 

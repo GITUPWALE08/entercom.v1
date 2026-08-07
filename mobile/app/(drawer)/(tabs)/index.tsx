@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ActivityIndicator, Image, Pressable, Platform, Alert } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ActivityIndicator, Image, Pressable, Platform, Alert, RefreshControl } from 'react-native';
 import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { ShieldCheck, Calendar, CheckCircle2, ChevronRight, Bell, Clock, FileText, CreditCard, Star, ArrowRight, Package, MessageCircle, Menu } from 'lucide-react-native';
 import { useAuthStore } from '../../../src/store/authStore';
@@ -82,6 +82,28 @@ export default function HomeScreen() {
   const [loadingReqs, setLoadingReqs] = useState(true);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = useCallback(async () => {
+    try {
+      const [reqsRes, ordersRes, paymentsRes, productsRes] = await Promise.all([
+        requestsApi.list(),
+        ordersApi.list(),
+        paymentsApi.list(),
+        productsApi.list()
+      ]);
+      setRequests(ensureArray(reqsRes));
+      setOrders(ensureArray(ordersRes));
+      setPayments(ensureArray(paymentsRes));
+      setProducts(ensureArray(productsRes));
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingReqs(false);
+      setLoadingOrders(false);
+      setLoadingProducts(false);
+    }
+  }, []);
 
   useEffect(() => {
     registerForPushNotificationsAsync().then(token => {
@@ -90,11 +112,14 @@ export default function HomeScreen() {
       }
     });
 
-    requestsApi.list().then(res => setRequests(ensureArray(res))).catch(console.error).finally(() => setLoadingReqs(false));
-    ordersApi.list().then(res => setOrders(ensureArray(res))).catch(console.error).finally(() => setLoadingOrders(false));
-    paymentsApi.list().then(res => setPayments(ensureArray(res))).catch(console.error);
-    productsApi.list().then(res => setProducts(ensureArray(res))).catch(console.error).finally(() => setLoadingProducts(false));
-  }, []);
+    loadData();
+  }, [loadData]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadData();
+    setRefreshing(false);
+  }, [loadData]);
 
   const activeRequest = requests.find(r => r.status !== 'completed' && r.status !== 'cancelled');
   const activeRequestsCount = requests.filter(r => r.status !== 'completed' && r.status !== 'cancelled').length;
@@ -108,7 +133,13 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <AppScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <AppScrollView 
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />
+        }
+        className="flex-1" 
+        showsVerticalScrollIndicator={false}
+      >
         {/* Premium Hero Section */}
         <View className="bg-ess-purple px-7 pt-20 pb-10 rounded-b-[40px] shadow-lg shadow-ess-purple/20 relative overflow-hidden">
           {/* Subtle background glow effect */}

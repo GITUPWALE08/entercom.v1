@@ -1,22 +1,40 @@
-import React from 'react';
-import { View, Text, ScrollView, Pressable, Switch } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, ScrollView, Pressable, Switch, RefreshControl } from 'react-native';
 import { User, Shield, Settings, Wrench, LogOut, ChevronRight, Bell, CreditCard, FileText } from 'lucide-react-native';
 import { useAuthStore } from '../../../src/store/authStore';
+import { usersApi } from '../../../src/api/users';
 import { router } from 'expo-router';
 import { Avatar } from '../../../src/components/ui/Avatar';
 import { Card } from '../../../src/components/ui/Card';
 import { Button } from '../../../src/components/ui/Button';
 
 export default function ProfileScreen() {
-  const { user, logout } = useAuthStore();
+  const { user, logout, setUser } = useAuthStore();
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleLogout = () => {
     logout();
     router.replace('/(auth)/login');
   };
 
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      const data = await usersApi.getProfile();
+      setUser({ ...user, ...data } as any);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
   return (
-    <ScrollView className="flex-1 bg-gray-50" showsVerticalScrollIndicator={false}>
+    <ScrollView 
+      className="flex-1 bg-gray-50" 
+      showsVerticalScrollIndicator={false}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#fff" />}
+    >
       {/* Premium Header */}
       <View className="bg-ess-purple pt-20 pb-16 px-7 rounded-b-[40px] shadow-lg shadow-ess-purple/20 relative overflow-hidden">
         <View className="absolute -top-20 -left-20 w-64 h-64 bg-ess-darkPurple rounded-full opacity-50 blur-3xl" />

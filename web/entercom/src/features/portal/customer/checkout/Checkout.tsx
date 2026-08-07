@@ -117,7 +117,7 @@ export default function Checkout() {
                       { value: '', label: 'No request (Direct Purchase)' },
                       ...ensureArray(activeRequests).map(req => ({
                       value: req.id,
-                      label: `${req.public_id || req.id.split('-')[0]} - ${req.title || req.service_type?.replace('_', ' ')}`
+                      label: `${req.title || req.service_type?.replace('_', ' ')} (${req.status?.replace('_', ' ')})`
                     }))]}
                   />
                 ) : (

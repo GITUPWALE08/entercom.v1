@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Switch, Image } from 'react-native';
+import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Switch, Image, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, User, Phone, MapPin, Save, Camera } from 'lucide-react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -10,6 +10,7 @@ import { usersApi, User as UserType } from '../../../src/api/users';
 
 export default function AccountSettingsScreen() {
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState<Partial<UserType>>({
     first_name: '',
@@ -28,9 +29,9 @@ export default function AccountSettingsScreen() {
     fetchProfile();
   }, []);
 
-  const fetchProfile = async () => {
+  const fetchProfile = async (isRefresh = false) => {
     try {
-      setLoading(true);
+      if (!isRefresh) setLoading(true);
       const data = await usersApi.getProfile();
       setProfile({
         first_name: data.first_name || '',
@@ -46,7 +47,13 @@ export default function AccountSettingsScreen() {
       Alert.alert('Error', 'Failed to load profile data.');
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchProfile(true);
   };
 
   const handleSave = async () => {
@@ -158,7 +165,12 @@ export default function AccountSettingsScreen() {
         <View className="w-10" />
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 24, paddingBottom: 40 }} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        className="flex-1" 
+        showsVerticalScrollIndicator={false} 
+        contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
+      >
         
         {/* Profile Info Section */}
         <View className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 items-center">
