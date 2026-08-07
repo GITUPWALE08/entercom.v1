@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Image, Pressable, SafeAreaView, TextInput, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, Pressable, Image, ActivityIndicator, SafeAreaView, ScrollView } from 'react-native';
+import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { router } from 'expo-router';
 import { Search, ShoppingCart, ChevronRight, Star, Shield, Wifi, Home, Tv, X } from 'lucide-react-native';
 import { Card, CardContent } from '../../../src/components/ui/Card';
@@ -37,12 +38,18 @@ export default function ExploreScreen() {
   const [searchQuery, setSearchQuery] = useState('');
   const { addItem, items } = useCartStore();
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   useEffect(() => {
     productsApi.list().then(res => setProducts(res || [])).catch(console.error).finally(() => setLoading(false));
   }, []);
 
-  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(searchQuery.toLowerCase()));
+  const filteredProducts = products.filter(p => {
+    const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || p.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCat = selectedCategory ? (p.category_name || p.category)?.toLowerCase().includes(selectedCategory.toLowerCase()) : true;
+    return matchesSearch && matchesCat;
+  });
+
   const trendingList = filteredProducts.slice(0, 5);
   const recommendedList = filteredProducts.slice(5, 10).length > 0 ? filteredProducts.slice(5, 10) : filteredProducts.slice(0, 5);
 
@@ -90,7 +97,8 @@ export default function ExploreScreen() {
         </View>
       )}
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+      <AppScrollView 
+        className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         
         {/* Featured Hero */}
         <View className="px-7 py-4">
@@ -123,12 +131,18 @@ export default function ExploreScreen() {
         {/* Categories */}
         <View className="py-4 mt-2">
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 28 }}>
+            <Pressable onPress={() => setSelectedCategory(null)} className="items-center mr-6">
+              <View className={`w-16 h-16 rounded-[20px] items-center justify-center mb-3 shadow-sm border ${selectedCategory === null ? 'bg-ess-purple border-ess-purple' : 'bg-white border-gray-100 shadow-black/5'}`}>
+                <Home size={26} color={selectedCategory === null ? "white" : "#4f46e5"} />
+              </View>
+              <Text className={`text-[12px] font-bold tracking-wide ${selectedCategory === null ? 'text-ess-purple' : 'text-gray-700'}`}>All</Text>
+            </Pressable>
             {categories.map((cat) => (
-              <Pressable key={cat.id} className="items-center mr-6">
-                <View className="w-16 h-16 bg-white rounded-[20px] items-center justify-center mb-3 shadow-sm shadow-black/5 border border-gray-100">
-                  <cat.icon size={26} color="#4f46e5" />
+              <Pressable key={cat.id} onPress={() => setSelectedCategory(cat.name)} className="items-center mr-6">
+                <View className={`w-16 h-16 rounded-[20px] items-center justify-center mb-3 shadow-sm border ${selectedCategory === cat.name ? 'bg-ess-purple border-ess-purple' : 'bg-white border-gray-100 shadow-black/5'}`}>
+                  <cat.icon size={26} color={selectedCategory === cat.name ? "white" : "#4f46e5"} />
                 </View>
-                <Text className="text-[12px] font-bold text-gray-700 tracking-wide">{cat.name}</Text>
+                <Text className={`text-[12px] font-bold tracking-wide ${selectedCategory === cat.name ? 'text-ess-purple' : 'text-gray-700'}`}>{cat.name}</Text>
               </Pressable>
             ))}
           </ScrollView>
@@ -211,7 +225,7 @@ export default function ExploreScreen() {
           </View>
         </View>
 
-      </ScrollView>
+      </AppScrollView>
     </SafeAreaView>
   );
 }

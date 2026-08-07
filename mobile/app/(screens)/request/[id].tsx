@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, AlertCircle, FileText, CheckCircle2, Clock, Circle, MessageCircle, CreditCard } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import * as FileSystem from 'expo-file-system';
 import { decode } from 'base64-arraybuffer';
 import { supabase } from '../../../src/lib/supabase';
 import { Camera, UploadCloud } from 'lucide-react-native';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 
 export default function RequestDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +22,7 @@ export default function RequestDetailScreen() {
 
   const [verifying, setVerifying] = useState(false);
   const [verificationPhoto, setVerificationPhoto] = useState<string | null>(null);
+  const [cancelling, setCancelling] = useState(false);
 
   const handlePickVerificationPhoto = async () => {
     try {
@@ -106,6 +108,37 @@ export default function RequestDetailScreen() {
     });
   };
 
+  const handleCancel = () => {
+    Alert.prompt(
+      'Cancel Request',
+      'Please provide a reason for cancelling this request:',
+      [
+        { text: 'Keep Request', style: 'cancel' },
+        {
+          text: 'Cancel It',
+          style: 'destructive',
+          onPress: async (reason) => {
+            if (!reason) {
+              Alert.alert('Reason Required', 'You must provide a reason to cancel the request.');
+              return;
+            }
+            try {
+              setCancelling(true);
+              await requestsApi.cancel(id as string, reason);
+              Alert.alert('Success', 'Request has been cancelled.');
+              fetchRequest();
+            } catch (err: any) {
+              Alert.alert('Error', err.response?.data?.detail || 'Failed to cancel request.');
+            } finally {
+              setCancelling(false);
+            }
+          },
+        },
+      ],
+      'plain-text'
+    );
+  };
+
   const getStatusBgColor = (status?: string) => {
     switch (status?.toLowerCase()) {
       case 'completed':
@@ -142,10 +175,7 @@ export default function RequestDetailScreen() {
       </View>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#081f3d" />
-          <Text className="text-gray-500 mt-4 font-medium">Loading request...</Text>
-        </View>
+        <LogoLoader text="Loading request details..." />
       ) : error ? (
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
@@ -164,8 +194,21 @@ export default function RequestDetailScreen() {
         >
           {/* Status Card */}
           <View className={`${getStatusBgColor(request.status)} mx-5 mt-5 p-5 rounded-2xl mb-4`}>
-            <Text className="text-white/80 font-medium mb-1 text-sm">Current Status</Text>
-            <StatusBadge status={request.status} />
+            <View className="flex-row justify-between items-start">
+              <View>
+                <Text className="text-white/80 font-medium mb-1 text-sm">Current Status</Text>
+                <StatusBadge status={request.status} />
+              </View>
+              {request.status === 'pending' && (
+                <Pressable 
+                  onPress={handleCancel}
+                  disabled={cancelling}
+                  className="bg-white/20 px-3 py-1.5 rounded-lg"
+                >
+                  {cancelling ? <ActivityIndicator size="small" color="white" /> : <Text className="text-white font-medium text-xs">Cancel Request</Text>}
+                </Pressable>
+              )}
+            </View>
             <Text className="text-white/70 text-xs mt-3">
               Last updated: {formatDate(request.updated_at)}
             </Text>

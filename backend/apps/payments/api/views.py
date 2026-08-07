@@ -54,6 +54,7 @@ class PaymentInitializeView(APIView):
         serializer.is_valid(raise_exception=True)
         
         order_id = serializer.validated_data['order_id']
+        callback_url = serializer.validated_data.get('callback_url')
         order = get_object_or_404(Order, pk=order_id)
         
         if actor.role == Role.CUSTOMER and str(order.customer_id) != str(actor.id):
@@ -68,7 +69,8 @@ class PaymentInitializeView(APIView):
             customer_id=order.customer_id,
             amount=order.total_amount,
             currency='NGN',
-            provider_reference=str(uuid.uuid4())
+            provider_reference=str(uuid.uuid4()),
+            callback_url=callback_url
         )
         return Response(PaymentSerializer(payment).data, status=status.HTTP_201_CREATED)
 

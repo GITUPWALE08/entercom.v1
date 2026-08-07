@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, Text, Pressable, Image } from 'react-native';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useAuthStore } from '../../src/store/authStore';
-import { LogOut, Home, CreditCard, Settings, ShieldCheck, ShoppingCart, Package, Briefcase, GraduationCap, Wrench, ChevronDown, ChevronRight, UserCircle, CalendarDays, ClipboardList } from 'lucide-react-native';
+import { LogOut, Home, CreditCard, Settings, ShieldCheck, ShoppingCart, Package, Briefcase, GraduationCap, Wrench, ChevronDown, ChevronRight, UserCircle, CalendarDays, ClipboardList, ShoppingBag } from 'lucide-react-native';
 import { Avatar } from '../../src/components/ui/Avatar';
 import { router } from 'expo-router';
 
@@ -37,7 +37,11 @@ function CustomDrawerContent(props: any) {
           <View className="absolute -top-10 -right-10 w-40 h-40 bg-ess-purple rounded-full opacity-30 blur-2xl" />
           
           <View className="flex-row items-center mb-4">
-            <ShieldCheck size={28} color="#ffffff" className="mr-2" />
+            <Image 
+              source={require('../../assets/logo.png')} 
+              style={{ width: 32, height: 32, marginRight: 8 }} 
+              resizeMode="contain" 
+            />
             <Text className="text-white font-extrabold text-[22px] tracking-tight">Entercom</Text>
           </View>
           
@@ -73,6 +77,7 @@ function CustomDrawerContent(props: any) {
           <Text className="text-gray-400 font-bold text-xs uppercase tracking-wider px-4 mt-6 mb-2">Shop & Orders</Text>
           <DrawerCustomItem icon={ShoppingCart} label="My Cart" onPress={() => router.push('/(screens)/cart')} />
           <DrawerCustomItem icon={Package} label="My Orders" onPress={() => router.push('/(screens)/orders')} />
+          <DrawerCustomItem icon={ShoppingBag} label="Products" onPress={() => router.push('/(screens)/product')} />
 
           {/* Careers */}
           <Text className="text-gray-400 font-bold text-xs uppercase tracking-wider px-4 mt-6 mb-2">Join Entercom</Text>

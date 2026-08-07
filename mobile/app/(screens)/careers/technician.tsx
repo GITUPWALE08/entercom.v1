@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Switch } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, ScrollView, Pressable, TextInput, Switch, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, Wrench, Briefcase, FileText, Upload, CheckCircle2 } from 'lucide-react-native';
 import { careersApi } from '../../../src/api/careers';
@@ -7,12 +7,32 @@ import { careersApi } from '../../../src/api/careers';
 export default function TechnicianCareerScreen() {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [existingApplication, setExistingApplication] = useState<any>(null);
   const [form, setForm] = useState({
     experience: '',
     certifications: '',
     availability: false,
     about: ''
   });
+
+  useEffect(() => {
+    checkExistingApplication();
+  }, []);
+
+  const checkExistingApplication = async () => {
+    try {
+      setCheckingStatus(true);
+      const apps = await careersApi.getTechnicianApplications();
+      if (apps && apps.length > 0) {
+        setExistingApplication(apps[0]);
+      }
+    } catch (error) {
+      console.error('Failed to check existing application', error);
+    } finally {
+      setCheckingStatus(false);
+    }
+  };
 
   const handleSubmit = async () => {
     try {
@@ -27,22 +47,68 @@ export default function TechnicianCareerScreen() {
     }
   };
 
-  if (success) {
+    );
+  }
+
+  if (checkingStatus) {
     return (
-      <View className="flex-1 bg-white items-center justify-center px-6">
-        <View className="bg-emerald-100 p-6 rounded-full mb-6">
-          <CheckCircle2 size={64} color="#059669" />
+      <View className="flex-1 bg-gray-50 items-center justify-center">
+        <ActivityIndicator size="large" color="#081f3d" />
+        <Text className="text-gray-500 font-medium mt-4">Checking application status...</Text>
+      </View>
+    );
+  }
+
+  if (existingApplication) {
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'approved': return 'bg-green-100 text-green-800';
+        case 'rejected': return 'bg-red-100 text-red-800';
+        case 'under_review': return 'bg-blue-100 text-blue-800';
+        case 'more_info_requested': return 'bg-orange-100 text-orange-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
+    };
+
+    return (
+      <View className="flex-1 bg-gray-50">
+        <View className="bg-white pt-16 pb-4 px-6 flex-row items-center justify-between border-b border-gray-100">
+          <Pressable onPress={() => router.back()} className="p-2 -ml-2 bg-gray-50 rounded-full">
+            <ArrowLeft size={24} color="#1f2937" />
+          </Pressable>
+          <Text className="text-xl font-bold text-gray-900">Application Status</Text>
+          <View className="w-10" />
         </View>
-        <Text className="text-2xl font-bold text-gray-900 mb-2 text-center">Application Submitted!</Text>
-        <Text className="text-gray-500 text-center mb-10 text-base">
-          Thank you for applying to be a technician. Our team will review your application and get back to you within 3-5 business days.
-        </Text>
-        <Pressable 
-          onPress={() => router.back()}
-          className="w-full bg-blue-600 py-4 rounded-xl items-center"
-        >
-          <Text className="text-white font-bold text-lg">Return to Profile</Text>
-        </Pressable>
+        <ScrollView className="flex-1 p-6">
+          <View className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
+            <View className="flex-row items-center justify-between mb-4">
+              <Text className="text-lg font-bold text-gray-900">Technician Application</Text>
+              <View className={`px-3 py-1 rounded-full ${getStatusColor(existingApplication.status).split(' ')[0]}`}>
+                <Text className={`text-xs font-bold ${getStatusColor(existingApplication.status).split(' ')[1]}`}>
+                  {existingApplication.status.replace(/_/g, ' ').toUpperCase()}
+                </Text>
+              </View>
+            </View>
+            <Text className="text-gray-500 mb-4">
+              Submitted on: {new Date(existingApplication.created_at).toLocaleDateString()}
+            </Text>
+
+            {existingApplication.status === 'rejected' && existingApplication.rejection_reason && (
+              <View className="mt-2 p-4 bg-red-50 rounded-xl">
+                <Text className="text-red-800 font-bold mb-1">Reason:</Text>
+                <Text className="text-red-700">{existingApplication.rejection_reason}</Text>
+              </View>
+            )}
+
+            {existingApplication.status === 'more_info_requested' && (
+              <View className="mt-2 p-4 bg-orange-50 rounded-xl">
+                <Text className="text-orange-800">
+                  The reviewer has requested more information. Please wait for them to reach out to you or contact support.
+                </Text>
+              </View>
+            )}
+          </View>
+        </ScrollView>
       </View>
     );
   }

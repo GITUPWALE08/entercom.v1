@@ -14,7 +14,7 @@ class PaymentService:
     """
     @staticmethod
     @transaction.atomic
-    def initialize_payment(actor, correlation_id, order_id, request_id, customer_id, amount, currency, provider_reference):
+    def initialize_payment(actor, correlation_id, order_id, request_id, customer_id, amount, currency, provider_reference, callback_url=None):
         require_permission(actor, 'payment.initialize')
         
         payment = Payment.objects.select_for_update().filter(order_id=order_id).first()
@@ -103,6 +103,8 @@ class PaymentService:
             customer = User.objects.filter(id=customer_id).first()
             email = customer.email if customer and customer.email else "customer@example.com"
             
+            final_callback_url = callback_url or f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/portal/customer/orders/{order_id}"
+            
             url = "https://api.paystack.co/transaction/initialize"
             headers = {
                 "Authorization": f"Bearer {paystack_secret}",
@@ -113,7 +115,7 @@ class PaymentService:
                 "amount": int(float(amount) * 100),
                 "reference": provider_reference,
                 "currency": currency,
-                "callback_url": f"{getattr(settings, 'FRONTEND_URL', 'http://localhost:5173')}/portal/customer/orders/{order_id}"
+                "callback_url": final_callback_url
             }
             try:
                 response = requests.post(url, json=payload, headers=headers)

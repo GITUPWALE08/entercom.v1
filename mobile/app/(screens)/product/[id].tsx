@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ArrowLeft, ShoppingCart, Star } from 'lucide-react-native';
+import { ArrowLeft, ShoppingCart, Star, Minus, Plus } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { productsApi, ProductItem } from '../../../src/api/products';
 import { useCartStore } from '../../../src/store/cartStore';
@@ -13,6 +13,7 @@ export default function ProductDetailScreen() {
   const [loading, setLoading] = useState(true);
   const { addItem, items } = useCartStore();
   const cartItemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     if (id) {
@@ -84,7 +85,18 @@ export default function ProductDetailScreen() {
             <Text className="ml-1.5 text-gray-600 font-semibold">4.8 (120 reviews)</Text>
           </View>
           
-          <Text className="text-4xl font-extrabold text-ess-purple mb-8">${product.price}</Text>
+          <View className="flex-row items-center justify-between mb-8">
+            <Text className="text-4xl font-extrabold text-ess-purple">${product.price}</Text>
+            {product.quantity_available <= 0 ? (
+              <View className="bg-red-100 px-3 py-1 rounded-full">
+                <Text className="text-red-700 font-bold text-xs uppercase tracking-widest">Out of Stock</Text>
+              </View>
+            ) : (
+              <View className="bg-green-100 px-3 py-1 rounded-full">
+                <Text className="text-green-700 font-bold text-xs uppercase tracking-widest">In Stock</Text>
+              </View>
+            )}
+          </View>
           
           <Text className="text-xl font-bold text-gray-900 mb-3">Description</Text>
           <Text className="text-gray-600 leading-relaxed text-[16px] mb-8">
@@ -93,16 +105,45 @@ export default function ProductDetailScreen() {
         </View>
       </ScrollView>
 
+      {product.quantity_available > 0 && (
+        <View className="px-6 py-4 bg-white border-t border-gray-100 flex-row items-center justify-between">
+          <Text className="text-gray-900 font-bold text-[16px]">Quantity</Text>
+          <View className="flex-row items-center border border-gray-200 rounded-xl bg-gray-50">
+            <Pressable 
+              onPress={() => setQuantity(q => Math.max(1, q - 1))}
+              className="p-3 bg-white rounded-l-xl"
+            >
+              <Minus size={18} color="#4b5563" />
+            </Pressable>
+            <Text className="px-5 font-bold text-[16px] text-gray-900 min-w-[50px] text-center">{quantity}</Text>
+            <Pressable 
+              onPress={() => setQuantity(q => Math.min(product.quantity_available, q + 1))}
+              disabled={quantity >= product.quantity_available}
+              className={`p-3 bg-white rounded-r-xl ${quantity >= product.quantity_available ? 'opacity-50' : ''}`}
+            >
+              <Plus size={18} color="#4b5563" />
+            </Pressable>
+          </View>
+        </View>
+      )}
+
       <View className="p-4 border-t border-gray-100 bg-white flex-row gap-4 pb-8 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
         <Pressable 
-          className="flex-1 bg-ess-purple py-4 rounded-[16px] items-center justify-center flex-row shadow-lg shadow-ess-purple/30"
+          disabled={product.quantity_available <= 0}
+          className={`flex-1 py-4 rounded-[16px] items-center justify-center flex-row shadow-lg ${
+            product.quantity_available <= 0 
+              ? 'bg-gray-300 shadow-none' 
+              : 'bg-ess-purple shadow-ess-purple/30'
+          }`}
           onPress={() => {
-            addItem(product);
+            addItem(product, quantity);
             router.push('/(screens)/cart');
           }}
         >
-          <ShoppingCart size={22} color="#fff" className="mr-2" />
-          <Text className="text-white font-bold text-[18px] ml-2">Add to Cart</Text>
+          <ShoppingCart size={22} color={product.quantity_available <= 0 ? '#9ca3af' : '#fff'} className="mr-2" />
+          <Text className={`font-bold text-[18px] ml-2 ${product.quantity_available <= 0 ? 'text-gray-500' : 'text-white'}`}>
+            {product.quantity_available <= 0 ? 'Out of Stock' : 'Add to Cart'}
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>

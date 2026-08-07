@@ -13,6 +13,7 @@ class PaymentSerializer(serializers.Serializer):
 
 class PaymentInitializeSerializer(serializers.Serializer):
     order_id = serializers.UUIDField(required=True)
+    callback_url = serializers.CharField(required=False, allow_blank=True, allow_null=True)
 
 class PaymentCancelSerializer(serializers.Serializer):
     reason = serializers.CharField(required=True)

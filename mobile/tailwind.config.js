@@ -6,11 +6,11 @@ module.exports = {
     extend: {
       colors: {
         ess: {
-          purple: '#081f3d',
-          darkPurple: '#0f4c81',
+          purple: '#0A0F1C', // Matches web hero background
+          darkPurple: '#050811',
           orange: '#f7941d',
           green: '#25d366',
-          softBlue: '#eef5fc',
+          softBlue: '#f8fafc',
           softOrange: '#fff7ed',
         }
       }

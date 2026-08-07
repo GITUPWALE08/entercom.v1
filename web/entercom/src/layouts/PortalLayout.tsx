@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
 import { useLogout } from '../hooks/useLogout';
@@ -15,6 +15,11 @@ export function PortalLayout() {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const mainRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    mainRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname]);
 
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -390,7 +395,7 @@ export function PortalLayout() {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto bg-[#F9FAFB]">
+        <main ref={mainRef} className="flex-1 overflow-y-auto bg-[#F9FAFB]">
           <Outlet />
         </main>
         {userRole === 'customer' && <SupportWidget />}

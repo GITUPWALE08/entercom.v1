@@ -1,9 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, RefreshControl, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Package, MapPin, CreditCard, AlertCircle, CheckCircle2, Clock, Circle, FileText } from 'lucide-react-native';
 import { ordersApi, OrderItem } from '../../../src/api/orders';
+import { paymentsApi } from '../../../src/api/payments';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 
 export default function OrderDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -58,6 +62,55 @@ export default function OrderDetailsScreen() {
     }
   };
 
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  const handlePayNow = async () => {
+    if (!id) return;
+    setProcessingPayment(true);
+    try {
+      const callbackUrl = Linking.createURL('payment-complete', { scheme: 'entercom' });
+      const paymentRes = await paymentsApi.initialize({ 
+        order_id: id,
+        callback_url: callbackUrl
+      });
+      if (paymentRes.authorization_url) {
+        await WebBrowser.openAuthSessionAsync(paymentRes.authorization_url, callbackUrl);
+        await fetchOrder(); // Refresh the order state after modal closes
+      }
+    } catch (err: any) {
+      Alert.alert('Payment Error', err.response?.data?.message || 'Failed to initialize payment.');
+    } finally {
+      setProcessingPayment(false);
+    }
+  };
+
+  const handleCancelOrder = () => {
+    if (!id) return;
+    Alert.alert(
+      'Cancel Order',
+      'Are you sure you want to cancel this order?',
+      [
+        { text: 'No, Keep It', style: 'cancel' },
+        { 
+          text: 'Yes, Cancel', 
+          style: 'destructive',
+          onPress: async () => {
+            setCancelling(true);
+            try {
+              await ordersApi.cancel(id, 'Cancelled via Mobile App');
+              await fetchOrder();
+            } catch (err: any) {
+              Alert.alert('Cancel Error', 'Failed to cancel the order. Please try again.');
+            } finally {
+              setCancelling(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <View className="flex-1 bg-gray-50">
       {/* Header */}
@@ -72,10 +125,7 @@ export default function OrderDetailsScreen() {
       </View>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#081f3d" />
-          <Text className="text-gray-500 mt-4 font-medium">Loading order...</Text>
-        </View>
+        <LogoLoader text="Loading order..." />
       ) : error ? (
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
@@ -105,6 +155,26 @@ export default function OrderDetailsScreen() {
               <Package size={32} color="white" />
             </View>
           </View>
+
+          {(order.status === 'pending' || order.status === 'pending_payment') && (
+            <View className="flex-row gap-3 mb-6">
+              <Pressable 
+                onPress={handleCancelOrder}
+                disabled={cancelling || processingPayment}
+                className="flex-1 bg-white border border-red-200 py-3 rounded-xl items-center"
+              >
+                <Text className="text-red-600 font-bold">{cancelling ? 'Cancelling...' : 'Cancel Order'}</Text>
+              </Pressable>
+              
+              <Pressable 
+                onPress={handlePayNow}
+                disabled={processingPayment || cancelling}
+                className="flex-[2] bg-ess-purple py-3 rounded-xl items-center"
+              >
+                <Text className="text-white font-bold">{processingPayment ? 'Redirecting...' : 'Pay Now'}</Text>
+              </Pressable>
+            </View>
+          )}
 
           {order.request_id && (
             <Pressable onPress={() => router.push(`/(screens)/request/${order.request_id}`)} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex-row justify-between items-center">

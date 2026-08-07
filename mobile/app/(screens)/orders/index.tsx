@@ -104,10 +104,10 @@ export default function OrdersScreen() {
                 You haven't placed any orders yet. Start exploring our products!
               </Text>
               <Pressable
-                onPress={() => router.replace('/(drawer)/(tabs)/explore')}
+                onPress={() => router.replace('/(drawer)/(tabs)/requests' as any)}
                 className="bg-ess-purple px-8 py-4 rounded-xl"
               >
-                <Text className="text-white font-bold text-lg">Browse Products</Text>
+                <Text className="text-white font-bold text-lg">View Requests</Text>
               </Pressable>
             </View>
           ) : (

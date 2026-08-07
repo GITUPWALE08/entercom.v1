@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { ClipboardList, ChevronRight, Plus, FileText } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -42,7 +43,7 @@ export default function RequestsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView
+      <AppScrollView
         className="flex-1 px-7 pt-10"
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
@@ -113,12 +114,12 @@ export default function RequestsScreen() {
             ))}
           </View>
         )}
-      </ScrollView>
+      </AppScrollView>
 
       {/* Floating Action Button */}
       <Pressable
-        onPress={() => router.push('/(screens)/requests')}
-        className="absolute bottom-8 right-7 bg-ess-purple w-16 h-16 rounded-[24px] items-center justify-center shadow-lg shadow-ess-purple/40"
+        onPress={() => router.push('/(screens)/request/new')}
+        className="absolute bottom-28 right-7 bg-ess-purple w-16 h-16 rounded-[24px] items-center justify-center shadow-lg shadow-ess-purple/40"
       >
         <Plus size={32} color="white" />
       </Pressable>

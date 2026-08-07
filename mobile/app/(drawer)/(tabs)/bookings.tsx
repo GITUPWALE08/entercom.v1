@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, Image, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, Pressable, RefreshControl, ActivityIndicator, Alert } from 'react-native';
+import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { Calendar as CalendarIcon, MapPin, Clock, Users, Wrench, ShieldCheck, Plus, AlertCircle } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../../../src/components/ui/Card';
@@ -35,7 +36,7 @@ export default function BookingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
-      <ScrollView 
+      <AppScrollView 
         className="flex-1 px-7 pt-10" 
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
@@ -126,11 +127,12 @@ export default function BookingsScreen() {
             ))}
           </View>
         )}
-      </ScrollView>
+      </AppScrollView>
 
-      {/* Premium Floating Action Button */}
+      {/* Floating Action Button */}
       <Pressable
-        className="absolute bottom-8 right-7 bg-ess-purple w-16 h-16 rounded-[24px] items-center justify-center shadow-lg shadow-ess-purple/40"
+        onPress={() => Alert.alert('Bookings', 'Bookings are automatically scheduled by our team once your service request is processed.')}
+        className="absolute bottom-28 right-7 bg-ess-purple w-16 h-16 rounded-[24px] items-center justify-center shadow-lg shadow-ess-purple/40"
       >
         <Plus size={32} color="white" />
       </Pressable>

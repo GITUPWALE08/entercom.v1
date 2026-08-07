@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl, Modal, TextInput, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, CreditCard, AlertCircle, Package, FileText, ChevronRight, Download } from 'lucide-react-native';
+import { ArrowLeft, CreditCard, AlertCircle, Package, FileText, ChevronRight, Download, ExternalLink, X, ShieldAlert } from 'lucide-react-native';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
+import * as Linking from 'expo-linking';
+import * as WebBrowser from 'expo-web-browser';
 import { paymentsApi, PaymentItem } from '../../../src/api/payments';
-import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { ordersApi } from '../../../src/api/orders';
+import { AppScrollView } from '../../../src/components/ui/AppScrollView';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 
 export default function PaymentDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -13,29 +17,15 @@ export default function PaymentDetailsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
   const [downloading, setDownloading] = useState(false);
-
-  const downloadReceipt = async () => {
-    if (!payment) return;
-    try {
-      setDownloading(true);
-      const url = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`; // Mock placeholder as API doesn't define it
-      const fileUri = `${FileSystem.documentDirectory}receipt_${payment.id}.pdf`;
-      const { uri } = await FileSystem.downloadAsync(url, fileUri);
-      
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
-        await Sharing.shareAsync(uri);
-      } else {
-        alert('Sharing is not available on your device');
-      }
-    } catch (err) {
-      console.error('Download error:', err);
-      alert('Failed to download receipt');
-    } finally {
-      setDownloading(false);
-    }
-  };
+  const [actionLoading, setActionLoading] = useState(false);
+  
+  // Modals
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [escalateModalVisible, setEscalateModalVisible] = useState(false);
+  const [reason, setReason] = useState('');
+  const [cancelOrderToo, setCancelOrderToo] = useState(false);
 
   const fetchPayment = useCallback(async () => {
     if (!id) return;
@@ -59,6 +49,90 @@ export default function PaymentDetailsScreen() {
     setRefreshing(false);
   }, [fetchPayment]);
 
+  const handleInitializePayment = async () => {
+    if (!payment?.order_id) return;
+    try {
+      setActionLoading(true);
+      const callbackUrl = Linking.createURL('payment-complete', { scheme: 'entercom' });
+      const response = await paymentsApi.initialize({ 
+        order_id: payment.order_id,
+        callback_url: callbackUrl
+      });
+      if (response.authorization_url) {
+        await WebBrowser.openAuthSessionAsync(response.authorization_url, callbackUrl);
+        await fetchPayment(); // Refresh payment state after modal closes
+      } else {
+        Alert.alert('Notice', 'Payment already processed or no checkout URL available.');
+      }
+    } catch (err) {
+      Alert.alert('Error', 'Failed to initialize payment.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleCancelPayment = async () => {
+    try {
+      setActionLoading(true);
+      await paymentsApi.cancel(id!, reason);
+      
+      if (cancelOrderToo && payment?.order_id) {
+        await ordersApi.cancel(payment.order_id, reason || 'Cancelled with payment');
+      }
+
+      setCancelModalVisible(false);
+      setReason('');
+      setCancelOrderToo(false);
+      await fetchPayment();
+      Alert.alert('Success', 'Payment cancelled.');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to cancel payment.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleEscalate = async () => {
+    if (!reason.trim()) {
+      Alert.alert('Error', 'Reason is required for escalation.');
+      return;
+    }
+    try {
+      setActionLoading(true);
+      await paymentsApi.escalate(id!, reason);
+      setEscalateModalVisible(false);
+      setReason('');
+      await fetchPayment();
+      Alert.alert('Success', 'Payment escalated to support.');
+    } catch (err) {
+      Alert.alert('Error', 'Failed to escalate payment.');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const downloadReceipt = async () => {
+    if (!payment) return;
+    try {
+      setDownloading(true);
+      const url = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`;
+      const fileUri = `${(FileSystem as any).documentDirectory}receipt_${payment.id}.pdf`;
+      const { uri } = await FileSystem.downloadAsync(url, fileUri);
+      
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(uri);
+      } else {
+        Alert.alert('Error', 'Sharing is not available on your device');
+      }
+    } catch (err) {
+      console.error('Download error:', err);
+      Alert.alert('Error', 'Failed to download receipt');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return '—';
     return new Date(dateStr).toLocaleString('en-US', {
@@ -69,12 +143,15 @@ export default function PaymentDetailsScreen() {
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
       case 'completed':
+      case 'paid':
       case 'success': return 'bg-green-600';
       case 'cancelled':
       case 'failed': return 'bg-red-600';
       default: return 'bg-ess-purple';
     }
   };
+
+  const isPending = payment?.status?.toLowerCase() === 'pending';
 
   return (
     <View className="flex-1 bg-gray-50">
@@ -90,12 +167,9 @@ export default function PaymentDetailsScreen() {
       </View>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#081f3d" />
-          <Text className="text-gray-500 mt-4 font-medium">Loading payment...</Text>
-        </View>
+        <LogoLoader text="Loading payment details..." />
       ) : error ? (
-        <ScrollView
+        <AppScrollView
           contentContainerStyle={{ flexGrow: 1 }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
         >
@@ -103,9 +177,9 @@ export default function PaymentDetailsScreen() {
             <AlertCircle size={48} color="#ef4444" />
             <Text className="text-red-500 text-center font-medium mt-4 px-8">{error}</Text>
           </View>
-        </ScrollView>
+        </AppScrollView>
       ) : !payment ? null : (
-        <ScrollView
+        <AppScrollView
           className="flex-1 p-6"
           showsVerticalScrollIndicator={false}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
@@ -136,45 +210,187 @@ export default function PaymentDetailsScreen() {
             </View>
           </View>
 
-          {/* Related Links */}
-          {payment.order_id && (
-            <Pressable onPress={() => router.push(`/(screens)/orders/${payment.order_id}`)} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 flex-row justify-between items-center">
-              <View className="flex-row items-center">
-                <Package size={20} color="#0f4c81" />
-                <Text className="ml-3 font-medium text-gray-900">View Order Details</Text>
-              </View>
-              <ChevronRight size={20} color="#9ca3af" />
-            </Pressable>
-          )}
-
-          {payment.request_id && (
-            <Pressable onPress={() => router.push(`/(screens)/request/${payment.request_id}`)} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 flex-row justify-between items-center">
-              <View className="flex-row items-center">
-                <FileText size={20} color="#f59e0b" />
-                <Text className="ml-3 font-medium text-gray-900">View Service Request</Text>
-              </View>
-              <ChevronRight size={20} color="#9ca3af" />
-            </Pressable>
-          )}
-
-          {/* Action Buttons */}
-          <Pressable 
-            onPress={downloadReceipt}
-            disabled={downloading}
-            className={`rounded-2xl flex-row justify-center items-center p-4 mb-10 shadow-sm ${downloading ? 'bg-ess-purple/70' : 'bg-ess-purple shadow-ess-purple/30'}`}
-          >
-            {downloading ? (
-              <ActivityIndicator color="white" />
-            ) : (
+          {/* Action Buttons based on state */}
+          <View className="space-y-3 mb-6">
+            {isPending && (
               <>
-                <Download size={20} color="white" />
-                <Text className="text-white font-bold text-[16px] ml-2">Download Receipt</Text>
+                <Pressable 
+                  onPress={handleInitializePayment}
+                  disabled={actionLoading}
+                  className="bg-green-600 p-4 rounded-2xl flex-row justify-center items-center mb-3 shadow-sm shadow-green-600/30"
+                >
+                  {actionLoading ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <>
+                      <ExternalLink size={20} color="white" />
+                      <Text className="text-white font-bold text-[16px] ml-2">Proceed to Payment</Text>
+                    </>
+                  )}
+                </Pressable>
+
+                <Pressable 
+                  onPress={() => { setReason(''); setCancelModalVisible(true); }}
+                  disabled={actionLoading}
+                  className="bg-white border-2 border-red-500 p-4 rounded-2xl flex-row justify-center items-center mb-3"
+                >
+                  <X size={20} color="#ef4444" />
+                  <Text className="text-red-500 font-bold text-[16px] ml-2">Cancel Payment</Text>
+                </Pressable>
               </>
             )}
-          </Pressable>
 
-        </ScrollView>
+            {!isPending && (
+              <Pressable 
+                onPress={downloadReceipt}
+                disabled={downloading}
+                className="bg-ess-purple p-4 rounded-2xl flex-row justify-center items-center mb-3 shadow-sm shadow-ess-purple/30"
+              >
+                {downloading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <Download size={20} color="white" />
+                    <Text className="text-white font-bold text-[16px] ml-2">Download Receipt</Text>
+                  </>
+                )}
+              </Pressable>
+            )}
+
+            <Pressable 
+              onPress={() => { setReason(''); setEscalateModalVisible(true); }}
+              disabled={actionLoading}
+              className="bg-orange-50 border border-orange-200 p-4 rounded-2xl flex-row justify-center items-center"
+            >
+              <ShieldAlert size={20} color="#f97316" />
+              <Text className="text-orange-500 font-bold text-[16px] ml-2">Escalate Issue</Text>
+            </Pressable>
+          </View>
+
+          {/* Related Links */}
+          <View className="mb-10">
+            {payment.order_id && (
+              <Pressable onPress={() => router.push(`/(screens)/orders/${payment.order_id}`)} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 flex-row justify-between items-center">
+                <View className="flex-row items-center">
+                  <Package size={20} color="#0f4c81" />
+                  <Text className="ml-3 font-medium text-gray-900">View Order Details</Text>
+                </View>
+                <ChevronRight size={20} color="#9ca3af" />
+              </Pressable>
+            )}
+
+            {payment.request_id && (
+              <Pressable onPress={() => router.push(`/(screens)/request/${payment.request_id}`)} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4 flex-row justify-between items-center">
+                <View className="flex-row items-center">
+                  <FileText size={20} color="#f59e0b" />
+                  <Text className="ml-3 font-medium text-gray-900">View Service Request</Text>
+                </View>
+                <ChevronRight size={20} color="#9ca3af" />
+              </Pressable>
+            )}
+          </View>
+
+        </AppScrollView>
       )}
+
+      {/* Cancel Modal */}
+      <Modal visible={cancelModalVisible} transparent animationType="fade">
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="bg-white w-full rounded-3xl p-6 shadow-xl">
+            <Text className="text-xl font-bold text-gray-900 mb-2">Cancel Payment</Text>
+            <Text className="text-gray-500 mb-4">Are you sure you want to cancel this payment? Please provide a reason.</Text>
+            
+            <TextInput
+              className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-900 mb-4 min-h-[100px]"
+              placeholder="Reason for cancellation (optional)"
+              multiline
+              textAlignVertical="top"
+              value={reason}
+              onChangeText={setReason}
+            />
+
+            <View className="mb-6 space-y-4">
+              <Pressable 
+                onPress={() => setCancelOrderToo(false)}
+                className="flex-row items-start"
+              >
+                <View className="mt-0.5">
+                  {!cancelOrderToo ? <AlertCircle size={20} color="#4f46e5" /> : <View className="w-5 h-5 rounded-full border-2 border-gray-300" />}
+                </View>
+                <View className="ml-3">
+                  <Text className="font-bold text-gray-900">Cancel Payment Only</Text>
+                  <Text className="text-gray-500 text-sm">The associated order will remain active.</Text>
+                </View>
+              </Pressable>
+
+              <Pressable 
+                onPress={() => setCancelOrderToo(true)}
+                className="flex-row items-start"
+              >
+                <View className="mt-0.5">
+                  {cancelOrderToo ? <AlertCircle size={20} color="#4f46e5" /> : <View className="w-5 h-5 rounded-full border-2 border-gray-300" />}
+                </View>
+                <View className="ml-3">
+                  <Text className="font-bold text-gray-900">Cancel Order & Payment</Text>
+                  <Text className="text-gray-500 text-sm">Cancel both this payment and its associated order.</Text>
+                </View>
+              </Pressable>
+            </View>
+            
+            <View className="flex-row justify-end space-x-3">
+              <Pressable 
+                className="px-5 py-3 rounded-xl bg-gray-100"
+                onPress={() => { setCancelModalVisible(false); setCancelOrderToo(false); }}
+              >
+                <Text className="text-gray-700 font-medium">Keep It</Text>
+              </Pressable>
+              <Pressable 
+                className="px-5 py-3 rounded-xl bg-red-500"
+                onPress={handleCancelPayment}
+                disabled={actionLoading}
+              >
+                {actionLoading ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold">Yes, Cancel</Text>}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Escalate Modal */}
+      <Modal visible={escalateModalVisible} transparent animationType="fade">
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className="bg-white w-full rounded-3xl p-6 shadow-xl">
+            <Text className="text-xl font-bold text-gray-900 mb-2">Escalate Issue</Text>
+            <Text className="text-gray-500 mb-4">Briefly describe the issue you are facing with this payment.</Text>
+            
+            <TextInput
+              className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-gray-900 mb-6 min-h-[100px]"
+              placeholder="E.g. I was charged twice..."
+              multiline
+              textAlignVertical="top"
+              value={reason}
+              onChangeText={setReason}
+            />
+            
+            <View className="flex-row justify-end space-x-3">
+              <Pressable 
+                className="px-5 py-3 rounded-xl bg-gray-100"
+                onPress={() => setEscalateModalVisible(false)}
+              >
+                <Text className="text-gray-700 font-medium">Cancel</Text>
+              </Pressable>
+              <Pressable 
+                className={`px-5 py-3 rounded-xl ${reason.trim() ? 'bg-orange-500' : 'bg-orange-300'}`}
+                onPress={handleEscalate}
+                disabled={actionLoading || !reason.trim()}
+              >
+                {actionLoading ? <ActivityIndicator color="white" /> : <Text className="text-white font-bold">Escalate</Text>}
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
     </View>
   );
 }

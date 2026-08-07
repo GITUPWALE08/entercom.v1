@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Image, Pressable, Platform, Alert } from 'react-native';
+import { View, Text, ActivityIndicator, Image, Pressable, Platform, Alert } from 'react-native';
+import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { ShieldCheck, Calendar, CheckCircle2, ChevronRight, Bell, Clock, FileText, CreditCard, Star, ArrowRight, Package, MessageCircle, Menu } from 'lucide-react-native';
 import { useAuthStore } from '../../../src/store/authStore';
 import { router, useNavigation } from 'expo-router';
@@ -17,13 +18,14 @@ import { Avatar } from '../../../src/components/ui/Avatar';
 import * as ExpoNotifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
+import { ScrollView } from 'react-native-gesture-handler';
 
 ExpoNotifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
-  }),
+  } as any),
 });
 
 async function registerForPushNotificationsAsync() {
@@ -106,7 +108,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-gray-50">
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
+      <AppScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {/* Premium Hero Section */}
         <View className="bg-ess-purple px-7 pt-20 pb-10 rounded-b-[40px] shadow-lg shadow-ess-purple/20 relative overflow-hidden">
           {/* Subtle background glow effect */}
@@ -290,7 +292,7 @@ export default function HomeScreen() {
             )}
           </View>
         </View>
-      </ScrollView>
+      </AppScrollView>
 
       {/* Premium Floating Chat Button */}
       <Pressable 

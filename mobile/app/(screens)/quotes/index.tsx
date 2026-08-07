@@ -1,27 +1,59 @@
-import React from 'react';
-import { View, Text, Pressable, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Pressable, FlatList, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, FileText, ChevronRight } from 'lucide-react-native';
 import { Card, CardContent } from '../../../src/components/ui/Card';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 import { Button } from '../../../src/components/ui/Button';
-
-const MOCK_QUOTES = [
-  { id: 'QT-2023-001', date: '2023-11-10', status: 'completed', amount: 1250.00, title: 'Office Security Installation' },
-  { id: 'QT-2023-002', date: '2023-11-15', status: 'pending', amount: 850.50, title: 'Smart Home Upgrade' },
-  { id: 'QT-2023-003', date: '2023-11-20', status: 'cancelled', amount: 3200.00, title: 'Warehouse Access Control' },
-];
+import { requestsApi } from '../../../src/api/requests';
 
 export default function QuotesScreen() {
+  const [quotes, setQuotes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchQuotes();
+  }, []);
+
+  const fetchQuotes = async () => {
+    try {
+      setLoading(true);
+      const reqs = await requestsApi.list();
+      const reqsWithQuotes = reqs.filter(r => ['awaiting_customer_approval', 'awaiting_payment', 'in_progress', 'completed'].includes(r.status));
+      
+      let allQuotes: any[] = [];
+      for (const req of reqsWithQuotes) {
+        try {
+          const qs = await requestsApi.quotes.list(req.id);
+          const validQs = Array.isArray(qs) ? qs : qs?.data || [];
+          validQs.forEach((q: any) => {
+            allQuotes.push({
+              ...q,
+              requestId: req.id,
+              requestTitle: req.title || req.service_type || 'Service Request',
+            });
+          });
+        } catch (e) {
+          // Ignore errors for individual requests
+        }
+      }
+      setQuotes(allQuotes);
+    } catch (error) {
+      console.error('Failed to fetch quotes:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const renderQuote = ({ item }: { item: any }) => {
     return (
-      <Pressable onPress={() => router.push(`/(screens)/quotes/${item.id}`)}>
+      <Pressable onPress={() => router.push({ pathname: '/(screens)/quotes/[id]', params: { id: item.id, requestId: item.requestId } })}>
         <Card className="mb-4 border-0 p-0 shadow-sm shadow-black/5 overflow-hidden">
           <CardContent className="p-5">
             <View className="flex-row justify-between items-start mb-4">
               <View className="flex-1 pr-4">
-                <Text className="text-gray-900 font-bold text-[18px] tracking-tight mb-1" numberOfLines={1}>{item.title}</Text>
-                <Text className="text-gray-500 text-[13px] font-medium">{item.id} • {item.date}</Text>
+                <Text className="text-gray-900 font-bold text-[18px] tracking-tight mb-1" numberOfLines={1}>{item.requestTitle}</Text>
+                <Text className="text-gray-500 text-[13px] font-medium">{item.id.substring(0, 8)} • v{item.version}</Text>
               </View>
               <StatusBadge status={item.status} />
             </View>
@@ -54,32 +86,38 @@ export default function QuotesScreen() {
         </Pressable>
       </View>
 
-      <FlatList
-        data={MOCK_QUOTES}
-        keyExtractor={(item) => item.id}
-        renderItem={renderQuote}
-        contentContainerStyle={{ padding: 28 }}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={() => (
-          <View className="items-center justify-center py-20 mt-10">
-            <View className="bg-white w-24 h-24 rounded-full items-center justify-center shadow-sm shadow-black/5 mb-6">
-              <FileText size={40} color="#9ca3af" />
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#081f3d" />
+        </View>
+      ) : (
+        <FlatList
+          data={quotes}
+          keyExtractor={(item) => item.id}
+          renderItem={renderQuote}
+          contentContainerStyle={{ padding: 28 }}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={() => (
+            <View className="items-center justify-center py-20 mt-10">
+              <View className="bg-white w-24 h-24 rounded-full items-center justify-center shadow-sm shadow-black/5 mb-6">
+                <FileText size={40} color="#9ca3af" />
+              </View>
+              <Text className="text-[20px] font-bold text-gray-900 tracking-tight mb-2">No quotes yet</Text>
+              <Text className="text-gray-500 text-center mb-10 px-8 text-[15px] leading-relaxed">
+                You haven't requested any custom quotes yet.
+              </Text>
+              <Button 
+                variant="primary" 
+                size="lg"
+                onPress={() => router.replace('/(drawer)/(tabs)/requests')}
+                className="px-10"
+              >
+                Request a Service
+              </Button>
             </View>
-            <Text className="text-[20px] font-bold text-gray-900 tracking-tight mb-2">No quotes yet</Text>
-            <Text className="text-gray-500 text-center mb-10 px-8 text-[15px] leading-relaxed">
-              You haven't requested any custom quotes yet.
-            </Text>
-            <Button 
-              variant="primary" 
-              size="lg"
-              onPress={() => router.replace('/(drawer)/(tabs)/requests')}
-              className="px-10"
-            >
-              Request a Service
-            </Button>
-          </View>
-        )}
-      />
+          )}
+        />
+      )}
     </View>
   );
 }
