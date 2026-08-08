@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Download, Calendar } from 'lucide-react-native';
@@ -50,7 +51,7 @@ export default function QuoteDetailsScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-gray-50 items-center justify-center">
-        <ActivityIndicator size="large" color="#081f3d" />
+        <LogoLoader />
       </View>
     );
   }
@@ -81,7 +82,6 @@ export default function QuoteDetailsScreen() {
           <CardContent className="p-5">
             <View className="flex-row justify-between items-start mb-5 pb-5 border-b border-gray-100">
               <View className="flex-1 pr-4">
-              <View className="flex-1 pr-4">
                 <Text className="text-gray-900 font-bold text-[22px] tracking-tight mb-1">Quote v{quote.version}</Text>
                 <Text className="text-gray-500 font-medium text-[13px]">{quote.id}</Text>
               </View>
@@ -90,7 +90,6 @@ export default function QuoteDetailsScreen() {
           </CardContent>
         </Card>
 
-        {/* Line Items */}
         {/* Line Items */}
         <Text className="text-[13px] font-bold text-ess-darkPurple uppercase tracking-widest mb-3 ml-1">Quote Total</Text>
         <Card className="mb-8 border-0 p-0 shadow-sm shadow-black/5 overflow-hidden">
@@ -102,7 +101,6 @@ export default function QuoteDetailsScreen() {
           </View>
         </Card>
 
-        {/* Actions */}
         {/* Actions */}
         {quote.status === 'issued' && (
           <View className="flex-row gap-4 mb-12">

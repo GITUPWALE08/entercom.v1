@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, TextInput, ScrollView, Pressable, KeyboardAvoidingView, Platform, Keyboard, ActivityIndicator, Alert, Image } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, Send, ShieldAlert, Paperclip, MoreVertical, X, File as FileIcon, Image as ImageIcon } from 'lucide-react-native';
@@ -148,7 +149,7 @@ export default function ChatScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-gray-50 items-center justify-center">
-        <ActivityIndicator size="large" color="#4f46e5" />
+        <LogoLoader />
       </View>
     );
   }

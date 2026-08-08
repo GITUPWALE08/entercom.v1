@@ -61,6 +61,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     mfa_enabled = models.BooleanField(default=False)
     profile_image = models.URLField(max_length=500, blank=True, default="")
+    push_token = models.CharField(max_length=255, blank=True, null=True, help_text="Expo Push Token for mobile notifications")
     role_version = models.PositiveIntegerField(default=1, help_text="Increment when permissions/roles change")
 
     USERNAME_FIELD = "email"

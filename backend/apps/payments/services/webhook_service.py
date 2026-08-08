@@ -36,9 +36,9 @@ class WebhookService:
                 actor=actor,
                 resource_type='payment',
                 resource_id=paystack_reference or 'unknown',
-                correlation_id=correlation_id,
                 metadata={
-                    'rejection_reason': 'HMAC mismatch'
+                    'rejection_reason': 'HMAC mismatch',
+                    'correlation_id': correlation_id
                 }
             )
             event_publisher.publish(
@@ -59,9 +59,9 @@ class WebhookService:
             actor=actor,
             resource_type='payment',
             resource_id=paystack_reference,
-            correlation_id=correlation_id,
             metadata={
-                'event_type': event_type
+                'event_type': event_type,
+                'correlation_id': correlation_id
             }
         )
         

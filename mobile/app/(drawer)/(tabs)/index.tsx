@@ -19,6 +19,7 @@ import * as ExpoNotifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import Constants from 'expo-constants';
 import { ScrollView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 ExpoNotifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -73,6 +74,7 @@ async function registerForPushNotificationsAsync() {
 export default function HomeScreen() {
   const user = useAuthStore((state) => state.user);
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   const [requests, setRequests] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -141,7 +143,10 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Premium Hero Section */}
-        <View className="bg-ess-purple px-7 pt-20 pb-10 rounded-b-[40px] shadow-lg shadow-ess-purple/20 relative overflow-hidden">
+        <View 
+          className="bg-ess-purple px-7 pb-10 rounded-b-[40px] shadow-lg shadow-ess-purple/20 relative overflow-hidden"
+          style={{ paddingTop: Math.max(insets.top + 20, 80) }}
+        >
           {/* Subtle background glow effect */}
           <View className="absolute -top-20 -right-20 w-64 h-64 bg-ess-darkPurple rounded-full opacity-50 blur-3xl" />
           
@@ -165,7 +170,10 @@ export default function HomeScreen() {
                 </Text>
               </View>
             </View>
-            <Pressable className="bg-white/10 p-3 rounded-full border border-white/10 backdrop-blur-md">
+            <Pressable 
+              onPress={() => router.push('/(screens)/notifications/')}
+              className="bg-white/10 p-3 rounded-full border border-white/10 backdrop-blur-md"
+            >
               <Bell size={22} color="white" />
             </Pressable>
           </View>
@@ -185,7 +193,7 @@ export default function HomeScreen() {
           {/* Metric Cards */}
           <Text className="text-gray-900 text-[18px] font-bold mb-5 tracking-tight">Overview</Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-10 -mx-7 px-7" contentContainerStyle={{ gap: 16 }}>
-            <Pressable onPress={() => router.push('/(screens)/requests')}>
+            <Pressable onPress={() => router.push('/(drawer)/(tabs)/requests')}>
               <MetricCard 
                 className="w-40"
                 title="Active Requests" 
@@ -194,7 +202,7 @@ export default function HomeScreen() {
               />
             </Pressable>
 
-            <Pressable onPress={() => router.push('/(screens)/requests')}>
+            <Pressable onPress={() => router.push('/(drawer)/(tabs)/requests')}>
               <MetricCard 
                 className="w-40"
                 title="Past Requests" 

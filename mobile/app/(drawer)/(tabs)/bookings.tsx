@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, Pressable, RefreshControl, ActivityIndicator, Alert } from 'react-native';
 import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { Calendar as CalendarIcon, MapPin, Clock, Users, Wrench, ShieldCheck, Plus, AlertCircle } from 'lucide-react-native';
@@ -54,7 +55,7 @@ export default function BookingsScreen() {
         {/* Timeline View */}
         {loading ? (
           <View className="py-20 items-center justify-center">
-            <ActivityIndicator size="large" color="#4f46e5" />
+            <LogoLoader />
           </View>
         ) : error ? (
           <View className="py-20 items-center justify-center">

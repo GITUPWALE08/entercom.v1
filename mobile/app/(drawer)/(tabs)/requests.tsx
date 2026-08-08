@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { LogoLoader } from '../../../src/components/ui/Loader';
+import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
 import { AppScrollView } from '../../../src/components/ui/AppScrollView';
-import { ClipboardList, ChevronRight, Plus, FileText } from 'lucide-react-native';
+import { ClipboardList, ChevronRight, Plus, FileText, Search, Filter } from 'lucide-react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Input } from '../../../src/components/ui/Input';
 import { router } from 'expo-router';
 import { Card, CardContent } from '../../../src/components/ui/Card';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
@@ -14,6 +16,9 @@ export default function RequestsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeFilter, setActiveFilter] = useState<'all'|'active'|'completed'>('all');
 
   const fetchRequests = useCallback(async () => {
     try {
@@ -41,6 +46,25 @@ export default function RequestsScreen() {
     return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
+  const filteredRequests = requests.filter(req => {
+    // text search
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = (req.title || req.service_type || '').toLowerCase().includes(query);
+      const matchesCategory = (req.category || '').toLowerCase().includes(query);
+      if (!matchesTitle && !matchesCategory) return false;
+    }
+    
+    // status filter
+    if (activeFilter === 'active') {
+      if (req.status === 'completed' || req.status === 'cancelled') return false;
+    } else if (activeFilter === 'completed') {
+      if (req.status !== 'completed' && req.status !== 'cancelled') return false;
+    }
+    
+    return true;
+  });
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <AppScrollView
@@ -58,28 +82,49 @@ export default function RequestsScreen() {
           </View>
         </View>
 
+        {/* Search & Filter */}
+        <View className="mb-6">
+          <Input 
+            placeholder="Search requests..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            leftIcon={<Search size={20} color="#9ca3af" />}
+          />
+          <View className="flex-row mt-4 gap-2">
+            {(['all', 'active', 'completed'] as const).map((f) => (
+              <Pressable
+                key={f}
+                onPress={() => setActiveFilter(f)}
+                className={`px-4 py-2 rounded-full border ${activeFilter === f ? 'bg-ess-purple border-ess-purple' : 'bg-white border-gray-200'}`}
+              >
+                <Text className={`font-semibold capitalize ${activeFilter === f ? 'text-white' : 'text-gray-600'}`}>{f}</Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
         {loading ? (
           <View className="items-center justify-center py-20">
-            <ActivityIndicator size="large" color="#081f3d" />
+            <LogoLoader />
             <Text className="text-gray-500 mt-4 font-medium">Loading requests...</Text>
           </View>
         ) : error ? (
           <View className="items-center justify-center py-20">
             <Text className="text-red-500 text-center font-medium px-8">{error}</Text>
           </View>
-        ) : requests.length === 0 ? (
+        ) : filteredRequests.length === 0 ? (
           <View className="items-center justify-center py-20">
-            <View className="bg-ess-softBlue p-6 rounded-full mb-6">
-              <ClipboardList size={48} color="#0f4c81" />
+            <View className="bg-gray-100 p-6 rounded-full mb-6">
+              <Search size={48} color="#9ca3af" />
             </View>
-            <Text className="text-xl font-bold text-gray-900 mb-2">No requests yet</Text>
+            <Text className="text-xl font-bold text-gray-900 mb-2">No matching requests</Text>
             <Text className="text-gray-500 text-center px-8 font-medium mb-2">
-              Tap the + button to submit your first service request.
+              Try adjusting your search or filters.
             </Text>
           </View>
         ) : (
           <View className="mb-24">
-            {requests.map((request) => (
+            {filteredRequests.map((request) => (
               <Pressable
                 key={request.id}
                 onPress={() => router.push(`/(screens)/request/${request.id}`)}

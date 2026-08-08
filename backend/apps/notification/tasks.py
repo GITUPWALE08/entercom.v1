@@ -140,7 +140,43 @@ def task_dispatch_push(self, delivery_id):
 
 @circuit_breaker("push_provider", failure_threshold=5, recovery_timeout=60)
 def _send_push_mock(delivery):
-    pass
+    import urllib.request
+    import json
+    
+    notification = delivery.notification
+    recipient = notification.recipient
+    
+    # Fetch all active push devices for the user
+    from apps.users.models import PushDevice
+    devices = PushDevice.objects.filter(user=recipient, is_active=True)
+    if not devices.exists():
+        # Silently skip if the user hasn't registered any push devices
+        return
+        
+    url = "https://exp.host/--/api/v2/push/send"
+    messages = []
+    for device in devices:
+        messages.append({
+            "to": device.token,
+            "title": notification.title,
+            "body": notification.message,
+            "data": {
+                "resource_type": notification.resource_type,
+                "resource_id": str(notification.resource_id)
+            }
+        })
+    
+    req = urllib.request.Request(url, json.dumps(messages).encode('utf-8'))
+    req.add_header('Accept', 'application/json')
+    req.add_header('Accept-encoding', 'gzip, deflate')
+    req.add_header('Content-Type', 'application/json')
+    
+    try:
+        response = urllib.request.urlopen(req, timeout=10)
+        result = json.loads(response.read().decode())
+        return result
+    except Exception as e:
+        raise Exception(f"Failed to send push: {e}")
 
 
 # --- Scheduled Jobs (Beat) ---

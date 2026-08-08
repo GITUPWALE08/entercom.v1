@@ -13,6 +13,8 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const { register, handleSubmit, reset } = useForm({
     defaultValues: {
@@ -52,10 +54,20 @@ export default function Profile() {
     setIsSaving(true);
     setMessage({ text: '', type: '' });
     try {
+      let finalProfileImage = data.profile_image;
+      
+      if (selectedImageFile) {
+        const { profile_image } = await usersApi.uploadProfileImage(selectedImageFile);
+        finalProfileImage = profile_image;
+        data.profile_image = profile_image;
+      }
+      
       const updated = await usersApi.updateProfile(data);
       setUser({ ...user, ...updated } as any);
       setMessage({ text: 'Profile updated successfully.', type: 'success' });
       setIsEditing(false);
+      setSelectedImageFile(null);
+      setImagePreview(null);
     } catch (err: any) {
       setMessage({ text: err.response?.data?.detail || 'Failed to update profile.', type: 'error' });
     } finally {
@@ -93,13 +105,29 @@ export default function Profile() {
           <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             {/* Header / Avatar */}
             <div className="p-8 sm:p-12 border-b border-gray-100 flex items-center gap-6 bg-slate-50/50">
-              <div className="relative">
-                {user?.profile_image ? (
-                  <img src={user.profile_image} alt="Profile" className="w-24 h-24 rounded-2xl object-cover shadow-md border border-gray-200" />
+              <div className="relative group">
+                {imagePreview || user?.profile_image ? (
+                  <img src={imagePreview || user?.profile_image} alt="Profile" className="w-24 h-24 rounded-2xl object-cover shadow-md border border-gray-200" />
                 ) : (
                   <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl flex items-center justify-center text-white text-4xl font-bold shadow-md">
                     {user?.first_name?.charAt(0) || user?.email?.charAt(0)}
                   </div>
+                )}
+                {isEditing && (
+                  <label className="absolute inset-0 bg-black/50 rounded-2xl flex items-center justify-center text-white text-xs font-medium cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity">
+                    Change
+                    <input 
+                      type="file" 
+                      accept="image/*" 
+                      className="hidden" 
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setSelectedImageFile(e.target.files[0]);
+                          setImagePreview(URL.createObjectURL(e.target.files[0]));
+                        }
+                      }}
+                    />
+                  </label>
                 )}
               </div>
               <div>
@@ -145,13 +173,18 @@ export default function Profile() {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Avatar URL</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Avatar</label>
                       <input
-                        type="text"
-                        {...register('profile_image')}
+                        type="file"
+                        accept="image/*"
                         disabled={!isEditing}
-                        placeholder="https://example.com/avatar.jpg"
-                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
+                        onChange={(e) => {
+                          if (e.target.files && e.target.files[0]) {
+                            setSelectedImageFile(e.target.files[0]);
+                            setImagePreview(URL.createObjectURL(e.target.files[0]));
+                          }
+                        }}
+                        className="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                       />
                     </div>
                     <div className="md:col-span-2">

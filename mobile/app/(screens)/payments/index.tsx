@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, Pressable, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, CreditCard, ChevronRight, FileText, Plus, AlertCircle } from 'lucide-react-native';
@@ -96,7 +97,7 @@ export default function PaymentsScreen() {
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#4f46e5" />
+          <LogoLoader />
         </View>
       ) : error ? (
         <View className="flex-1 items-center justify-center">

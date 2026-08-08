@@ -1,0 +1,15 @@
+# Ignore everything in the parent directory except the mobile folder
+../*
+!../mobile/
+
+# Standard Expo ignores
+node_modules/
+.expo/
+dist/
+npm-debug.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*

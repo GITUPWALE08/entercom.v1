@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, Package, Clock, CheckCircle2, ChevronRight, XCircle, AlertCircle } from 'lucide-react-native';
@@ -74,7 +75,7 @@ export default function OrdersScreen() {
 
       {loading ? (
         <View className="flex-1 items-center justify-center">
-          <ActivityIndicator size="large" color="#081f3d" />
+          <LogoLoader />
           <Text className="text-gray-500 mt-4 font-medium">Loading orders...</Text>
         </View>
       ) : error ? (

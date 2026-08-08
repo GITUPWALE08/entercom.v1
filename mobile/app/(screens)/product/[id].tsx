@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, Image, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ArrowLeft, ShoppingCart, Star, Minus, Plus } from 'lucide-react-native';
@@ -43,7 +44,7 @@ export default function ProductDetailScreen() {
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#4f46e5" />
+        <LogoLoader />
       </SafeAreaView>
     );
   }

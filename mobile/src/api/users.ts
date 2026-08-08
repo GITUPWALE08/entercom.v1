@@ -51,6 +51,24 @@ export const usersApi = {
     return normalizeData(data);
   },
   
+  uploadProfileImage: async (imageUri: string, mimeType: string = 'image/jpeg'): Promise<{profile_image: string}> => {
+    const formData = new FormData() as any;
+    const filename = imageUri.split('/').pop() || 'profile.jpg';
+    
+    formData.append('image', {
+      uri: imageUri,
+      name: filename,
+      type: mimeType,
+    });
+    
+    const { data } = await apiClient.post<{profile_image: string}>('/users/upload-image/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
+  },
+  
   registerPushDevice: async (token: string, deviceType: string): Promise<void> => {
     await apiClient.post('/users/register-device/', { token, device_type: deviceType });
   }

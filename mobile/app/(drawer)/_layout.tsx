@@ -4,7 +4,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { View, Text, Pressable, Image } from 'react-native';
 import { DrawerContentScrollView } from '@react-navigation/drawer';
 import { useAuthStore } from '../../src/store/authStore';
-import { LogOut, Home, CreditCard, Settings, ShieldCheck, ShoppingCart, Package, Briefcase, GraduationCap, Wrench, ChevronDown, ChevronRight, UserCircle, CalendarDays, ClipboardList, ShoppingBag } from 'lucide-react-native';
+import { LogOut, Home, CreditCard, Settings, ShieldCheck, ShoppingCart, Package, Briefcase, GraduationCap, Wrench, ChevronDown, ChevronRight, UserCircle, CalendarDays, ClipboardList, ShoppingBag, FileText } from 'lucide-react-native';
 import { Avatar } from '../../src/components/ui/Avatar';
 import { router } from 'expo-router';
 
@@ -72,12 +72,13 @@ function CustomDrawerContent(props: any) {
           <DrawerCustomItem icon={CalendarDays} label="Bookings" onPress={() => router.push('/(drawer)/(tabs)/bookings')} />
           <DrawerCustomItem icon={ClipboardList} label="Requests" onPress={() => router.push('/(drawer)/(tabs)/requests')} />
           <DrawerCustomItem icon={CreditCard} label="Payments" onPress={() => router.push('/(screens)/payments')} />
+          <DrawerCustomItem icon={FileText} label="Quotes" onPress={() => router.push('/(screens)/quotes')} />
 
           {/* Shop & Orders */}
           <Text className="text-gray-400 font-bold text-xs uppercase tracking-wider px-4 mt-6 mb-2">Shop & Orders</Text>
           <DrawerCustomItem icon={ShoppingCart} label="My Cart" onPress={() => router.push('/(screens)/cart')} />
           <DrawerCustomItem icon={Package} label="My Orders" onPress={() => router.push('/(screens)/orders')} />
-          <DrawerCustomItem icon={ShoppingBag} label="Products" onPress={() => router.push('/(screens)/product')} />
+          <DrawerCustomItem icon={ShoppingBag} label="Shop / Explore" onPress={() => router.push('/(drawer)/(tabs)/explore')} />
 
           {/* Careers */}
           <Text className="text-gray-400 font-bold text-xs uppercase tracking-wider px-4 mt-6 mb-2">Join Entercom</Text>

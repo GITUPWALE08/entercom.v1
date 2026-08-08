@@ -1,0 +1,10 @@
+# Ignore everything in the monorepo except the mobile folder for EAS builds
+backend/
+web/
+docs/
+design/
+deployment/
+.pytest_cache/
+__pycache__/
+node_modules/
+.venv313/

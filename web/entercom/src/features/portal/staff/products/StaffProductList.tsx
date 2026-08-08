@@ -109,8 +109,8 @@ export default function StaffProductList() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {paginatedProducts.map((product: ProductItem) => (
-                <div key={product.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-shadow flex flex-col">
-                  <div className="h-48 bg-gray-100 flex items-center justify-center border-b border-gray-100">
+                <div key={product.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-shadow flex flex-col h-[380px]">
+                  <div className="h-48 shrink-0 bg-gray-100 flex items-center justify-center border-b border-gray-100">
                     <span className="text-gray-400 font-medium">No Image</span>
                   </div>
                   <div className="p-6 flex-1 flex flex-col">

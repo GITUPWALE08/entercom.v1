@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, TextInput, Pressable, Image, ActivityIndicator, SafeAreaView, ScrollView, RefreshControl } from 'react-native';
 import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { router } from 'expo-router';
@@ -182,14 +183,14 @@ export default function ExploreScreen() {
           
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 28 }}>
             {loading ? (
-              <ActivityIndicator color="#081f3d" size="large" className="my-10 ml-4" />
+              <LogoLoader />
             ) : trendingList.map((product) => (
-              <Pressable key={product.id} className="w-48 mr-4" onPress={() => router.push(`/(screens)/product/${product.id}`)}>
-                <Card className="border-0 p-0 overflow-hidden h-full">
+              <Pressable key={product.id} className="w-48 mr-4 h-[260px]" onPress={() => router.push(`/(screens)/product/${product.id}`)}>
+                <Card className="border-0 p-0 overflow-hidden h-full flex-col">
                   {product.images && product.images.length > 0 ? (
-                    <Image source={{ uri: product.images[0].image }} className="w-full h-40 bg-gray-100" resizeMode="cover" />
+                    <Image source={{ uri: product.images[0].image }} className="w-full h-[140px] bg-gray-100" resizeMode="cover" />
                   ) : (
-                    <View className="w-full h-40 bg-gray-100 items-center justify-center">
+                    <View className="w-full h-[140px] bg-gray-100 items-center justify-center">
                        <ShoppingCart size={40} color="#9ca3af" />
                     </View>
                   )}
@@ -215,11 +216,11 @@ export default function ExploreScreen() {
           
           <View className="px-7 space-y-4">
             {loading ? (
-              <ActivityIndicator color="#081f3d" size="large" className="my-10" />
+              <LogoLoader />
             ) : recommendedList.map((product) => (
-              <Pressable key={product.id} onPress={() => router.push(`/(screens)/product/${product.id}`)}>
-                <Card className="border-0 p-0 overflow-hidden">
-                  <View className="flex-row items-center p-3">
+              <Pressable key={product.id} className="h-[140px]" onPress={() => router.push(`/(screens)/product/${product.id}`)}>
+                <Card className="border-0 p-0 overflow-hidden h-full">
+                  <View className="flex-row items-center p-3 h-full">
                     {product.images && product.images.length > 0 ? (
                       <Image source={{ uri: product.images[0].image }} className="w-28 h-28 rounded-[20px] mr-4 bg-gray-100" resizeMode="cover" />
                     ) : (

@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
@@ -23,6 +24,9 @@ urlpatterns = [
     path("api/v1/system/", include("apps.common.urls")),
     #path("api/v1/technicians/", include("apps.technicians.urls")),
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.ENABLE_SPECTACULAR:
     from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView

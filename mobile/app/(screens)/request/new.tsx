@@ -79,7 +79,6 @@ export default function CreateRequestScreen() {
 
       <ScrollView className="flex-1 p-6">
         <View className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 mb-8">
-        <View className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 space-y-4 mb-8">
           <View>
             <Text className="text-gray-700 font-medium mb-2">Category</Text>
             <View className="flex-row flex-wrap gap-2">

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator, Alert, KeyboardAvoidingView, Platform, Switch, Image, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, User, Phone, MapPin, Save, Camera } from 'lucide-react-native';
@@ -89,23 +90,14 @@ export default function AccountSettingsScreen() {
       if (!result.canceled && result.assets && result.assets.length > 0) {
         setUploadingImage(true);
         const asset = result.assets[0];
-        const fileUri = asset.uri;
-        const fileName = `avatar_${Date.now()}.jpg`;
         
-        const base64 = await FileSystem.readAsStringAsync(fileUri, { encoding: 'base64' });
-        const filePath = `avatars/${fileName}`;
-        
-        const { error: uploadError } = await supabase.storage
-          .from('entercom-media')
-          .upload(filePath, decode(base64), { contentType: 'image/jpeg' });
+        // Upload directly to Django API using multipart/form-data
+        const { profile_image } = await usersApi.uploadProfileImage(
+          asset.uri, 
+          asset.mimeType || 'image/jpeg'
+        );
           
-        if (uploadError) throw uploadError;
-        
-        const { data: publicUrlData } = supabase.storage
-          .from('entercom-media')
-          .getPublicUrl(filePath);
-          
-        setProfile(prev => ({ ...prev, profile_image: publicUrlData.publicUrl }));
+        setProfile(prev => ({ ...prev, profile_image }));
       }
     } catch (error) {
       console.error('Error uploading image', error);
@@ -148,7 +140,7 @@ export default function AccountSettingsScreen() {
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-gray-50">
-        <ActivityIndicator size="large" color="#081f3d" />
+        <LogoLoader />
         <Text className="text-gray-500 mt-4 font-medium">Loading profile...</Text>
       </View>
     );

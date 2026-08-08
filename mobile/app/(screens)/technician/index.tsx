@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Briefcase, Clock, CheckCircle, XCircle, Plus, X, UploadCloud, File as FileIcon } from 'lucide-react-native';
@@ -125,7 +126,7 @@ export default function TechnicianPortalScreen() {
   if (loading) {
     return (
       <View className="flex-1 bg-white items-center justify-center">
-        <ActivityIndicator size="large" color="#4F46E5" />
+        <LogoLoader />
       </View>
     );
   }

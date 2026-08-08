@@ -11,7 +11,11 @@ export default function ForgotPasswordScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const handleResetPassword = async () => {
+  const [otp, setOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [isResetting, setIsResetting] = useState(false);
+
+  const handleRequestOtp = async () => {
     if (!email) {
       Alert.alert('Error', 'Please enter your email address');
       return;
@@ -25,6 +29,25 @@ export default function ForgotPasswordScreen() {
       Alert.alert('Request Failed', error?.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCompleteReset = async () => {
+    if (!otp || !newPassword) {
+      Alert.alert('Error', 'Please enter the OTP and a new password');
+      return;
+    }
+
+    try {
+      setIsResetting(true);
+      await authApi.resetPassword({ email, token: otp, new_password: newPassword });
+      Alert.alert('Success', 'Your password has been reset successfully. You can now login.', [
+        { text: 'OK', onPress: () => router.replace('/(auth)/login') }
+      ]);
+    } catch (error: any) {
+      Alert.alert('Reset Failed', error?.message || 'Invalid or expired OTP');
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -73,23 +96,40 @@ export default function ForgotPasswordScreen() {
                   variant="primary"
                   size="lg"
                   isLoading={isLoading}
-                  onPress={handleResetPassword}
+                  onPress={handleRequestOtp}
                   className="w-full shadow-lg shadow-ess-purple/20"
                 >
-                  Send Reset Link
+                  Send Reset Code
                 </Button>
               </View>
             </>
           ) : (
-            <View className="mt-4">
-              <Button
-                variant="primary"
-                size="lg"
-                onPress={() => router.replace('/(auth)/login')}
-                className="w-full shadow-lg shadow-ess-purple/20"
-              >
-                Return to Sign In
-              </Button>
+            <View className="space-y-6">
+              <Input
+                label="6-Digit Reset Code (OTP)"
+                placeholder="000000"
+                keyboardType="number-pad"
+                value={otp}
+                onChangeText={setOtp}
+              />
+              <Input
+                label="New Password"
+                placeholder="••••••••"
+                secureTextEntry
+                value={newPassword}
+                onChangeText={setNewPassword}
+              />
+              <View className="mt-4">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  isLoading={isResetting}
+                  onPress={handleCompleteReset}
+                  className="w-full shadow-lg shadow-ess-purple/20"
+                >
+                  Reset Password
+                </Button>
+              </View>
             </View>
           )}
 

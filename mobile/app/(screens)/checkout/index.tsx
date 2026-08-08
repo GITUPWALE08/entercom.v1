@@ -72,19 +72,27 @@ export default function CheckoutScreen() {
         });
         
         if (paymentRes.authorization_url) {
+          clearCart(); // Clear cart just like web before redirecting
           const result = await WebBrowser.openAuthSessionAsync(
             paymentRes.authorization_url,
             callbackUrl
           );
           
-          if (result.type === 'success' || result.type === 'dismiss') {
-            // Payment window closed, check status elsewhere or just proceed
-          }
+          // Regardless of success/dismissal, rely on backend webhook for truth.
+          // Send user to order details screen to poll/view actual status.
+          router.replace(`/(screens)/orders/${order.id}`);
+          return;
+        } else {
+          // If no auth URL (e.g. zero amount or mock), just go to order directly
+          clearCart();
+          router.replace(`/(screens)/orders/${order.id}`);
+          return;
         }
       }
       
+      // Fallback if order creation somehow didn't return an id (unlikely)
       clearCart();
-      setSuccess(true);
+      router.replace('/(screens)/orders');
     } catch (err: any) {
       const errMsg = err.response?.data?.message || 'Unable to complete your order. Please try again.';
       Alert.alert('Checkout Failed', errMsg);

@@ -1,6 +1,12 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.contrib.auth import get_user_model
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+import uuid
+from rest_framework.decorators import action
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import extend_schema
 
@@ -116,6 +122,25 @@ class UserViewSet(viewsets.ModelViewSet):
             )
             # Re-serialize updated user
             return Response(UserListSerializer(request.user).data)
+
+    @extend_schema(summary="Upload profile image")
+    @action(detail=False, methods=['post'], url_path='upload-image', parser_classes=[MultiPartParser, FormParser])
+    def upload_image(self, request):
+        if 'image' not in request.FILES:
+            return Response({'detail': 'No image provided.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        image_file = request.FILES['image']
+        ext = image_file.name.split('.')[-1]
+        filename = f"avatars/{uuid.uuid4().hex}.{ext}"
+        
+        path = default_storage.save(filename, ContentFile(image_file.read()))
+        url = request.build_absolute_uri(default_storage.url(path))
+        
+        user = request.user
+        user.profile_image = url
+        user.save(update_fields=['profile_image'])
+        
+        return Response({'profile_image': url})
 
     @action(detail=True, methods=['post'])
     def assign_role(self, request, pk=None):

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { LogoLoader } from '../../../src/components/ui/Loader';
 import { View, Text, ScrollView, Pressable, TextInput, Switch, ActivityIndicator } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, Wrench, Briefcase, FileText, Upload, CheckCircle2 } from 'lucide-react-native';
@@ -47,13 +48,10 @@ export default function TechnicianCareerScreen() {
     }
   };
 
-    );
-  }
-
   if (checkingStatus) {
     return (
       <View className="flex-1 bg-gray-50 items-center justify-center">
-        <ActivityIndicator size="large" color="#081f3d" />
+        <LogoLoader />
         <Text className="text-gray-500 font-medium mt-4">Checking application status...</Text>
       </View>
     );

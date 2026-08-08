@@ -49,5 +49,17 @@ export const usersApi = {
   updateProfile: async (profileData: Partial<User>): Promise<User> => {
     const { data } = await apiClient.patch<User>('/users/me/', profileData);
     return normalizeData(data);
+  },
+
+  uploadProfileImage: async (file: File): Promise<{profile_image: string}> => {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const { data } = await apiClient.post<{profile_image: string}>('/users/upload-image/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return data;
   }
 };

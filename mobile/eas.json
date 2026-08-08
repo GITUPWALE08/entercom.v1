@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 7.0.0"
+    "version": ">= 7.0.0",
+    "appVersionSource": "remote"
   },
   "build": {
     "development": {
@@ -11,10 +12,21 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://entercom-v1.onrender.com/api/v1",
+        "EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY": "pk_test_b8e612806935cc2efb450c05cd9c7482ed1b1dd4"
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://entercom-v1.onrender.com/api/v1",
+        "EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY": "pk_live_your_actual_live_key_here"
+      }
     }
   },
   "submit": {

@@ -74,9 +74,9 @@ export default function ProductList() {
               <Link 
                 to={`/portal/customer/products/${product.id}`} 
                 key={product.id}
-                className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col"
+                className="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col h-[360px]"
               >
-                <div className="aspect-[4/3] bg-gray-50 overflow-hidden relative">
+                <div className="h-[180px] shrink-0 bg-gray-50 overflow-hidden relative">
                   {product.images && product.images.length > 0 ? (
                     <img src={product.images?.[0]?.image || 'https://placehold.co/400x300'} alt={product.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
