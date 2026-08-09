@@ -54,11 +54,8 @@ export default function Profile() {
     setIsSaving(true);
     setMessage({ text: '', type: '' });
     try {
-      let finalProfileImage = data.profile_image;
-      
       if (selectedImageFile) {
         const { profile_image } = await usersApi.uploadProfileImage(selectedImageFile);
-        finalProfileImage = profile_image;
         data.profile_image = profile_image;
       }
       
