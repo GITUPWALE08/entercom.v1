@@ -26,6 +26,8 @@ export default function Login() {
   const [mfaSession, setMfaSession] = useState<string | null>(null);
   const [mfaOtp, setMfaOtp] = useState('');
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState('');
 
   const {
     register,
@@ -101,6 +103,7 @@ export default function Login() {
   const handleVerifyMfa = async () => {
     if (!mfaSession || mfaOtp.length !== 6) return;
     setServerError(null);
+    setResendSuccess('');
     setIsVerifyingMfa(true);
     try {
       const response = await authApi.verifyMfa(mfaSession, mfaOtp);
@@ -109,6 +112,21 @@ export default function Login() {
       setServerError(error.response?.data?.detail || 'Invalid or expired 2FA code.');
     } finally {
       setIsVerifyingMfa(false);
+    }
+  };
+
+  const handleResendMfa = async () => {
+    if (!mfaSession) return;
+    setServerError(null);
+    setResendSuccess('');
+    setIsResending(true);
+    try {
+      await authApi.resendMfa(mfaSession);
+      setResendSuccess('A new code has been sent to your email.');
+    } catch (error: any) {
+      setServerError(error.response?.data?.detail || 'Failed to resend code.');
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -139,6 +157,11 @@ export default function Login() {
                 <div className="text-sm text-red-700">{serverError}</div>
               </div>
             )}
+            {resendSuccess && (
+              <div className="rounded-md bg-green-50 p-4 border border-green-200">
+                <div className="text-sm text-green-700">{resendSuccess}</div>
+              </div>
+            )}
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Enter 6-digit code</label>
@@ -161,6 +184,16 @@ export default function Login() {
                 className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2.5 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 transition-all shadow-md active:scale-[0.98]"
               >
                 {isVerifyingMfa ? 'Verifying...' : 'Verify Code'}
+              </button>
+            </div>
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={handleResendMfa}
+                disabled={isResending || isVerifyingMfa}
+                className="text-sm text-blue-600 hover:text-blue-500 font-medium disabled:opacity-50"
+              >
+                {isResending ? 'Sending...' : 'Did not receive code? Resend'}
               </button>
             </div>
           </div>

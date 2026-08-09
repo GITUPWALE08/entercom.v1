@@ -172,6 +172,36 @@ class AuthService:
         return user, refresh, None
 
     @staticmethod
+    def resend_mfa(mfa_session: str) -> None:
+        try:
+            mfa_token = MfaToken.objects.filter(mfa_session=mfa_session, is_used=False).latest('created_at')
+        except MfaToken.DoesNotExist:
+            raise AuthenticationFailed("Invalid or expired MFA session")
+
+        if mfa_token.expires_at < timezone.now():
+            raise AuthenticationFailed("MFA session has expired. Please log in again.")
+            
+        user = mfa_token.user
+        
+        mfa_token.is_used = True
+        mfa_token.save(update_fields=['is_used'])
+
+        otp = f"{secrets.randbelow(1000000):06d}"
+        MfaToken.objects.create(user=user, token=otp, mfa_session=mfa_session)
+
+        from apps.notification.providers import ProviderFactory
+        provider = ProviderFactory.get_provider()
+        html_body = f"<p>Hello {user.first_name},</p><p>Your new 2FA login code is: <strong>{otp}</strong>. It will expire in 10 minutes.</p>"
+        text_body = f"Hello {user.first_name},\n\nYour new 2FA login code is: {otp}. It will expire in 10 minutes."
+        
+        provider.send_email(
+            to_email=user.email,
+            subject="Your new 2FA Login Code",
+            html_body=html_body,
+            plain_text_body=text_body
+        )
+
+    @staticmethod
     def verify_mfa(mfa_session: str, otp: str, request_metadata: dict[str, Any]) -> tuple[User, RefreshToken]:
         try:
             mfa_token = MfaToken.objects.get(mfa_session=mfa_session, token=otp, is_used=False)

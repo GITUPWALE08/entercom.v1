@@ -25,6 +25,7 @@ export default function LoginScreen() {
   const [mfaSession, setMfaSession] = useState<string | null>(null);
   const [mfaOtp, setMfaOtp] = useState('');
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   const setUser = useAuthStore((state) => state.setUser);
 
@@ -83,6 +84,19 @@ export default function LoginScreen() {
       Alert.alert('Verification Failed', error?.response?.data?.detail || 'Invalid or expired code');
     } finally {
       setIsVerifyingMfa(false);
+    }
+  };
+
+  const handleResendMfa = async () => {
+    if (!mfaSession) return;
+    try {
+      setIsResending(true);
+      await authApi.resendMfa(mfaSession);
+      Alert.alert('Success', 'A new code has been sent to your email.');
+    } catch (error: any) {
+      Alert.alert('Failed', error?.response?.data?.detail || 'Failed to resend code');
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -170,8 +184,13 @@ export default function LoginScreen() {
                   Verify Code
                 </Button>
               </View>
-              <Pressable className="mt-4 items-center" onPress={() => setMfaRequired(false)}>
-                <Text className="text-ess-purple font-medium">Back to Login</Text>
+              <Pressable className="mt-2 items-center" onPress={handleResendMfa} disabled={isResending || isVerifyingMfa}>
+                <Text className={`text-ess-purple font-medium ${isResending ? 'opacity-50' : ''}`}>
+                  {isResending ? 'Sending...' : 'Did not receive code? Resend'}
+                </Text>
+              </Pressable>
+              <Pressable className="mt-6 items-center" onPress={() => setMfaRequired(false)}>
+                <Text className="text-gray-500 font-medium">Back to Login</Text>
               </Pressable>
             </View>
           ) : (

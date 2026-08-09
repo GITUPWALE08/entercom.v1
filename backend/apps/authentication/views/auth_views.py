@@ -266,3 +266,15 @@ class VerifyMfaView(APIView):
         else:
             ip = request.META.get("REMOTE_ADDR")
         return ip
+
+class ResendMfaView(APIView):
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthAnonRateThrottle]
+
+    def post(self, request):
+        mfa_session = request.data.get("mfa_session")
+        if not mfa_session:
+            return Response({"detail": "mfa_session is required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        AuthService.resend_mfa(mfa_session=mfa_session)
+        return Response({"detail": "MFA code resent successfully."}, status=status.HTTP_200_OK)

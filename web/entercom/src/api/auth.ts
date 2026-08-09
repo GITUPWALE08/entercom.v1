@@ -25,6 +25,9 @@ export const authApi = {
     const { data } = await apiClient.post<LoginResponse>('/auth/verify-mfa/', { mfa_session: mfaSession, otp });
     return normalizeData(data);
   },
+  resendMfa: async (mfaSession: string): Promise<void> => {
+    await apiClient.post('/auth/resend-mfa/', { mfa_session: mfaSession });
+  },
   register: async (credentials: Record<string, string>): Promise<RegisterResponse> => {
     const { data } = await apiClient.post<RegisterResponse>('/auth/register/', credentials);
     return normalizeData(data);
