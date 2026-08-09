@@ -69,7 +69,7 @@ export default function QuotesScreen() {
             <View className="flex-row justify-between items-center pt-4 border-t border-gray-100">
               <View>
                 <Text className="text-gray-500 text-[12px] font-bold uppercase tracking-widest mb-0.5">Estimated Amount</Text>
-                <Text className="text-ess-darkPurple font-extrabold text-[20px] tracking-tight">${item.amount.toFixed(2)}</Text>
+                <Text className="text-ess-darkPurple font-extrabold text-[20px] tracking-tight">₦{parseFloat(item.amount || 0).toLocaleString()}</Text>
               </View>
               <View className="bg-ess-softBlue p-2 rounded-full">
                 <ChevronRight size={20} color="#081f3d" />

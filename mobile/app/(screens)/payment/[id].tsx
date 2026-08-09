@@ -10,6 +10,7 @@ import { paymentsApi, PaymentItem } from '../../../src/api/payments';
 import { ordersApi } from '../../../src/api/orders';
 import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { LogoLoader } from '../../../src/components/ui/Loader';
+import { downloadReceipt } from '../../../src/utils/receipt';
 
 export default function PaymentDetailsScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -111,23 +112,13 @@ export default function PaymentDetailsScreen() {
     }
   };
 
-  const downloadReceipt = async () => {
+  const handleDownloadReceipt = async () => {
     if (!payment) return;
     try {
       setDownloading(true);
-      const url = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`;
-      const fileUri = `${(FileSystem as any).documentDirectory}receipt_${payment.id}.pdf`;
-      const { uri } = await FileSystem.downloadAsync(url, fileUri);
-      
-      const canShare = await Sharing.isAvailableAsync();
-      if (canShare) {
-        await Sharing.shareAsync(uri);
-      } else {
-        Alert.alert('Error', 'Sharing is not available on your device');
-      }
+      await downloadReceipt(payment, 'payment');
     } catch (err) {
       console.error('Download error:', err);
-      Alert.alert('Error', 'Failed to download receipt');
     } finally {
       setDownloading(false);
     }
@@ -242,19 +233,19 @@ export default function PaymentDetailsScreen() {
 
             {!isPending && (
               <Pressable 
-                onPress={downloadReceipt}
-                disabled={downloading}
-                className="bg-ess-purple p-4 rounded-2xl flex-row justify-center items-center mb-3 shadow-sm shadow-ess-purple/30"
-              >
-                {downloading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <>
-                    <Download size={20} color="white" />
-                    <Text className="text-white font-bold text-[16px] ml-2">Download Receipt</Text>
-                  </>
-                )}
-              </Pressable>
+            onPress={handleDownloadReceipt}
+            disabled={downloading}
+            className="flex-row items-center justify-center p-3 border border-gray-200 rounded-xl mt-4"
+          >
+            {downloading ? (
+              <ActivityIndicator size="small" color="#4f46e5" />
+            ) : (
+              <>
+                <FileText size={18} color="#4f46e5" />
+                <Text className="ml-2 font-semibold text-ess-purple">Download Receipt</Text>
+              </>
+            )}
+          </Pressable>
             )}
 
             <Pressable 

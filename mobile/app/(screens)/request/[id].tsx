@@ -18,6 +18,15 @@ export default function RequestDetailScreen() {
   const [timeline, setTimeline] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Auto-refresh every 10 seconds
+  useEffect(() => {
+    if (!id) return;
+    const interval = setInterval(() => {
+      fetchRequestDetails(true);
+    }, 10000);
+    return () => clearInterval(interval);
+  }, [id]);
   const [error, setError] = useState<string | null>(null);
 
   const [verifying, setVerifying] = useState(false);
@@ -170,7 +179,7 @@ export default function RequestDetailScreen() {
           <ArrowLeft size={24} color="#1f2937" />
         </Pressable>
         <Text className="text-xl font-bold flex-1 text-gray-900" numberOfLines={1}>
-          Request #{id?.toString().substring(0, 8).toUpperCase()}
+          Request {request?.public_id || `#${id?.toString().substring(0, 8).toUpperCase()}`}
         </Text>
       </View>
 
@@ -199,7 +208,7 @@ export default function RequestDetailScreen() {
                 <Text className="text-white/80 font-medium mb-1 text-sm">Current Status</Text>
                 <StatusBadge status={request.status} />
               </View>
-              {request.status === 'pending' && (
+              {!['completed', 'cancelled', 'canceled', 'draft', 'resolved'].includes(request.status?.toLowerCase()) && (
                 <Pressable 
                   onPress={handleCancel}
                   disabled={cancelling}
@@ -213,6 +222,57 @@ export default function RequestDetailScreen() {
               Last updated: {formatDate(request.updated_at)}
             </Text>
           </View>
+
+          {/* Workflow Indicator */}
+          {request.status === 'awaiting_assignment' && (
+            <View className="mx-5 bg-blue-50 p-3 rounded-xl mb-4 flex-row items-center">
+              <Clock size={16} color="#2563eb" />
+              <Text className="ml-2 text-blue-800 font-semibold">Waiting on Staff to assign technician</Text>
+            </View>
+          )}
+          {request.status === 'staff_review' && (
+            <View className="mx-5 bg-purple-50 p-3 rounded-xl mb-4 flex-row items-center">
+              <Clock size={16} color="#7e22ce" />
+              <Text className="ml-2 text-purple-800 font-semibold">Waiting on Staff for review</Text>
+            </View>
+          )}
+          
+          {/* Action Banners */}
+          {request.status === 'draft' && (
+            <Pressable onPress={() => {}} className="mx-5 bg-ess-purple rounded-2xl shadow-sm p-4 mb-3 flex-row justify-between items-center">
+              <Text className="font-bold text-white ml-2">Submit Request</Text>
+              <ArrowLeft size={16} color="white" className="rotate-180" />
+            </Pressable>
+          )}
+          {request.status === 'awaiting_customer_approval' && (
+            <Pressable onPress={() => router.push('/(screens)/quotes')} className="mx-5 bg-orange-500 rounded-2xl shadow-sm p-4 mb-3 flex-row justify-between items-center">
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center">
+                  <FileText size={16} color="white" />
+                </View>
+                <Text className="ml-3 font-bold text-white">Review Pending Quote</Text>
+              </View>
+              <ArrowLeft size={16} color="white" className="rotate-180" />
+            </Pressable>
+          )}
+
+          {request.status === 'awaiting_payment' && request.order_id && (
+            <Pressable onPress={() => router.push(`/(screens)/orders/${request.order_id}`)} className="mx-5 bg-ess-purple rounded-2xl shadow-sm p-4 mb-3 flex-row justify-between items-center">
+              <View className="flex-row items-center">
+                <View className="w-8 h-8 rounded-full bg-white/20 items-center justify-center">
+                  <CreditCard size={16} color="white" />
+                </View>
+                <Text className="ml-3 font-bold text-white">Pay Quote Now</Text>
+              </View>
+              <ArrowLeft size={16} color="white" className="rotate-180" />
+            </Pressable>
+          )}
+          
+          {(request.status === 'cancelled' || request.status === 'canceled') && (
+            <Pressable onPress={() => router.push('/(screens)/request/new')} className="mx-5 bg-gray-800 rounded-2xl shadow-sm p-4 mb-3 flex-row justify-center items-center">
+              <Text className="font-bold text-white">Retry / Create New Request</Text>
+            </Pressable>
+          )}
 
           {request.order_id && (
             <Pressable onPress={() => router.push(`/(screens)/orders/${request.order_id}`)} className="mx-5 bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-3 flex-row justify-between items-center">
@@ -272,6 +332,12 @@ export default function RequestDetailScreen() {
                   <Text className="text-gray-900 font-semibold">{formatDate(request.created_at)}</Text>
                 </View>
               )}
+              {request.requires_technician !== undefined && (
+                <View className="flex-row justify-between">
+                  <Text className="text-gray-500 font-medium">Technician Required</Text>
+                  <Text className="text-gray-900 font-semibold">{request.requires_technician ? 'Yes' : 'No'}</Text>
+                </View>
+              )}
               {request.address && (
                 <View className="mt-1 pt-3 border-t border-gray-100">
                   <Text className="text-gray-500 font-medium mb-1">Address</Text>
@@ -287,50 +353,7 @@ export default function RequestDetailScreen() {
             </View>
           </View>
 
-          {/* Technician Completion Verification Panel */}
-          {request?.status === 'in_progress' && (
-            <View className="mx-5 mt-5 bg-white rounded-2xl border border-gray-100 shadow-sm p-5 mb-4">
-              <Text className="text-lg font-bold text-gray-900 mb-4">Job Verification</Text>
-              
-              {verificationPhoto ? (
-                <View className="mb-4 bg-green-50 rounded-xl p-4 flex-row items-center">
-                  <CheckCircle2 size={24} color="#16a34a" />
-                  <Text className="ml-3 text-green-800 font-semibold flex-1">Photo Uploaded Successfully</Text>
-                </View>
-              ) : (
-                <Pressable 
-                  onPress={handlePickVerificationPhoto}
-                  disabled={verifying}
-                  className="mb-4 bg-gray-50 border border-dashed border-gray-300 rounded-xl p-6 items-center justify-center"
-                >
-                  {verifying ? (
-                    <ActivityIndicator color="#0f4c81" />
-                  ) : (
-                    <>
-                      <Camera size={32} color="#9ca3af" />
-                      <Text className="text-gray-600 font-medium mt-3">Upload Completion Photo</Text>
-                    </>
-                  )}
-                </Pressable>
-              )}
 
-              <Pressable 
-                onPress={handleCompleteJob}
-                disabled={verifying || !verificationPhoto}
-                className={`p-4 rounded-xl items-center justify-center flex-row shadow-sm ${
-                  verificationPhoto ? 'bg-ess-purple' : 'bg-gray-200'
-                }`}
-              >
-                {verifying ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  <Text className={`font-bold text-base ${verificationPhoto ? 'text-white' : 'text-gray-400'}`}>
-                    Submit & Complete Job
-                  </Text>
-                )}
-              </Pressable>
-            </View>
-          )}
 
           {/* Timeline */}
           {timeline.length > 0 && (

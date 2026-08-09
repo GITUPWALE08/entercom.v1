@@ -6,6 +6,7 @@ import { ordersApi, OrderItem } from '../../../src/api/orders';
 import { paymentsApi } from '../../../src/api/payments';
 import * as Linking from 'expo-linking';
 import * as WebBrowser from 'expo-web-browser';
+import { downloadReceipt } from '../../../src/utils/receipt';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 import { LogoLoader } from '../../../src/components/ui/Loader';
 
@@ -199,6 +200,14 @@ export default function OrderDetailsScreen() {
               <ArrowLeft size={16} color="#9ca3af" className="rotate-180" />
             </Pressable>
           )}
+
+          <Pressable 
+            onPress={() => downloadReceipt(order, 'order')} 
+            className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex-row justify-center items-center"
+          >
+            <FileText size={16} color="#4f46e5" />
+            <Text className="ml-2 font-semibold text-ess-purple">Download Receipt</Text>
+          </Pressable>
 
           {/* Order Items */}
           {order.items && order.items.length > 0 && (

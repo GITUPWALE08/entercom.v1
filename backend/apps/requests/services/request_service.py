@@ -108,18 +108,17 @@ class RequestService:
             category=request.category,
         ))
 
-        # [DEFERRED] Non-MVP event
-        # transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
-        #     event_type="request_created",
-        #     recipient_id=user.id,
-        #     resource_type="request",
-        #     resource_id=str(request.id),
-        #     category="updates",
-        #     title="Request Created",
-        #     message=f"Request {request.public_id} created.",
-        #     context={"category": request.category},
-        #     is_system_critical=False,
-        # ))
+        transaction.on_commit(lambda: DispatchOrchestrator.dispatch_event(
+            event_type="request_created",
+            recipient_id=user.id,
+            resource_type="request",
+            resource_id=str(request.id),
+            category="updates",
+            title="Request Created",
+            message=f"Request {request.public_id} created successfully.",
+            context={"category": request.category},
+            is_system_critical=False,
+        ))
 
         return request
 

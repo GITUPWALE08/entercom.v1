@@ -14,6 +14,12 @@ export function StatusBadge({ status = 'unknown', className = '' }: StatusBadgeP
       case 'pending_quote_approval':
       case 'pending_payment':
       case 'pending_technician':
+      case 'awaiting_customer_approval':
+      case 'awaiting_payment':
+      case 'staff_review':
+      case 'awaiting_assignment':
+      case 'draft':
+      case 'pending_verification':
         return { view: 'bg-ess-softOrange border-ess-orange/20', text: 'text-ess-orange' };
       case 'approved':
       case 'paid':
@@ -21,7 +27,9 @@ export function StatusBadge({ status = 'unknown', className = '' }: StatusBadgeP
         return { view: 'bg-[#e8f7ed] border-ess-green/20', text: 'text-ess-green' };
       case 'rejected':
       case 'cancelled':
+      case 'canceled':
       case 'failed':
+      case 'escalated':
         return { view: 'bg-red-50 border-red-200', text: 'text-red-600' };
       case 'in_progress': 
       case 'scheduled':
@@ -34,8 +42,10 @@ export function StatusBadge({ status = 'unknown', className = '' }: StatusBadgeP
 
   const formatStatus = (status: string) => {
     if (!status) return 'UNKNOWN';
-    if (status === 'pending_quote_approval') return 'QUOTE PENDING';
-    if (status === 'pending_technician') return 'FINDING PRO';
+    if (status === 'awaiting_customer_approval' || status === 'pending_quote_approval') return 'QUOTE PENDING';
+    if (status === 'awaiting_assignment' || status === 'pending_technician') return 'FINDING PRO';
+    if (status === 'awaiting_payment' || status === 'pending_payment') return 'PAYMENT PENDING';
+    if (status === 'staff_review') return 'IN REVIEW';
     return status.replace(/_/g, ' ').toUpperCase();
   };
 

@@ -12,7 +12,8 @@ export default function NotificationsScreen() {
   const fetchNotifications = useCallback(async () => {
     try {
       const data = await notificationsApi.getNotifications(0, 50);
-      setNotifications(data.results || []);
+      // normalizeData unwraps DRF pagination into a plain array
+      setNotifications(Array.isArray(data) ? data : data.results || []);
     } catch (err) {
       console.error(err);
     }
