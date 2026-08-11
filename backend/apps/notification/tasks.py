@@ -4,7 +4,7 @@ from django.utils import timezone
 from celery import shared_task
 from django.core.cache import cache
 from .models import Notification, NotificationDelivery
-from .services import FailureRecoveryService
+from .services import FailureRecoveryService, NotificationService
 
 logger = logging.getLogger(__name__)
 

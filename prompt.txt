@@ -1,122 +1,23 @@
-127.0.0.1:41728 - - [11/Aug/2026:13:05:45] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:41740 - - [11/Aug/2026:13:05:46] "WSCONNECTING /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:41740 - - [11/Aug/2026:13:05:46] "WSREJECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:41740 - - [11/Aug/2026:13:05:46] "WSDISCONNECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:41754 - - [11/Aug/2026:13:05:47] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:41754 - - [11/Aug/2026:13:05:47] "WSREJECT /ws/requests/" - -
-127.0.0.1:41754 - - [11/Aug/2026:13:05:47] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:45024 - - [11/Aug/2026:13:06:06] "GET /api/v1/chat/conversations/" 401 183
-127.0.0.1:45014 - - [11/Aug/2026:13:06:06] "GET /api/v1/notifications/unread-count/" 401 183
-127.0.0.1:55666 - - [11/Aug/2026:13:06:06] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:55666 - - [11/Aug/2026:13:06:06] "WSREJECT /ws/requests/" - -
-127.0.0.1:55666 - - [11/Aug/2026:13:06:06] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:45014 - - [11/Aug/2026:13:06:06] "GET /api/v1/requests/?limit=1000" 401 183
-127.0.0.1:55662 - - [11/Aug/2026:13:06:06] "GET /api/v1/orders/" 401 183
-127.0.0.1:45024 - - [11/Aug/2026:13:06:06] "GET /api/v1/payments/" 401 183
-127.0.0.1:55662 - - [11/Aug/2026:13:06:06] "GET /api/v1/products/?limit=1000" 401 183
-127.0.0.1:55678 - - [11/Aug/2026:13:06:07] "GET /api/v1/requests/?limit=1000" 401 183
-127.0.0.1:45014 - - [11/Aug/2026:13:06:07] "GET /api/v1/payments/" 401 183
-127.0.0.1:55692 - - [11/Aug/2026:13:06:07] "GET /api/v1/orders/" 401 183
-127.0.0.1:55702 - - [11/Aug/2026:13:06:07] "POST /api/v1/users/register-device/" 401 183
-127.0.0.1:45014 - - [11/Aug/2026:13:06:07] "GET /api/v1/products/?limit=1000" 401 183
-127.0.0.1:55722 - - [11/Aug/2026:13:06:08] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:55722 - - [11/Aug/2026:13:06:08] "WSREJECT /ws/requests/" - -
-127.0.0.1:55722 - - [11/Aug/2026:13:06:08] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:55662 - - [11/Aug/2026:13:06:08] "POST /api/v1/auth/refresh/" 200 627
-127.0.0.1:45014 - - [11/Aug/2026:13:06:09] "GET /api/v1/notifications/unread-count/" 200 18
-127.0.0.1:55678 - - [11/Aug/2026:13:06:10] "GET /api/v1/payments/" 200 2
-127.0.0.1:45014 - - [11/Aug/2026:13:06:10] "GET /api/v1/products/?limit=1000" 200 1171
-127.0.0.1:46490 - - [11/Aug/2026:13:06:10] "GET /api/v1/orders/" 200 2
-127.0.0.1:46500 - - [11/Aug/2026:13:06:10] "GET /api/v1/requests/?limit=1000" 200 123
-127.0.0.1:46512 - - [11/Aug/2026:13:06:11] "GET /api/v1/chat/conversations/" 200 1598
-127.0.0.1:46490 - - [11/Aug/2026:13:06:11] "GET /api/v1/payments/" 200 2
-127.0.0.1:55678 - - [11/Aug/2026:13:06:11] "GET /api/v1/requests/?limit=1000" 200 123
-127.0.0.1:46500 - - [11/Aug/2026:13:06:11] "GET /api/v1/orders/" 200 2
-127.0.0.1:45014 - - [11/Aug/2026:13:06:11] "POST /api/v1/users/register-device/" 200 44
-127.0.0.1:46582 - - [11/Aug/2026:13:06:12] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:46490 - - [11/Aug/2026:13:06:12] "GET /api/v1/products/?limit=1000" 200 1171
-127.0.0.1:46500 - - [11/Aug/2026:13:06:12] "GET /api/v1/notifications/?offset=0&limit=50" 200 1768
-127.0.0.1:46582 - - [11/Aug/2026:13:06:13] "WSCONNECT /ws/requests/" - -
-127.0.0.1:46610 - - [11/Aug/2026:13:06:17] "WSCONNECTING /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:46610 - - [11/Aug/2026:13:06:17] "WSREJECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:46610 - - [11/Aug/2026:13:06:17] "WSDISCONNECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:55284 - - [11/Aug/2026:13:06:19] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:55284 - - [11/Aug/2026:13:06:19] "WSREJECT /ws/requests/" - -
-127.0.0.1:55284 - - [11/Aug/2026:13:06:19] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:45014 - - [11/Aug/2026:13:06:20] "GET /api/v1/chat/conversations/" 200 1598
-127.0.0.1:45014 - - [11/Aug/2026:13:06:21] "GET /api/v1/chat/conversations/" 200 1598
-127.0.0.1:45014 - - [11/Aug/2026:13:06:22] "GET /api/v1/chat/conversations/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/messages/?page=1" 200 2067
-127.0.0.1:55312 - - [11/Aug/2026:13:06:23] "WSCONNECTING /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:55312 - - [11/Aug/2026:13:06:23] "WSCONNECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:45014 - - [11/Aug/2026:13:06:40] "GET /api/v1/notifications/unread-count/" 200 18
-127.0.0.1:49188 - - [11/Aug/2026:13:06:48] "WSCONNECTING /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:49188 - - [11/Aug/2026:13:06:48] "WSREJECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:49188 - - [11/Aug/2026:13:06:48] "WSDISCONNECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:50010 - - [11/Aug/2026:13:06:50] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:50010 - - [11/Aug/2026:13:06:50] "WSREJECT /ws/requests/" - -
-127.0.0.1:50010 - - [11/Aug/2026:13:06:50] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:45014 - - [11/Aug/2026:13:06:50] "GET /api/v1/chat/conversations/" 200 1598
-127.0.0.1:55312 - - [11/Aug/2026:13:06:56] "WSDISCONNECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:45014 - - [11/Aug/2026:13:07:03] "POST /api/v1/chat/conversations/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/messages/" 401 183
-127.0.0.1:45014 - - [11/Aug/2026:13:07:03] "OPTIONS /api/v1/auth/refresh/" 200 -
-127.0.0.1:45014 - - [11/Aug/2026:13:07:04] "POST /api/v1/auth/refresh/" 200 627
-127.0.0.1:57574 - - [11/Aug/2026:13:07:04] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:57578 - - [11/Aug/2026:13:07:05] "WSCONNECTING /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:57574 - - [11/Aug/2026:13:07:06] "WSCONNECT /ws/requests/" - -
-127.0.0.1:57578 - - [11/Aug/2026:13:07:06] "WSCONNECT /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
-127.0.0.1:46582 - - [11/Aug/2026:13:07:07] "WSDISCONNECT /ws/requests/" - -
-127.0.0.1:45814 - - [11/Aug/2026:13:07:09] "WSCONNECTING /ws/requests/" - -
-127.0.0.1:45814 - - [11/Aug/2026:13:07:10] "WSCONNECT /ws/requests/" - -
-127.0.0.1:45014 - - [11/Aug/2026:13:07:10] "POST /api/v1/chat/conversations/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/messages/" 201 647
-127.0.0.1:55678 - - [11/Aug/2026:13:07:11] "GET /api/v1/notifications/unread-count/" 200 18
-127.0.0.1:45872 - - [11/Aug/2026:13:07:12] "GET /api/v1/notifications/?offset=0&limit=50" 200 2331
-127.0.0.1:55678 - - [11/Aug/2026:13:07:12] "GET /api/v1/chat/conversations/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" 200 2444
-127.0.0.1:45014 - - [11/Aug/2026:13:07:12] "GET /api/v1/chat/conversations/" 200 6513
-127.0.0.1:55678 - - [11/Aug/2026:13:07:17] "GET /api/v1/chat/conversations/" 200 1599
-127.0.0.1:55678 - - [11/Aug/2026:13:07:19] "GET /api/v1/chat/conversations/" 200 1599
-127.0.0.1:59970 - - [11/Aug/2026:13:07:20] "WSCONNECTING /ws/chat/b4edf431-bc09-4c5a-af6a-cd01cc6d53be/" - -
+{
+    "detail": "Given token not valid for any token type",
+    "code": "token_not_valid",
+    "messages": [
+        {
+            "token_class": "AccessToken",
+            "token_type": "access",
+            "message": "Token is invalid or expired"
+        }
+    ]
+}
 
 
-127.0.0.1:52724 - - [11/Aug/2026:13:16:31] "GET /api/v1/orders/64ed0d67-6a7e-4f65-95e2-c34aa3315712/" 200 418
-127.0.0.1:42506 - - [11/Aug/2026:13:16:32] "GET /api/v1/notifications/unread-count/" 200 19
-127.0.0.1:42492 - - [11/Aug/2026:13:16:32] "GET /api/v1/chat/conversations/" 200 1597
-127.0.0.1:42520 - - [11/Aug/2026:13:16:32] "WSCONNECTING /ws/requests/" - -
-2026-08-11 13:16:54,692 [INFO] forensic.audit 47523429-3b54-48eb-b36d-fcd701774998 AUDIT_EVENT:request.created
-2026-08-11 13:16:54,762 [INFO] apps.requests.events.publishers 47523429-3b54-48eb-b36d-fcd701774998 Published Domain Event: EventName.REQUEST_CREATED
-2026-08-11 13:16:55,167 [ERROR] apps.notification.mapper 47523429-3b54-48eb-b36d-fcd701774998 Failed to map event EventName.REQUEST_CREATED: can not serialize 'UUID' object
-2026-08-11 13:16:55,802 [ERROR] apps.websocket.services.event_bridge 47523429-3b54-48eb-b36d-fcd701774998 Failed to publish request.created to customer_9cedecfb-f388-44c1-b261-649f9de879e2: can not serialize 'UUID' object
-2026-08-11 13:16:57,905 [INFO] forensic.audit 47523429-3b54-48eb-b36d-fcd701774998 AUDIT_EVENT:request.submitted
-2026-08-11 13:16:57,977 [INFO] apps.requests.events.publishers 47523429-3b54-48eb-b36d-fcd701774998 Published Domain Event: EventName.REQUEST_SUBMITTED
-
-
-celery worker log
-[2026-08-11 13:15:46,610: INFO/ForkPoolWorker-3] AUDIT_EVENT:notification.provider_failure
-[2026-08-11 13:15:46,660: INFO/ForkPoolWorker-1] Task apps.notification.tasks.task_dispatch_push[9317d097-95b5-49ee-b00c-f82f5fa10bdc] succeeded in 1.9879896715283394s: None
-[2026-08-11 13:15:46,925: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_email[041fe190-552e-47a2-b5a4-330e7c0611b3] received
-[2026-08-11 13:15:46,938: INFO/ForkPoolWorker-3] Task apps.notification.tasks.task_dispatch_email[041fe190-552e-47a2-b5a4-330e7c0611b3] retry: Retry in 15s: NameError("name 'NotificationService' is not defined")
-[2026-08-11 13:16:01,203: INFO/ForkPoolWorker-2] Task apps.notification.tasks.task_dispatch_email[dc39043d-42e2-4f7d-a18e-128559e2d8be] succeeded in 1.0464220643043518s: None
-[2026-08-11 13:16:02,944: INFO/ForkPoolWorker-2] Task apps.notification.tasks.task_dispatch_email[041fe190-552e-47a2-b5a4-330e7c0611b3] succeeded in 1.0340631157159805s: None
-[2026-08-11 13:16:29,787: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_email[7ef773b9-556d-4cba-a4dc-93fc6087183d] received
-[2026-08-11 13:16:30,972: ERROR/ForkPoolWorker-2] Email dispatch failed for delivery e9e8058c-eff5-4747-8465-24726a236c34: name 'NotificationService' is not defined
-[2026-08-11 13:16:31,567: INFO/ForkPoolWorker-2] AUDIT_EVENT:notification.provider_failure
-[2026-08-11 13:16:31,907: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_email[7ef773b9-556d-4cba-a4dc-93fc6087183d] received
-[2026-08-11 13:16:31,915: INFO/ForkPoolWorker-2] Task apps.notification.tasks.task_dispatch_email[7ef773b9-556d-4cba-a4dc-93fc6087183d] retry: Retry in 15s: NameError("name 'NotificationService' is not defined")
-[2026-08-11 13:16:40,634: INFO/MainProcess] Task apps.audit_logs.tasks.trace_probe[edf115c4-d4b3-49d3-b42d-1e60f7ad2f7f] received
-[2026-08-11 13:16:40,637: INFO/ForkPoolWorker-2] Task apps.audit_logs.tasks.trace_probe[edf115c4-d4b3-49d3-b42d-1e60f7ad2f7f] succeeded in 0.002042815089225769s: {'request_id': '', 'correlation_id': ''}
-[2026-08-11 13:16:47,901: INFO/ForkPoolWorker-2] Task apps.notification.tasks.task_dispatch_email[7ef773b9-556d-4cba-a4dc-93fc6087183d] succeeded in 1.032350480556488s: None
-[2026-08-11 13:16:57,490: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_push[12b37f4d-e2e7-40b0-85d8-09b8c2c92806] received
-[2026-08-11 13:16:57,648: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_email[8bad702c-64d3-40f4-8b3b-3003e5ce4110] received
-[2026-08-11 13:16:58,827: ERROR/ForkPoolWorker-4] Email dispatch failed for delivery 6bfa68fc-4b88-46f2-985c-261b6edc309d: name 'NotificationService' is not defined
-[2026-08-11 13:16:59,168: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_push[0c8659db-e050-49de-994a-3e0a2e771f62] received
-[2026-08-11 13:16:59,326: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_email[0a061ed0-893a-4fa7-a795-7f245bb687aa] received
-[2026-08-11 13:16:59,410: INFO/ForkPoolWorker-2] Task apps.notification.tasks.task_dispatch_push[12b37f4d-e2e7-40b0-85d8-09b8c2c92806] succeeded in 1.9182957708835602s: None
-[2026-08-11 13:16:59,420: INFO/ForkPoolWorker-4] AUDIT_EVENT:notification.provider_failure
-[2026-08-11 13:16:59,721: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_email[8bad702c-64d3-40f4-8b3b-3003e5ce4110] received
-[2026-08-11 13:16:59,730: INFO/ForkPoolWorker-4] Task apps.notification.tasks.task_dispatch_email[8bad702c-64d3-40f4-8b3b-3003e5ce4110] retry: Retry in 15s: NameError("name 'NotificationService' is not defined")
-[2026-08-11 13:17:00,502: ERROR/ForkPoolWorker-3] Email dispatch failed for delivery 9a1e9081-5a29-4d77-9bab-c67894e33a5c: name 'NotificationService' is not defined
-[2026-08-11 13:17:01,060: INFO/ForkPoolWorker-1] Task apps.notification.tasks.task_dispatch_push[0c8659db-e050-49de-994a-3e0a2e771f62] succeeded in 1.8915067687630653s: None
-[2026-08-11 13:17:01,093: INFO/ForkPoolWorker-3] AUDIT_EVENT:notification.provider_failure
-[2026-08-11 13:17:01,394: INFO/MainProcess] Task apps.notification.tasks.task_dispatch_email[0a061ed0-893a-4fa7-a795-7f245bb687aa] received
-[2026-08-11 13:17:01,401: INFO/ForkPoolWorker-3] Task apps.notification.tasks.task_dispatch_email[0a061ed0-893a-4fa7-a795-7f245bb687aa] retry: Retry in 15s: NameError("name 'NotificationService' is not defined")
-[2026-08-11 13:17:15,743: INFO/ForkPoolWorker-2] Task apps.notification.tasks.task_dispatch_email[8bad702c-64d3-40f4-8b3b-3003e5ce4110] succeeded in 1.0233904793858528s: None
-[2026-08-11 13:17:17,419: INFO/ForkPoolWorker-2] Task apps.notification.tasks.task_dispatch_email[0a061ed0-893a-4fa7-a795-7f245bb687aa] succeeded in 1.0277950018644333s: None
+Request URL
+https://entercom-v1.onrender.com/api/v1/requests/?limit=1000
+Request Method
+GET
+Status Code
+401 Unauthorized
+Remote Address
+216.24.57.7:443
+Referrer Policy
+strict-origin-when-cross-origin
