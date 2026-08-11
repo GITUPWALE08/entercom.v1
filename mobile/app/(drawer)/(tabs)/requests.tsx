@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LogoLoader } from '../../../src/components/ui/Loader';
+import { ListSkeleton } from '../../../src/components/ui/Skeleton';
 import { ScrollView, View, Text, Pressable, RefreshControl } from 'react-native';
 import { AppScrollView } from '../../../src/components/ui/AppScrollView';
 import { ClipboardList, ChevronRight, Plus, FileText, Search, Filter } from 'lucide-react-native';
@@ -104,9 +105,8 @@ export default function RequestsScreen() {
         </View>
 
         {loading ? (
-          <View className="items-center justify-center py-20">
-            <LogoLoader />
-            <Text className="text-gray-500 mt-4 font-medium">Loading requests...</Text>
+          <View className="mb-24">
+            <ListSkeleton />
           </View>
         ) : error ? (
           <View className="items-center justify-center py-20">

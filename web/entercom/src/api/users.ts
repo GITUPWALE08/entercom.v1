@@ -1,5 +1,6 @@
 import { normalizeData } from './normalize';
 import { apiClient } from './axios';
+import { supabase } from '../lib/supabase';
 
 export interface UserRole {
   id: string;
@@ -52,14 +53,23 @@ export const usersApi = {
   },
 
   uploadProfileImage: async (file: File): Promise<{profile_image: string}> => {
-    const formData = new FormData();
-    formData.append('image', file);
-    
-    const { data } = await apiClient.post<{profile_image: string}>('/users/upload-image/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return data;
+    const filename = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}_${file.name}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('entercom-media')
+      .upload(filename, file, { contentType: file.type });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabase.storage
+      .from('entercom-media')
+      .getPublicUrl(filename);
+
+    const publicUrl = publicUrlData.publicUrl;
+
+    // Update profile on backend with the new URL
+    await usersApi.updateProfile({ profile_image: publicUrl });
+
+    return { profile_image: publicUrl };
   }
 };

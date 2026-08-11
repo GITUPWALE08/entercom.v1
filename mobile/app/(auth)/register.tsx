@@ -5,6 +5,7 @@ import { authApi } from '../../src/api/auth';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input } from '../../src/components/ui/Input';
 import { Button } from '../../src/components/ui/Button';
+import { Alert as CustomAlert } from '../../src/components/ui/Alert';
 
 export default function RegisterScreen() {
   const [firstName, setFirstName] = useState('');
@@ -13,10 +14,14 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [registerError, setRegisterError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const handleRegister = async () => {
+    setRegisterError(null);
+    setSuccessMsg(null);
     if (!email || !password || !firstName || !lastName) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      setRegisterError('Please fill in all required fields');
       return;
     }
 
@@ -25,11 +30,12 @@ export default function RegisterScreen() {
       const payload: Record<string, string> = { email, password, first_name: firstName, last_name: lastName };
       if (phone) payload.phone_number = phone;
       await authApi.register(payload);
-      Alert.alert('Success', 'Registration successful. Please login.', [
-        { text: 'OK', onPress: () => router.replace('/(auth)/login') }
-      ]);
+      setSuccessMsg('Registration successful. Please login.');
+      setTimeout(() => {
+        router.replace('/(auth)/login');
+      }, 2000);
     } catch (error: any) {
-      Alert.alert('Registration Failed', error?.message || 'Something went wrong');
+      setRegisterError(error?.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -61,6 +67,24 @@ export default function RegisterScreen() {
               Sign up to get started
             </Text>
           </View>
+
+          {registerError && (
+            <CustomAlert 
+              type="error" 
+              title="Error" 
+              description={registerError} 
+              className="mb-6 shadow-sm shadow-red-500/10" 
+            />
+          )}
+
+          {successMsg && (
+            <CustomAlert 
+              type="success" 
+              title="Success" 
+              description={successMsg} 
+              className="mb-6 shadow-sm shadow-green-500/10" 
+            />
+          )}
 
           <View className="space-y-5">
             <View className="flex-row space-x-4">

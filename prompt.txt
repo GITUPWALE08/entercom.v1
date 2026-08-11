@@ -1,1 +1,4 @@
--> the notications are now displaying for mobile app now, but there is no interface for the mark all as read, and i am unable to open the notification getiing unmatched route (page could not be found)
+Reading credentials from credentials.json failed. Make sure this file is correct and all credentials are present there.
+Error: Android credentials are missing in credentials.json
+Cryptic error? Learn more: https://expo.fyi/cryptic-error-eas
+Press any key to continue...

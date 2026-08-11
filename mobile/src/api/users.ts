@@ -1,5 +1,8 @@
 import { normalizeData } from './normalize';
 import { apiClient } from './axios';
+import { supabase } from '../lib/supabase';
+import * as FileSystem from 'expo-file-system';
+import { decode } from 'base64-arraybuffer';
 
 export interface UserRole {
   id: string;
@@ -52,21 +55,25 @@ export const usersApi = {
   },
   
   uploadProfileImage: async (imageUri: string, mimeType: string = 'image/jpeg'): Promise<{profile_image: string}> => {
-    const formData = new FormData() as any;
-    const filename = imageUri.split('/').pop() || 'profile.jpg';
-    
-    formData.append('image', {
-      uri: imageUri,
-      name: filename,
-      type: mimeType,
-    });
-    
-    const { data } = await apiClient.post<{profile_image: string}>('/users/upload-image/', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return data;
+    const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' });
+    const filename = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('entercom-media')
+      .upload(filename, decode(base64), { contentType: mimeType });
+
+    if (uploadError) throw uploadError;
+
+    const { data: publicUrlData } = supabase.storage
+      .from('entercom-media')
+      .getPublicUrl(filename);
+
+    const publicUrl = publicUrlData.publicUrl;
+
+    // Update profile on backend with the new URL
+    await usersApi.updateProfile({ profile_image: publicUrl });
+
+    return { profile_image: publicUrl };
   },
   
   registerPushDevice: async (token: string, deviceType: string): Promise<void> => {

@@ -202,7 +202,17 @@ export default function OrderDetailsScreen() {
           )}
 
           <Pressable 
-            onPress={() => downloadReceipt(order, 'order')} 
+            onPress={() => {
+              Alert.alert(
+                'Download Receipt',
+                'Choose your preferred format',
+                [
+                  { text: 'PDF', onPress: () => downloadReceipt(order, 'order', 'pdf') },
+                  { text: 'Document (HTML)', onPress: () => downloadReceipt(order, 'order', 'html') },
+                  { text: 'Cancel', style: 'cancel' }
+                ]
+              );
+            }}
             className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6 flex-row justify-center items-center"
           >
             <FileText size={16} color="#4f46e5" />

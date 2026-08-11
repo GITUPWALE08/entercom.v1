@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LogoLoader } from '../../../src/components/ui/Loader';
+import { ListSkeleton } from '../../../src/components/ui/Skeleton';
 import { View, Text, Pressable, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, CreditCard, ChevronRight, FileText, Plus, AlertCircle } from 'lucide-react-native';
@@ -88,16 +89,24 @@ export default function PaymentsScreen() {
 
         {/* Current Balance Card */}
         <View className="bg-white/10 backdrop-blur-md rounded-[24px] p-6 border border-white/20 relative z-10">
-          <Text className="text-indigo-100 text-[13px] font-bold tracking-widest uppercase mb-1">Total Paid</Text>
-          <Text className="text-white font-extrabold text-[36px] tracking-tighter mb-5">
-            ${payments.filter(p => p.status === 'completed' || p.status === 'success').reduce((acc, curr) => acc + parseFloat(curr.amount), 0).toFixed(2)}
-          </Text>
+          <View className="flex-row justify-between items-center mb-1">
+            <Text className="text-indigo-100 text-[13px] font-bold tracking-widest uppercase">Total Paid</Text>
+            <Text className="text-indigo-100 text-[13px] font-bold tracking-widest uppercase">Pending</Text>
+          </View>
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-white font-extrabold text-[32px] tracking-tighter">
+              ${payments.filter(p => p.status === 'completed' || p.status === 'success').reduce((acc, curr) => acc + parseFloat(curr.amount), 0).toFixed(2)}
+            </Text>
+            <Text className="text-amber-300 font-extrabold text-[24px] tracking-tighter">
+              ${payments.filter(p => p.status === 'pending').reduce((acc, curr) => acc + parseFloat(curr.amount), 0).toFixed(2)}
+            </Text>
+          </View>
         </View>
       </View>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <LogoLoader />
+        <View className="flex-1 mt-4">
+          <ListSkeleton />
         </View>
       ) : error ? (
         <View className="flex-1 items-center justify-center">
@@ -115,10 +124,6 @@ export default function PaymentsScreen() {
           ListHeaderComponent={() => (
             <View className="mb-6 flex-row items-center justify-between">
               <Text className="text-[20px] font-bold text-gray-900 tracking-tight">Recent Transactions</Text>
-              <Pressable className="flex-row items-center bg-ess-softBlue px-3 py-1.5 rounded-full">
-                <Plus size={14} color="#081f3d" />
-                <Text className="text-[12px] font-bold text-ess-darkPurple ml-1 tracking-wide">Add Card</Text>
-              </Pressable>
             </View>
           )}
           ListEmptyComponent={() => (

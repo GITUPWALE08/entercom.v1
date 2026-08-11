@@ -76,7 +76,7 @@ export default function ExploreScreen() {
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       {/* Premium Header */}
-      <View className="flex-row items-center justify-between px-7 pt-4 pb-4 bg-gray-50 z-10">
+      <View className="flex-row items-center justify-between px-7 pt-10 pb-4 bg-gray-50 z-10">
         <View>
           <Text className="text-[13px] font-bold text-ess-darkPurple uppercase tracking-widest mb-1">Entercom Shop</Text>
           <Text className="text-3xl font-bold text-gray-900 tracking-tight">Explore</Text>
@@ -124,32 +124,44 @@ export default function ExploreScreen() {
         contentContainerStyle={{ paddingBottom: 120 }}>
         
         {/* Featured Hero */}
-        <View className="px-7 py-4">
-          <Pressable className="rounded-[32px] overflow-hidden bg-ess-darkPurple relative h-80 shadow-lg shadow-ess-purple/20">
-            <Image 
-              source={{ uri: featuredBundle.image }} 
-              className="w-full h-full opacity-60"
-              resizeMode="cover"
-            />
-            {/* Gradient overlay for text readability */}
-            <View className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-            
-            <View className="absolute inset-0 p-6 justify-end">
-              <View className="bg-ess-purple/90 self-start px-3 py-1.5 rounded-full mb-3 backdrop-blur-md">
-                <Text className="text-white text-[11px] font-bold uppercase tracking-widest">Featured Bundle</Text>
-              </View>
-              <Text className="text-3xl font-extrabold text-white mb-2 tracking-tight leading-tight">{featuredBundle.title}</Text>
-              <Text className="text-indigo-100 text-[15px] mb-5 font-medium leading-relaxed">{featuredBundle.description}</Text>
+        {products.length > 0 && (
+          <View className="px-7 py-4">
+            <Pressable 
+              onPress={() => router.push(`/(screens)/product/${products[0].id}`)}
+              className="rounded-[32px] overflow-hidden bg-ess-darkPurple relative h-80 shadow-lg shadow-ess-purple/20"
+            >
+              <Image 
+                source={{ uri: products[0].image_url || featuredBundle.image }} 
+                className="w-full h-full opacity-60"
+                resizeMode="cover"
+              />
+              {/* Gradient overlay for text readability */}
+              <View className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
               
-              <View className="flex-row items-center justify-between">
-                <Text className="text-2xl font-bold text-white">{featuredBundle.price}</Text>
-                <Button variant="primary" className="bg-white" textClassName="text-ess-darkPurple">
-                  View Details
-                </Button>
+              <View className="absolute inset-0 p-6 justify-end">
+                <View className="bg-ess-purple/90 self-start px-3 py-1.5 rounded-full mb-3 backdrop-blur-md">
+                  <Text className="text-white text-[11px] font-bold uppercase tracking-widest">Featured Product</Text>
+                </View>
+                <Text className="text-3xl font-extrabold text-white mb-2 tracking-tight leading-tight">{products[0].name}</Text>
+                <Text className="text-indigo-100 text-[15px] mb-5 font-medium leading-relaxed" numberOfLines={2}>
+                  {products[0].description || featuredBundle.description}
+                </Text>
+                
+                <View className="flex-row items-center justify-between">
+                  <Text className="text-2xl font-bold text-white">${products[0].price}</Text>
+                  <Button 
+                    variant="primary" 
+                    className="bg-white" 
+                    textClassName="text-ess-darkPurple"
+                    onPress={() => router.push(`/(screens)/product/${products[0].id}`)}
+                  >
+                    View Details
+                  </Button>
+                </View>
               </View>
-            </View>
-          </Pressable>
-        </View>
+            </Pressable>
+          </View>
+        )}
 
         {/* Categories */}
         <View className="py-4 mt-2">

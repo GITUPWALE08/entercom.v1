@@ -23,10 +23,10 @@ export default function RequestDetailScreen() {
   useEffect(() => {
     if (!id) return;
     const interval = setInterval(() => {
-      fetchRequestDetails(true);
+      fetchRequest();
     }, 10000);
     return () => clearInterval(interval);
-  }, [id]);
+  }, [id, fetchRequest]);
   const [error, setError] = useState<string | null>(null);
 
   const [verifying, setVerifying] = useState(false);

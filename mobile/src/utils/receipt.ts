@@ -2,7 +2,7 @@ import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
 import { Alert } from 'react-native';
 
-export const downloadReceipt = async (data: any, type: 'order' | 'payment') => {
+export const downloadReceipt = async (data: any, type: 'order' | 'payment', format: 'pdf' | 'html' = 'pdf') => {
   try {
     const isOrder = type === 'order';
     const id = data.id;
@@ -100,16 +100,32 @@ export const downloadReceipt = async (data: any, type: 'order' | 'payment') => {
       </html>
     `;
 
-    const { uri } = await Print.printToFileAsync({ html });
-    
-    if (await Sharing.isAvailableAsync()) {
-      await Sharing.shareAsync(uri, {
-        mimeType: 'application/pdf',
-        dialogTitle: 'Download Receipt',
-        UTI: 'com.adobe.pdf'
-      });
+    if (format === 'pdf') {
+      const { uri } = await Print.printToFileAsync({ html });
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(uri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Download Receipt',
+          UTI: 'com.adobe.pdf'
+        });
+      } else {
+        Alert.alert('Error', 'Sharing is not available on this device');
+      }
     } else {
-      Alert.alert('Error', 'Sharing is not available on this device');
+      // Document (HTML)
+      const FileSystem = require('expo-file-system');
+      const fileUri = FileSystem.documentDirectory + `Receipt_${id}.html`;
+      await FileSystem.writeAsStringAsync(fileUri, html, { encoding: FileSystem.EncodingType.UTF8 });
+      
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'text/html',
+          dialogTitle: 'Download Receipt',
+          UTI: 'public.html'
+        });
+      } else {
+        Alert.alert('Error', 'Sharing is not available on this device');
+      }
     }
   } catch (error) {
     console.error('Error generating receipt:', error);

@@ -81,6 +81,12 @@ export function NotificationCenter() {
     } else if (notification.resource_type === 'payment') {
        if (userRole === 'admin' || userRole === 'super_admin') return;
        navigate(`${basePath}/payments/${notification.resource_id}`);
+    } else if (notification.resource_type === 'chat') {
+       if (userRole === 'customer') {
+          window.dispatchEvent(new CustomEvent('open-chat', { detail: { conversationId: notification.resource_id } }));
+       } else {
+          navigate(`${basePath}/inbox/${notification.resource_id}`);
+       }
     }
   };
 

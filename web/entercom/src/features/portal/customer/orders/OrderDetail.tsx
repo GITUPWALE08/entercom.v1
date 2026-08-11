@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ordersApi } from '../../../../api/orders';
@@ -17,6 +18,8 @@ export default function OrderDetail() {
   const queryParams = new URLSearchParams(location.search);
   const isMockPayment = queryParams.get('mock_payment') === 'true';
   const paymentReference = queryParams.get('reference');
+  
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['orders', id],
@@ -217,11 +220,61 @@ export default function OrderDetail() {
                          )}
              
              {/* Note: Invoices would go here if backend supported them */}
-             <button className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm">
+             <button 
+               onClick={() => setIsDownloadModalOpen(true)}
+               className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+             >
                Download Receipt
              </button>
           </div>
         </div>
+
+        {isDownloadModalOpen && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl shadow-xl w-full max-w-sm p-8 animate-fade-in-up">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">Download Receipt</h2>
+              <p className="text-gray-500 text-sm mb-6">Choose your preferred file format.</p>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={() => {
+                    setIsDownloadModalOpen(false);
+                    setTimeout(() => window.print(), 100);
+                  }}
+                  className="w-full py-3 px-4 bg-gray-50 border border-gray-200 text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                  Download as PDF
+                </button>
+                <button
+                  onClick={() => {
+                    setIsDownloadModalOpen(false);
+                    const html = `<html><body><h2>Order Invoice #${order.id}</h2><p>Total: ${order.total_amount}</p><p>Status: ${order.status}</p><p>Date: ${new Date(order.created_at).toLocaleString()}</p></body></html>`;
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `OrderInvoice_${order.id}.html`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="w-full py-3 px-4 bg-gray-50 border border-gray-200 text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition-colors flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                  Download as Document
+                </button>
+                <button
+                  onClick={() => setIsDownloadModalOpen(false)}
+                  className="w-full mt-2 py-3 px-4 text-gray-500 font-medium hover:text-gray-900 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </PageContainer>
     </ErrorBoundary>
   );

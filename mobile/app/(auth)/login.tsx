@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Input } from '../../src/components/ui/Input';
 import { Button } from '../../src/components/ui/Button';
+import { Alert as CustomAlert } from '../../src/components/ui/Alert';
 import { Fingerprint } from 'lucide-react-native';
 
 // expo-local-authentication is not available on web
@@ -26,6 +27,8 @@ export default function LoginScreen() {
   const [mfaOtp, setMfaOtp] = useState('');
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const setUser = useAuthStore((state) => state.setUser);
 
@@ -51,8 +54,9 @@ export default function LoginScreen() {
   };
 
   const handleLogin = async () => {
+    setLoginError(null);
     if (!email || !password) {
-      Alert.alert('Error', 'Please enter both email and password');
+      setLoginError('Please enter both email and password');
       return;
     }
 
@@ -68,7 +72,7 @@ export default function LoginScreen() {
       
       await handleSuccessfulLogin(response, email, password);
     } catch (error: any) {
-      Alert.alert('Login Failed', error?.response?.data?.detail || error?.message || 'Something went wrong');
+      setLoginError(error?.response?.data?.detail || error?.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -81,20 +85,22 @@ export default function LoginScreen() {
       const response = await authApi.verifyMfa(mfaSession, mfaOtp);
       await handleSuccessfulLogin(response, email, password);
     } catch (error: any) {
-      Alert.alert('Verification Failed', error?.response?.data?.detail || 'Invalid or expired code');
+      setLoginError(error?.response?.data?.detail || 'Invalid or expired code');
     } finally {
       setIsVerifyingMfa(false);
     }
   };
 
   const handleResendMfa = async () => {
+    setLoginError(null);
+    setSuccessMsg(null);
     if (!mfaSession) return;
     try {
       setIsResending(true);
       await authApi.resendMfa(mfaSession);
-      Alert.alert('Success', 'A new code has been sent to your email.');
+      setSuccessMsg('A new code has been sent to your email.');
     } catch (error: any) {
-      Alert.alert('Failed', error?.response?.data?.detail || 'Failed to resend code');
+      setLoginError(error?.response?.data?.detail || 'Failed to resend code');
     } finally {
       setIsResending(false);
     }
@@ -129,7 +135,7 @@ export default function LoginScreen() {
       }
     } catch (error) {
       console.error('Biometric auth error', error);
-      Alert.alert('Error', 'Biometric authentication failed');
+      setLoginError('Biometric authentication failed');
     } finally {
       setIsLoading(false);
     }
@@ -161,6 +167,24 @@ export default function LoginScreen() {
               {mfaRequired ? 'Enter your 2FA verification code' : 'Sign in to manage your security'}
             </Text>
           </View>
+
+          {loginError && (
+            <CustomAlert 
+              type="error" 
+              title="Error" 
+              description={loginError} 
+              className="mb-6 shadow-sm shadow-red-500/10" 
+            />
+          )}
+
+          {successMsg && (
+            <CustomAlert 
+              type="success" 
+              title="Success" 
+              description={successMsg} 
+              className="mb-6 shadow-sm shadow-green-500/10" 
+            />
+          )}
 
           {mfaRequired ? (
             <View className="space-y-6">

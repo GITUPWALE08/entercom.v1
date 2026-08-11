@@ -1,69 +1,80 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, Pressable, FlatList, RefreshControl, ActivityIndicator } from 'react-native';
+import React, { useState, useCallback } from 'react';
+import { View, Text, Pressable, FlatList, RefreshControl, ActivityIndicator, Alert } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Bell, CheckCircle2, ChevronRight, MessageSquare, Package, Calendar } from 'lucide-react-native';
+import { ArrowLeft, Bell, CheckCircle2, ChevronRight, MessageSquare, Package, Calendar, CreditCard, Archive, Filter } from 'lucide-react-native';
 import { notificationsApi, Notification } from '../../../src/api/notifications';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 export default function NotificationsScreen() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const queryClient = useQueryClient();
 
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const data = await notificationsApi.getNotifications(0, 50);
-      // normalizeData unwraps DRF pagination into a plain array
-      setNotifications(Array.isArray(data) ? data : data.results || []);
-    } catch (err) {
-      console.error(err);
+  const { data = [], isLoading, refetch, isRefetching } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const res = await notificationsApi.getNotifications(0, 50);
+      return Array.isArray(res) ? res : res.results || [];
     }
-  }, []);
+  });
 
-  useEffect(() => {
-    fetchNotifications().finally(() => setLoading(false));
-  }, [fetchNotifications]);
+  const notifications = filter === 'unread' ? data.filter(n => n.status === 'unread') : data;
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchNotifications();
-    setRefreshing(false);
-  }, [fetchNotifications]);
+    await refetch();
+  }, [refetch]);
 
-  const handleMarkAllRead = async () => {
-    try {
-      await notificationsApi.markAllRead();
-      setNotifications(prev => prev.map(n => ({ ...n, status: 'read' })));
-    } catch (err) {
-      console.error(err);
-    }
+  const markAllReadMutation = useMutation({
+    mutationFn: () => notificationsApi.markAllRead(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  });
+
+  const archiveAllMutation = useMutation({
+    mutationFn: () => notificationsApi.archiveAll(),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  });
+
+  const handleMarkAllRead = () => markAllReadMutation.mutate();
+  
+  const handleArchiveAll = () => {
+    Alert.alert('Archive All', 'Are you sure you want to archive all notifications?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Archive', style: 'destructive', onPress: () => archiveAllMutation.mutate() }
+    ]);
   };
 
   const handlePress = async (notification: Notification) => {
-    // Actionable part
     if (notification.status !== 'read') {
       try {
         await notificationsApi.markAsRead(notification.id);
-        setNotifications(prev => prev.map(n => n.id === notification.id ? { ...n, status: 'read' } : n));
+        queryClient.invalidateQueries({ queryKey: ['notifications'] });
       } catch (err) {
         console.error(err);
       }
     }
     
     // Route to appropriate screen based on resource type
+    if (!notification.resource_id) {
+       return;
+    }
+    
     if (notification.resource_type === 'order') {
       router.push(`/(screens)/orders/${notification.resource_id}` as any);
-    } else if (notification.resource_type === 'booking') {
-      router.push(`/(screens)/bookings/${notification.resource_id}` as any);
-    } else if (notification.resource_type === 'request') {
-      router.push(`/(screens)/requests/${notification.resource_id}` as any);
+    } else if (notification.resource_type === 'request' || notification.resource_type === 'booking') {
+      router.push(`/(screens)/request/${notification.resource_id}` as any);
+    } else if (notification.resource_type === 'payment' || notification.resource_type === 'invoice') {
+      router.push(`/(screens)/payment/${notification.resource_id}` as any);
+    } else if (notification.resource_type === 'quote') {
+      router.push(`/(screens)/quotes/${notification.resource_id}` as any);
     } else if (notification.resource_type === 'chat') {
-      router.push(`/(screens)/chat`);
+      router.push(`/(screens)/chat/${notification.resource_id}` as any);
     }
   };
 
   const getIcon = (type: string) => {
     switch (type) {
       case 'order': return <Package size={20} color="#4f46e5" />;
+      case 'payment': 
+      case 'invoice': return <CreditCard size={20} color="#4f46e5" />;
       case 'booking': return <Calendar size={20} color="#4f46e5" />;
       case 'chat': return <MessageSquare size={20} color="#4f46e5" />;
       default: return <Bell size={20} color="#4f46e5" />;
@@ -119,12 +130,33 @@ export default function NotificationsScreen() {
           <ArrowLeft size={20} color="#1f2937" />
         </Pressable>
         <Text className="text-xl font-bold text-gray-900 tracking-tight">Notifications</Text>
-        <Pressable onPress={handleMarkAllRead} className="w-10 h-10 items-center justify-center">
-          <CheckCircle2 size={22} color="#4f46e5" />
+        <View className="flex-row items-center gap-2">
+          <Pressable onPress={handleArchiveAll} className="bg-gray-50 px-2 py-1.5 rounded-full border border-gray-200">
+            <Archive size={18} color="#4b5563" />
+          </Pressable>
+          <Pressable onPress={handleMarkAllRead} className="bg-indigo-50 px-2 py-1.5 rounded-full border border-indigo-100">
+            <CheckCircle2 size={18} color="#4f46e5" />
+          </Pressable>
+        </View>
+      </View>
+
+      {/* Filter Tabs */}
+      <View className="flex-row px-6 py-3 bg-gray-50 border-b border-gray-100">
+        <Pressable 
+          onPress={() => setFilter('all')} 
+          className={`mr-3 px-4 py-1.5 rounded-full ${filter === 'all' ? 'bg-gray-900' : 'bg-white border border-gray-200'}`}
+        >
+          <Text className={`font-bold ${filter === 'all' ? 'text-white' : 'text-gray-600'}`}>All</Text>
+        </Pressable>
+        <Pressable 
+          onPress={() => setFilter('unread')} 
+          className={`px-4 py-1.5 rounded-full ${filter === 'unread' ? 'bg-gray-900' : 'bg-white border border-gray-200'}`}
+        >
+          <Text className={`font-bold ${filter === 'unread' ? 'text-white' : 'text-gray-600'}`}>Unread</Text>
         </Pressable>
       </View>
 
-      {loading ? (
+      {isLoading ? (
         <View className="flex-1 items-center justify-center">
           <ActivityIndicator size="large" color="#4f46e5" />
         </View>
@@ -143,7 +175,7 @@ export default function NotificationsScreen() {
           renderItem={renderItem}
           contentContainerStyle={{ paddingBottom: 40 }}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4f46e5" />
+            <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#4f46e5" />
           }
         />
       )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LogoLoader } from '../../../src/components/ui/Loader';
+import { ListSkeleton } from '../../../src/components/ui/Skeleton';
 import { View, Text, Pressable, FlatList, ActivityIndicator, RefreshControl } from 'react-native';
 import { router } from 'expo-router';
 import { ArrowLeft, FileText, ChevronRight } from 'lucide-react-native';
@@ -95,8 +96,8 @@ export default function QuotesScreen() {
       </View>
 
       {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <LogoLoader />
+        <View className="flex-1 mt-4">
+          <ListSkeleton />
         </View>
       ) : (
         <FlatList

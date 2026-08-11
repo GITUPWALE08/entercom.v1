@@ -1,37 +1,29 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { LogoLoader } from '../../../src/components/ui/Loader';
-import { View, Text, ScrollView, Pressable, ActivityIndicator, RefreshControl } from 'react-native';
+import { ListSkeleton } from '../../../src/components/ui/Skeleton';
+import { View, Text, ScrollView, Pressable, RefreshControl } from 'react-native';
+import { useQuery } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { ArrowLeft, Package, Clock, CheckCircle2, ChevronRight, XCircle, AlertCircle } from 'lucide-react-native';
 import { ordersApi, OrderItem } from '../../../src/api/orders';
 import { ensureArray } from '../../../src/utils/arrays';
 
 export default function OrdersScreen() {
-  const [orders, setOrders] = useState<OrderItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchOrders = useCallback(async () => {
-    try {
-      setError(null);
-      const data = await ordersApi.list();
-      setOrders(ensureArray(data));
-    } catch (err: any) {
-      setError('Failed to load orders. Pull down to retry.');
-      console.error('Orders fetch error:', err);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchOrders().finally(() => setLoading(false));
-  }, [fetchOrders]);
+  const {
+    data: orders = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching
+  } = useQuery({
+    queryKey: ['orders'],
+    queryFn: () => ordersApi.list().then(ensureArray)
+  });
 
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await fetchOrders();
-    setRefreshing(false);
-  }, [fetchOrders]);
+    await refetch();
+  }, [refetch]);
 
   const getStatusStyle = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -73,19 +65,20 @@ export default function OrdersScreen() {
         <View className="w-10" />
       </View>
 
-      {loading ? (
-        <View className="flex-1 items-center justify-center">
-          <LogoLoader />
-          <Text className="text-gray-500 mt-4 font-medium">Loading orders...</Text>
-        </View>
-      ) : error ? (
+      {isLoading ? (
+        <ScrollView className="flex-1">
+          <ListSkeleton />
+        </ScrollView>
+      ) : isError ? (
         <ScrollView
           contentContainerStyle={{ flexGrow: 1 }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#081f3d" />}
         >
           <View className="flex-1 items-center justify-center py-20">
             <AlertCircle size={48} color="#ef4444" />
-            <Text className="text-red-500 text-center font-medium mt-4 px-8">{error}</Text>
+            <Text className="text-red-500 text-center font-medium mt-4 px-8">
+              {error instanceof Error ? error.message : 'Failed to load orders. Pull down to retry.'}
+            </Text>
           </View>
         </ScrollView>
       ) : (
@@ -93,7 +86,7 @@ export default function OrdersScreen() {
           className="flex-1"
           contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
           showsVerticalScrollIndicator={false}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />}
+          refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#081f3d" />}
         >
           {orders.length === 0 ? (
             <View className="items-center justify-center py-20 mt-10">

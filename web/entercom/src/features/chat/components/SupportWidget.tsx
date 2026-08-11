@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { MessageSquare, X, ChevronRight, FileText, ShoppingBag, CreditCard, PenTool, User } from 'lucide-react';
 import { useAuthStore } from '../../../store/authStore';
@@ -18,6 +18,17 @@ export function SupportWidget() {
     queryFn: () => chatApi.list(),
     enabled: !!user && isOpen,
   });
+
+  useEffect(() => {
+    const handleOpenChat = (e: CustomEvent) => {
+      setIsOpen(true);
+      if (e.detail?.conversationId) {
+        setActiveConversationId(e.detail.conversationId);
+      }
+    };
+    window.addEventListener('open-chat', handleOpenChat as EventListener);
+    return () => window.removeEventListener('open-chat', handleOpenChat as EventListener);
+  }, []);
 
   // Hidden on authentication pages
   const hiddenPaths = ['/login', '/register', '/forgot-password'];

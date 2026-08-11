@@ -112,16 +112,38 @@ export default function PaymentDetailsScreen() {
     }
   };
 
-  const handleDownloadReceipt = async () => {
+  const handleDownloadReceipt = () => {
     if (!payment) return;
-    try {
-      setDownloading(true);
-      await downloadReceipt(payment, 'payment');
-    } catch (err) {
-      console.error('Download error:', err);
-    } finally {
-      setDownloading(false);
-    }
+    
+    Alert.alert(
+      'Download Receipt',
+      'Choose your preferred format',
+      [
+        { 
+          text: 'PDF', 
+          onPress: async () => {
+            try {
+              setDownloading(true);
+              await downloadReceipt(payment, 'payment', 'pdf');
+            } finally {
+              setDownloading(false);
+            }
+          }
+        },
+        { 
+          text: 'Document (HTML)', 
+          onPress: async () => {
+            try {
+              setDownloading(true);
+              await downloadReceipt(payment, 'payment', 'html');
+            } finally {
+              setDownloading(false);
+            }
+          }
+        },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
   };
 
   const formatDate = (dateStr?: string) => {

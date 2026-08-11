@@ -14,6 +14,9 @@ import { ensureArray } from '../../../src/utils/arrays';
 import { Card, CardContent, MetricCard } from '../../../src/components/ui/Card';
 import { Button } from '../../../src/components/ui/Button';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { notificationsApi } from '../../../src/api/notifications';
+import { chatApi } from '../../../src/api/chat';
+import { useQuery } from '@tanstack/react-query';
 import { Avatar } from '../../../src/components/ui/Avatar';
 import * as ExpoNotifications from 'expo-notifications';
 import * as Device from 'expo-device';
@@ -85,6 +88,19 @@ export default function HomeScreen() {
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notifications', 'unreadCount'],
+    queryFn: () => notificationsApi.getUnreadCount(),
+    refetchInterval: 30000 // Refetch every 30 seconds
+  });
+
+  const { data: conversations = [] } = useQuery({
+    queryKey: ['conversations'],
+    queryFn: () => chatApi.list(),
+    refetchInterval: 30000
+  });
+  const hasUnreadChat = Array.isArray(conversations) && conversations.some(c => c.unread_count > 0);
 
   const loadData = useCallback(async () => {
     try {
@@ -172,9 +188,12 @@ export default function HomeScreen() {
             </View>
             <Pressable 
               onPress={() => router.push('/(screens)/notifications/')}
-              className="bg-white/10 p-3 rounded-full border border-white/10 backdrop-blur-md"
+              className="bg-white/10 p-3 rounded-full border border-white/10 backdrop-blur-md relative"
             >
               <Bell size={22} color="white" />
+              {unreadCount > 0 && (
+                <View className="absolute top-2 right-2.5 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-ess-darkPurple" />
+              )}
             </Pressable>
           </View>
 
@@ -339,7 +358,9 @@ export default function HomeScreen() {
         className="absolute bottom-28 right-6 bg-ess-purple w-16 h-16 rounded-[24px] items-center justify-center shadow-lg shadow-ess-purple/40 z-50"
       >
         <MessageCircle size={28} color="white" />
-        <View className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-ess-purple items-center justify-center" />
+        {hasUnreadChat && (
+          <View className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-ess-purple items-center justify-center" />
+        )}
       </Pressable>
     </View>
   );

@@ -7,10 +7,18 @@ import { router } from 'expo-router';
 import { Avatar } from '../../../src/components/ui/Avatar';
 import { Card } from '../../../src/components/ui/Card';
 import { Button } from '../../../src/components/ui/Button';
+import { notificationsApi } from '../../../src/api/notifications';
+import { useQuery } from '@tanstack/react-query';
 
 export default function ProfileScreen() {
   const { user, logout, setUser } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
+
+  const { data: unreadCount = 0 } = useQuery({
+    queryKey: ['notifications', 'unreadCount'],
+    queryFn: () => notificationsApi.getUnreadCount(),
+    refetchInterval: 30000
+  });
 
   const handleLogout = () => {
     logout();
@@ -97,6 +105,26 @@ export default function ProfileScreen() {
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
           
+          <Pressable onPress={() => router.push('/(screens)/notifications/')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
+            <View className="flex-row items-center">
+              <View className="bg-gray-100 p-2.5 rounded-[12px] mr-4 relative">
+                <Bell size={20} color="#4b5563" />
+                {unreadCount > 0 && (
+                  <View className="absolute top-2 right-2.5 w-2 h-2 bg-red-500 rounded-full border-2 border-gray-100" />
+                )}
+              </View>
+              <Text className="text-gray-800 text-[16px] font-bold tracking-tight">Notifications</Text>
+            </View>
+            <View className="flex-row items-center">
+              {unreadCount > 0 && (
+                <View className="bg-red-500 px-2 py-0.5 rounded-full mr-2">
+                  <Text className="text-white text-[10px] font-bold">{unreadCount}</Text>
+                </View>
+              )}
+              <ChevronRight size={20} color="#9ca3af" />
+            </View>
+          </Pressable>
+          
           <Pressable onPress={() => router.push('/(screens)/payments')} className="p-4 flex-row items-center justify-between border-b border-gray-50">
             <View className="flex-row items-center">
               <View className="bg-red-50 p-2.5 rounded-[12px] mr-4">
@@ -107,7 +135,7 @@ export default function ProfileScreen() {
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable>
           
-          <Pressable className="p-4 flex-row items-center justify-between border-b border-gray-50">
+          {/* <Pressable className="p-4 flex-row items-center justify-between border-b border-gray-50">
             <View className="flex-row items-center">
               <View className="bg-ess-green/10 p-2.5 rounded-[12px] mr-4">
                 <Shield size={20} color="#25d366" />
@@ -115,7 +143,7 @@ export default function ProfileScreen() {
               <Text className="text-gray-800 text-[16px] font-bold tracking-tight">Warranty Status</Text>
             </View>
             <ChevronRight size={20} color="#9ca3af" />
-          </Pressable>
+          </Pressable> */}
           
           <View className="p-4 flex-row items-center justify-between">
             <View className="flex-row items-center">
