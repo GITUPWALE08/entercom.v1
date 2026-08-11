@@ -145,7 +145,7 @@ export default function ProfileScreen() {
             <ChevronRight size={20} color="#9ca3af" />
           </Pressable> */}
           
-          <View className="p-4 flex-row items-center justify-between">
+          {/* <View className="p-4 flex-row items-center justify-between">
             <View className="flex-row items-center">
               <View className="bg-gray-100 p-2.5 rounded-[12px] mr-4">
                 <Bell size={20} color="#4b5563" />
@@ -153,7 +153,7 @@ export default function ProfileScreen() {
               <Text className="text-gray-800 text-[16px] font-bold tracking-tight">Notifications</Text>
             </View>
             <Switch value={true} trackColor={{ false: '#d1d5db', true: '#081f3d' }} />
-          </View>
+          </View> */}
         </Card>
 
         {/* Support Group */}

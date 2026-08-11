@@ -1,10 +1,4 @@
--> on the web:
-    src/features/portal/customer/orders/OrderDetail.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
-    src/features/portal/customer/payments/CustomerPaymentDetail.tsx(20,10): error TS6133: 'isDownloadModalOpen' is declared but its value is never read.
-    Error: Command "npm run build" exited with 2
 
--> on the mobile:
-    - the notification is not stil not opening the chat
-    - when you click on a notification like the request/payment notification, it take too long to open 
-    - the chat interface unlike the web app customer's portal where customer can choose what type of chat they want to open, is not available on the mobile
-    - for the upload picture I am getting error could not upload picture
+src/features/portal/customer/orders/OrderDetail.tsx(22,57): error TS2304: Cannot find name 'useState'.
+src/features/portal/customer/payments/CustomerPaymentDetail.tsx(170,38): error TS2304: Cannot find name 'setIsDownloadModalOpen'.
+Error: Command "npm run build" exited with 2
