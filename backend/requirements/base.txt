@@ -16,7 +16,7 @@ channels-redis>=4.1.0,<5
 
 # Workers & cache
 celery[redis]>=5.4,<5.5
-redis>=5.0,<6
+redis>=4.6,<5
 django-redis
 django-celery-beat
 

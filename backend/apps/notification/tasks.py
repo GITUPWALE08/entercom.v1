@@ -174,6 +174,13 @@ def _send_push_mock(delivery):
     try:
         response = urllib.request.urlopen(req, timeout=10)
         result = json.loads(response.read().decode())
+        
+        # Check for Expo Push API specific errors in the response body
+        if "data" in result:
+            for item in result["data"]:
+                if item.get("status") == "error":
+                    raise Exception(f"Expo rejected token: {item.get('message', 'Unknown error')} - Details: {item.get('details', {})}")
+        
         return result
     except Exception as e:
         raise Exception(f"Failed to send push: {e}")
