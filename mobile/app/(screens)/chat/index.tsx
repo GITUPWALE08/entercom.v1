@@ -17,10 +17,10 @@ export default function ChatListScreen() {
     }
   });
 
-  const createSupportChat = useMutation({
-    mutationFn: () => chatApi.create({
-      subject: 'Support Hub',
-      conversation_type: 'support'
+  const createChatMutation = useMutation({
+    mutationFn: ({ type, subject }: { type: string, subject: string }) => chatApi.create({
+      subject,
+      conversation_type: type
     }),
     onSuccess: (newChat) => {
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
@@ -33,7 +33,15 @@ export default function ChatListScreen() {
   }, [refetch]);
 
   const handleStartNewChat = () => {
-    createSupportChat.mutate();
+    import('react-native').then(({ Alert }) => {
+      Alert.alert('Start New Chat', 'What kind of support do you need?', [
+        { text: 'General Support', onPress: () => createChatMutation.mutate({ type: 'support', subject: 'Support Hub' }) },
+        { text: 'Order Issue', onPress: () => createChatMutation.mutate({ type: 'order', subject: 'Order Support' }) },
+        { text: 'Request Enquiry', onPress: () => createChatMutation.mutate({ type: 'request', subject: 'Request Support' }) },
+        { text: 'Payment Support', onPress: () => createChatMutation.mutate({ type: 'payment', subject: 'Payment Support' }) },
+        { text: 'Cancel', style: 'cancel' }
+      ]);
+    });
   };
 
   const renderItem = ({ item }: { item: ChatConversation }) => {
@@ -79,10 +87,10 @@ export default function ChatListScreen() {
         <Text className="text-xl font-bold text-gray-900 tracking-tight">Messages</Text>
         <Pressable 
           onPress={handleStartNewChat} 
-          disabled={createSupportChat.isPending}
+          disabled={createChatMutation.isPending}
           className="bg-ess-purple w-10 h-10 rounded-full items-center justify-center"
         >
-          {createSupportChat.isPending ? (
+          {createChatMutation.isPending ? (
              <ActivityIndicator size="small" color="white" />
           ) : (
              <Plus size={20} color="white" />

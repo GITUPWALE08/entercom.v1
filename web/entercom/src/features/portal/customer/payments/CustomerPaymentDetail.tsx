@@ -17,7 +17,6 @@ export default function CustomerPaymentDetail() {
 
   const [isEscalateModalOpen, setIsEscalateModalOpen] = useState(false);
   const [escalateReason, setEscalateReason] = useState('');
-  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   const { data: payment, isLoading } = useQuery({
     queryKey: ['payments', id],

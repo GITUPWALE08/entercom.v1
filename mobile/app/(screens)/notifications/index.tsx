@@ -42,14 +42,11 @@ export default function NotificationsScreen() {
     ]);
   };
 
-  const handlePress = async (notification: Notification) => {
+  const handlePress = (notification: Notification) => {
     if (notification.status !== 'read') {
-      try {
-        await notificationsApi.markAsRead(notification.id);
-        queryClient.invalidateQueries({ queryKey: ['notifications'] });
-      } catch (err) {
-        console.error(err);
-      }
+      notificationsApi.markAsRead(notification.id)
+        .then(() => queryClient.invalidateQueries({ queryKey: ['notifications'] }))
+        .catch(err => console.error(err));
     }
     
     // Route to appropriate screen based on resource type
