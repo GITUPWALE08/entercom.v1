@@ -12,7 +12,7 @@ djangorestframework-simplejwt>=5.3,<5.4
 
 # Async / realtime
 channels[daphne]>=4.0,<5
-channels-redis>=4.2,<5
+channels-redis>=4.1.0,<5
 
 # Workers & cache
 celery[redis]>=5.4,<5.5

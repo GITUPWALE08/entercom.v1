@@ -16,7 +16,9 @@ export default function RegisterScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [registerError, setRegisterError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
-
+  const [showOtp, setShowOtp] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [isVerifying, setIsVerifying] = useState(false);
   const handleRegister = async () => {
     setRegisterError(null);
     setSuccessMsg(null);
@@ -30,16 +32,77 @@ export default function RegisterScreen() {
       const payload: Record<string, string> = { email, password, first_name: firstName, last_name: lastName };
       if (phone) payload.phone_number = phone;
       await authApi.register(payload);
-      setSuccessMsg('Registration successful. Please login.');
-      setTimeout(() => {
-        router.replace('/(auth)/login');
-      }, 2000);
+      setSuccessMsg('Registration successful. Please verify your email.');
+      setShowOtp(true);
     } catch (error: any) {
       setRegisterError(error?.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleVerifyOtp = async () => {
+    setRegisterError(null);
+    setIsVerifying(true);
+    try {
+      await authApi.verifyEmail(otp);
+      setSuccessMsg('Email verified successfully!');
+      setTimeout(() => {
+        router.replace('/(auth)/login');
+      }, 1500);
+    } catch (error: any) {
+      setRegisterError(error?.message || 'Invalid OTP. Please try again.');
+    } finally {
+      setIsVerifying(false);
+    }
+  };
+
+  if (showOtp) {
+    return (
+      <SafeAreaView className="flex-1 bg-white relative">
+        <View className="absolute top-0 left-0 w-full h-[300px] bg-ess-softBlue rounded-b-[60px]" />
+        
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+          className="flex-1"
+        >
+          <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', paddingHorizontal: 32 }} showsVerticalScrollIndicator={false}>
+            <View className="mb-10 items-center mt-10">
+              <Text className="text-3xl font-bold text-ess-darkPurple mb-2 text-center">Verify Email</Text>
+              <Text className="text-[15px] text-gray-500 text-center">
+                We've sent a 6-digit OTP to your email.
+              </Text>
+            </View>
+
+            {registerError && (
+              <CustomAlert type="error" title="Error" description={registerError} className="mb-6" />
+            )}
+            
+            {successMsg && (
+              <CustomAlert type="success" title="Success" description={successMsg} className="mb-6" />
+            )}
+
+            <View className="space-y-4">
+              <Input
+                label="OTP Code"
+                placeholder="Enter 6-digit OTP"
+                value={otp}
+                onChangeText={setOtp}
+                keyboardType="number-pad"
+                maxLength={6}
+              />
+              <Button 
+                title={isVerifying ? "Verifying..." : "Verify OTP"} 
+                onPress={handleVerifyOtp} 
+                isLoading={isVerifying}
+                disabled={otp.length !== 6 || isVerifying}
+              />
+            </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-white relative">
