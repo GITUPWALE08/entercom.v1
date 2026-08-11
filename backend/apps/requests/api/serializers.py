@@ -45,14 +45,20 @@ class RequestListSerializer(serializers.Serializer):
     def get_payment_id(self, obj):
         if not hasattr(obj, 'payments'):
             return None
-        payment = obj.payments.order_by('-created_at').first()
-        return str(payment.id) if payment else None
+        payments = list(obj.payments.all())
+        if not payments:
+            return None
+        payments.sort(key=lambda p: p.created_at, reverse=True)
+        return str(payments[0].id)
 
     def get_payment_status(self, obj):
         if not hasattr(obj, 'payments'):
             return None
-        payment = obj.payments.order_by('-created_at').first()
-        return payment.status if payment else None
+        payments = list(obj.payments.all())
+        if not payments:
+            return None
+        payments.sort(key=lambda p: p.created_at, reverse=True)
+        return payments[0].status
 
     def get_next_states(self, obj):        
         status = obj.status if hasattr(obj, 'status') else obj.get('status')

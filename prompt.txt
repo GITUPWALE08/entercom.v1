@@ -1,23 +1,21 @@
-{
-    "detail": "Given token not valid for any token type",
-    "code": "token_not_valid",
-    "messages": [
-        {
-            "token_class": "AccessToken",
-            "token_type": "access",
-            "message": "Token is invalid or expired"
-        }
-    ]
-}
+only the request page is crshing on the staff page
 
 
-Request URL
-https://entercom-v1.onrender.com/api/v1/requests/?limit=1000
-Request Method
-GET
-Status Code
-401 Unauthorized
-Remote Address
-216.24.57.7:443
-Referrer Policy
-strict-origin-when-cross-origin
+login/	200	preflight	Preflight
+0.0 kB	267 ms
+login/	200	xhr	index-BlKWjfa3.js:15	0.7 kB	2.83 s
+Dashboard-B5_mBx1F.js	200	script	about:client:1	2.2 kB	951 ms
+bookings-Br75utp0.js	200	script	about:client:1	0.8 kB	721 ms
+products-BS4SWT22.js	200	script	about:client:1	0.8 kB	951 ms
+Card-Bv4T5XI6.js	200	script	about:client:1	1.0 kB	951 ms
+notifications/?offset=0&limit=20	200	xhr	index-BlKWjfa3.js:15	1.6 kB	1.45 s
+unread-count/	200	xhr	index-BlKWjfa3.js:15	0.2 kB	1.45 s
+requests/	101	websocket	index-BlKWjfa3.js:22	0.0 kB	Pending
+requests/?limit=1000	(canceled)	xhr	index-BlKWjfa3.js:15	0.0 kB	9.88 s
+bookings/?start_date=2026-08-11&end_date=2026-08-12	200	preflight	Preflight
+0.0 kB	393 ms
+products/?limit=1000	200	preflight	Preflight
+0.0 kB	402 ms
+bookings/?start_date=2026-08-11&end_date=2026-08-12	200	xhr	index-BlKWjfa3.js:15	0.2 kB	2.19 s
+products/?limit=1000	200	xhr	index-BlKWjfa3.js:15	0.7 kB	2.20 s
+requests/?limit=1000	(pending)	xhr	index-BlKWjfa3.js:15	0.0 kB	Pe
