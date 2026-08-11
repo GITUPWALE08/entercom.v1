@@ -1,4 +1,33 @@
-
-src/features/portal/customer/orders/OrderDetail.tsx(22,57): error TS2304: Cannot find name 'useState'.
-src/features/portal/customer/payments/CustomerPaymentDetail.tsx(170,38): error TS2304: Cannot find name 'setIsDownloadModalOpen'.
-Error: Command "npm run build" exited with 2
+ git push origin main
+Enumerating objects: 45, done.
+Counting objects: 100% (45/45), done.
+Delta compression using up to 2 threads
+Compressing objects: 100% (23/23), done.
+Writing objects: 100% (27/27), 3.95 KiB | 33.00 KiB/s, done.
+Total 27 (delta 16), reused 14 (delta 3), pack-reused 0 (from 0)
+remote: Resolving deltas: 100% (16/16), completed with 12 local objects.
+remote: error: GH013: Repository rule violations found for refs/heads/main.
+remote: 
+remote: - GITHUB PUSH PROTECTION
+remote:   —————————————————————————————————————————
+remote:     Resolve the following violations before pushing again
+remote: 
+remote:     - Push cannot contain secrets
+remote: 
+remote:     
+remote:      (?) Learn how to resolve a blocked push
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push
+remote:     
+remote:     
+remote:       —— Google Cloud Service Account Credentials ——————————
+remote:        locations:
+remote:          - commit: b27761fb2ca2f9030787838fc7a09ff88d611754
+remote:            path: mobile/credentials.json:1
+remote:     
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.
+remote:        https://github.com/GITUPWALE08/entercom.v1/security/secret-scanning/unblock-secret/3HlhGc2hmwYWOG1Gh23h3iP7cs3
+remote:     
+remote: 
+remote: 
+To https://github.com/GITUPWALE08/entercom.v1.git
+ ! [remote rejected] main -> main (push declined due to repository rule violations)
