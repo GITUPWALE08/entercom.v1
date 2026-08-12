@@ -1,21 +1,20 @@
-only the request page is crshing on the staff page
+here is part of the firebase console settings page
 
+Project settings
+General
+Cloud Messaging
+Integrations
+Service accounts
+Data privacy
+Users and permissions
+Alerts
+Firebase Cloud Messaging API (V1)Enabled
+Recommended for most use cases. Learn more
 
-login/	200	preflight	Preflight
-0.0 kB	267 ms
-login/	200	xhr	index-BlKWjfa3.js:15	0.7 kB	2.83 s
-Dashboard-B5_mBx1F.js	200	script	about:client:1	2.2 kB	951 ms
-bookings-Br75utp0.js	200	script	about:client:1	0.8 kB	721 ms
-products-BS4SWT22.js	200	script	about:client:1	0.8 kB	951 ms
-Card-Bv4T5XI6.js	200	script	about:client:1	1.0 kB	951 ms
-notifications/?offset=0&limit=20	200	xhr	index-BlKWjfa3.js:15	1.6 kB	1.45 s
-unread-count/	200	xhr	index-BlKWjfa3.js:15	0.2 kB	1.45 s
-requests/	101	websocket	index-BlKWjfa3.js:22	0.0 kB	Pending
-requests/?limit=1000	(canceled)	xhr	index-BlKWjfa3.js:15	0.0 kB	9.88 s
-bookings/?start_date=2026-08-11&end_date=2026-08-12	200	preflight	Preflight
-0.0 kB	393 ms
-products/?limit=1000	200	preflight	Preflight
-0.0 kB	402 ms
-bookings/?start_date=2026-08-11&end_date=2026-08-12	200	xhr	index-BlKWjfa3.js:15	0.2 kB	2.19 s
-products/?limit=1000	200	xhr	index-BlKWjfa3.js:15	0.7 kB	2.20 s
-requests/?limit=1000	(pending)	xhr	index-BlKWjfa3.js:15	0.0 kB	Pe
+Check the real time performance of the V1 API on the Status Dashboard
+
+Sender ID
+Service Account
+629435470434	Manage Service Accounts
+Cloud Messaging API (Legacy)Disabled
+If you are an existing user of the legacy HTTP or XMPP APIs (deprecated on 6/20/2023), you must migrate to the latest Firebase Cloud Messaging API (HTTP v1) by 6/20/2024. Learn more

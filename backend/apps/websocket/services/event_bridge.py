@@ -48,11 +48,21 @@ class WebSocketEventPublisher:
         payload_dict = event.to_dict()
         
         # Standardize payload structure
-        payload = {
+        import uuid
+        def sanitize_for_json(obj):
+            if isinstance(obj, dict):
+                return {k: sanitize_for_json(v) for k, v in obj.items()}
+            elif isinstance(obj, list):
+                return [sanitize_for_json(v) for v in obj]
+            elif isinstance(obj, uuid.UUID):
+                return str(obj)
+            return obj
+
+        payload = sanitize_for_json({
             "request_id": req_id,
             "timestamp": event.timestamp,
             "data": payload_dict.get("data", {})
-        }
+        })
 
         groups = set()
         

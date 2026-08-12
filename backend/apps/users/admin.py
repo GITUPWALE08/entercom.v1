@@ -2,7 +2,13 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from apps.users.forms import UserAdminChangeForm, UserAdminCreationForm
-from apps.users.models import User
+from apps.users.models import User, PushDevice
+
+@admin.register(PushDevice)
+class PushDeviceAdmin(admin.ModelAdmin):
+    list_display = ('user', 'token', 'device_type', 'is_active', 'created_at')
+    search_fields = ('user__email', 'token')
+    list_filter = ('device_type', 'is_active')
 
 
 @admin.register(User)
