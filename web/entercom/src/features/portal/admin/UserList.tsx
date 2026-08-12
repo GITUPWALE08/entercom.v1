@@ -27,12 +27,21 @@ export default function UserList() {
   });
 
   const assignRoleMutation = useMutation({
-    mutationFn: ({ userId, roleSlug }: { userId: string; roleSlug: string }) => 
-      usersApi.assignRole(userId, roleSlug),
-    onSuccess: () => {
+    mutationFn: async ({ userId, roleSlug }: { userId: string; roleSlug: string }) => {
+      return await usersApi.assignRole(userId, roleSlug);
+    },
+    onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       setIsAssigning(false);
       setSelectedRole('');
+      if (data?.message) {
+        alert(data.message);
+      } else {
+        alert('Role assigned successfully.');
+      }
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.detail || err.response?.data?.message || 'Failed to assign role.');
     }
   });
 
@@ -41,6 +50,10 @@ export default function UserList() {
       usersApi.deassignRole(userId, roleSlug),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      alert('Role revoked successfully.');
+    },
+    onError: (err: any) => {
+      alert(err.response?.data?.detail || err.response?.data?.message || 'Failed to revoke role.');
     }
   });
 

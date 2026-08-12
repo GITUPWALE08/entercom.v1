@@ -26,7 +26,18 @@ def get_user_max_hierarchy(user: AbstractBaseUser) -> int:
     value = effective_user_roles_qs(user).aggregate(
         Max("role__hierarchy_level")
     )["role__hierarchy_level__max"]
-    return value or 0
+    if value is None:
+        role = getattr(user, 'role', '')
+        if role == 'SUPER_ADMIN':
+            return 100
+        elif role == 'MANAGER':
+            return 80
+        elif role == 'STAFF':
+            return 50
+        elif role == 'TECHNICIAN':
+            return 20
+        return 0
+    return value
 
 
 def user_is_super_admin(user: AbstractBaseUser) -> bool:
@@ -36,4 +47,6 @@ def user_is_super_admin(user: AbstractBaseUser) -> bool:
     """
     if not user or not user.is_authenticated:
         return False
+    if getattr(user, 'role', '') == 'SUPER_ADMIN':
+        return True
     return effective_user_roles_qs(user).filter(role__slug="superadmin").exists()

@@ -1,7 +1,3 @@
-I have fixed the push notification, Now let's move on
-here are the list of tasks to performance
--> Assign technician on the staff portal is not showing any technician
--> Unable to reject quote/revise quote on mobile unlike the web, also after paying the quoted amount you should be redirected back to initial page 
--> on the manager portal on the sidebar, the technicians tab should go to list of available technicians and they should be able to view their details page
--> on the admin page I am unable to assign roles, the roles are not showing (for now let's use the legacy roles)
--> the architechture initially supports that a user can only be actively logged in on only two devices at a time (one mobile and one desktop only) but I can login on multiple devices and web at the same time
+-> I am still unable to assign roles on the admin page 
+-> you didn't fix the login issue (the architechture initially supports that a user can only be actively logged in on only two devices at a time (one mobile and one desktop only) but I can login on multiple devices and web at the same
+)

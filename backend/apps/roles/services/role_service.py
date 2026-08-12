@@ -195,7 +195,8 @@ class RoleService:
             )
 
         user.role_version += 1
-        user.save(update_fields=["role_version"])
+        user.role = role_slug.upper()
+        user.save(update_fields=["role_version", "role"])
         invalidate_cache(user.id)
         revoke_all_sessions(user)
         return user_role

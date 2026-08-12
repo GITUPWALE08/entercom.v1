@@ -619,6 +619,25 @@ class AuthService:
         else:
             device = "Desktop"
 
+        is_mobile = device in ["Mobile", "iPhone", "Android"]
+        
+        # Enforce architecture constraint: 1 Mobile, 1 Desktop
+        active_sessions = UserSession.objects.filter(user=user, is_active=True)
+        for s in active_sessions:
+            s_is_mobile = s.device_name in ["Mobile", "iPhone", "Android"]
+            if s_is_mobile == is_mobile:
+                s.is_active = False
+                s.save(update_fields=["is_active"])
+                
+                # Also blacklist the associated token if possible
+                try:
+                    from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+                    out_token = OutstandingToken.objects.filter(user=user, jti=s.refresh_jti).first()
+                    if out_token:
+                        BlacklistedToken.objects.get_or_create(token=out_token)
+                except Exception:
+                    pass
+
         return UserSession.objects.create(
             user=user,
             refresh_jti=jti,

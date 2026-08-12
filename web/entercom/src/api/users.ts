@@ -34,8 +34,9 @@ export const usersApi = {
     return normalizeData(data);
   },
 
-  assignRole: async (userId: string, roleSlug: string, reason: string = ''): Promise<void> => {
-    await apiClient.post(`/users/${userId}/assign_role/`, { role_slug: roleSlug, reason });
+  assignRole: async (userId: string, roleSlug: string, reason: string = ''): Promise<any> => {
+    const { data } = await apiClient.post(`/users/${userId}/assign_role/`, { role_slug: roleSlug, reason });
+    return data;
   },
 
   deassignRole: async (userId: string, roleSlug: string): Promise<void> => {
