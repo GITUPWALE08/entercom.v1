@@ -61,7 +61,13 @@ export default function PaymentDetailsScreen() {
       });
       if (response.authorization_url) {
         await WebBrowser.openAuthSessionAsync(response.authorization_url, callbackUrl);
-        await fetchPayment(); // Refresh payment state after modal closes
+        const updatedPayment = await paymentsApi.get(id!);
+        setPayment(updatedPayment);
+        if (updatedPayment.status === 'completed' || updatedPayment.status === 'paid' || updatedPayment.status === 'successful') {
+          Alert.alert('Payment Successful', 'Your payment was processed successfully.', [
+            { text: 'OK', onPress: () => router.replace('/') }
+          ]);
+        }
       } else {
         Alert.alert('Notice', 'Payment already processed or no checkout URL available.');
       }

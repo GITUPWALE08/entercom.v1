@@ -41,13 +41,10 @@ def check_receipt(ticket_id):
     print(f"\n⏳ Step 2: Waiting 5 seconds for Firebase to process it...")
     time.sleep(5)
     
-    print(f"🔍 Step 3: Checking Push Receipt to see if Firebase blocked it...")
     url = "https://exp.host/--/api/v2/push/getReceipts"
     payload = {"ids": [ticket_id]}
-    
     req = urllib.request.Request(url, json.dumps(payload).encode('utf-8'))
     req.add_header('Accept', 'application/json')
-    req.add_header('Accept-encoding', 'gzip, deflate')
     req.add_header('Content-Type', 'application/json')
     
     try:

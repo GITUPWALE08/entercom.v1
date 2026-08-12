@@ -1,20 +1,7 @@
-here is part of the firebase console settings page
-
-Project settings
-General
-Cloud Messaging
-Integrations
-Service accounts
-Data privacy
-Users and permissions
-Alerts
-Firebase Cloud Messaging API (V1)Enabled
-Recommended for most use cases. Learn more
-
-Check the real time performance of the V1 API on the Status Dashboard
-
-Sender ID
-Service Account
-629435470434	Manage Service Accounts
-Cloud Messaging API (Legacy)Disabled
-If you are an existing user of the legacy HTTP or XMPP APIs (deprecated on 6/20/2023), you must migrate to the latest Firebase Cloud Messaging API (HTTP v1) by 6/20/2024. Learn more
+I have fixed the push notification, Now let's move on
+here are the list of tasks to performance
+-> Assign technician on the staff portal is not showing any technician
+-> Unable to reject quote/revise quote on mobile unlike the web, also after paying the quoted amount you should be redirected back to initial page 
+-> on the manager portal on the sidebar, the technicians tab should go to list of available technicians and they should be able to view their details page
+-> on the admin page I am unable to assign roles, the roles are not showing (for now let's use the legacy roles)
+-> the architechture initially supports that a user can only be actively logged in on only two devices at a time (one mobile and one desktop only) but I can login on multiple devices and web at the same time

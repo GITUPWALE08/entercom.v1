@@ -28,9 +28,11 @@ class UserViewSet(viewsets.ModelViewSet):
         role = self.request.query_params.get('role')
         if role:
             roles = [r.strip() for r in role.split(',') if r.strip()]
+            roles_upper = [r.upper() for r in roles]
             if roles:
                 queryset = queryset.filter(
                     Q(role_assignments__role__slug__in=roles, role_assignments__is_active=True) |
+                    Q(role__in=roles_upper) |
                     Q(role__in=roles)
                 ).distinct()
         return queryset

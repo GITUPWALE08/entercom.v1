@@ -34,10 +34,35 @@ export default function QuoteDetailsScreen() {
     }
   };
 
-  const handleAction = async (action: 'approve' | 'reject') => {
+  const handleAction = async (action: 'approve' | 'reject' | 'revise') => {
+    if (action === 'reject' || action === 'revise') {
+      Alert.prompt(
+        action === 'reject' ? 'Reject Quote' : 'Revise Quote',
+        `Please provide a reason for ${action}ing this quote:`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Submit',
+            onPress: async (reason) => {
+              if (!reason) {
+                Alert.alert('Reason Required', `You must provide a reason to ${action} the quote.`);
+                return;
+              }
+              await performAction(action, reason);
+            }
+          }
+        ],
+        'plain-text'
+      );
+    } else {
+      await performAction(action);
+    }
+  };
+
+  const performAction = async (action: 'approve' | 'reject' | 'revise', reason?: string) => {
     try {
       setProcessing(true);
-      await requestsApi.quotes.action(requestId as string, action);
+      await requestsApi.quotes.action(requestId as string, action, reason);
       Alert.alert('Success', `Quote ${action}d successfully.`);
       router.back();
     } catch (error: any) {
@@ -103,26 +128,38 @@ export default function QuoteDetailsScreen() {
 
         {/* Actions */}
         {quote.status === 'issued' && (
-          <View className="flex-row gap-4 mb-12">
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="flex-1 border-gray-200" 
-              textClassName="text-gray-600"
-              onPress={() => handleAction('reject')}
-              disabled={processing}
-            >
-              Reject
-            </Button>
+          <View className="flex-col gap-3 mb-12">
             <Button 
               variant="primary" 
               size="lg" 
-              className="flex-[2] shadow-lg shadow-ess-purple/20"
+              className="w-full shadow-lg shadow-ess-purple/20"
               onPress={() => handleAction('approve')}
               disabled={processing}
             >
               Approve Quote
             </Button>
+            <View className="flex-row gap-3">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="flex-1 border-gray-200" 
+                textClassName="text-gray-600"
+                onPress={() => handleAction('revise')}
+                disabled={processing}
+              >
+                Revise Quote
+              </Button>
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="flex-1 border-gray-200" 
+                textClassName="text-red-600"
+                onPress={() => handleAction('reject')}
+                disabled={processing}
+              >
+                Reject Quote
+              </Button>
+            </View>
           </View>
         )}
       </ScrollView>

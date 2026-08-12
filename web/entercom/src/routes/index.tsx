@@ -48,6 +48,7 @@ const ManagerReports = lazy(() => import('../features/portal/manager/Reports'));
 const EscalationList = lazy(() => import('../features/portal/manager/requests/EscalationList'));
 const ManagerRequestDetail = lazy(() => import('../features/portal/manager/requests/ManagerRequestDetail'));
 const TechnicianList = lazy(() => import('../features/portal/manager/technicians/TechnicianList'));
+const TechnicianDetail = lazy(() => import('../features/portal/manager/technicians/TechnicianDetail'));
 const ManagerRecruitmentDashboard = lazy(() => import('../features/portal/manager/recruitment/ManagerRecruitmentDashboard'));
 const ManagerApplicationDetail = lazy(() => import('../features/portal/manager/recruitment/ApplicationDetail'));
 
@@ -171,6 +172,7 @@ export const router = createBrowserRouter([
               { path: 'requests', element: <Suspense fallback={<LoadingScreen/>}><EscalationList /></Suspense> },
               { path: 'requests/:id', element: <Suspense fallback={<LoadingScreen/>}><ManagerRequestDetail /></Suspense> },
               { path: 'technicians', element: <Suspense fallback={<LoadingScreen/>}><TechnicianList /></Suspense> },
+              { path: 'technicians/:id', element: <Suspense fallback={<LoadingScreen/>}><TechnicianDetail /></Suspense> },
               { path: 'recruitment', element: <Suspense fallback={<LoadingScreen/>}><ManagerRecruitmentDashboard /></Suspense> },
               { path: 'recruitment/:id', element: <Suspense fallback={<LoadingScreen/>}><ManagerApplicationDetail /></Suspense> },
               { path: 'inventory', element: <Suspense fallback={<LoadingScreen/>}><StaffInventory /></Suspense> },
