@@ -2,6 +2,7 @@ import { ensureArray } from '../utils/arrays';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Bell, Check, Trash2, AlertCircle, Info, FileText, Loader2 } from 'lucide-react';
 import { useNotifications } from '../hooks/useNotifications';
+import { EmptyState } from '../shared/components/EmptyState';
 import { formatDistanceToNow } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/authStore';
@@ -145,9 +146,13 @@ export function NotificationCenter() {
                 ))}
               </div>
             ) : activeNotifications.length === 0 ? (
-              <div className="px-4 py-8 text-center text-gray-500 flex flex-col items-center">
-                <Bell className="w-8 h-8 text-gray-300 mb-2" />
-                <p className="text-sm">You have no new notifications.</p>
+              <div className="p-4">
+                <EmptyState
+                  size="sm"
+                  title="No new notifications"
+                  description="You're all caught up."
+                  icon={<Bell className="w-6 h-6 text-indigo-500" />}
+                />
               </div>
             ) : (
               <ul className="divide-y divide-gray-50">

@@ -45,7 +45,7 @@ export default function AccountSettingsScreen() {
       setEmail(data.email || '');
     } catch (error) {
       console.error('Failed to load profile:', error);
-      Alert.alert('Error', 'Failed to load profile data.');
+      global.showAppAlert('Error', 'Failed to load profile data.');
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -68,11 +68,11 @@ export default function AccountSettingsScreen() {
         profile_image: profile.profile_image,
         mfa_enabled: profile.mfa_enabled,
       });
-      Alert.alert('Success', 'Profile updated successfully.');
+      global.showAppAlert('Success', 'Profile updated successfully.');
       router.back();
     } catch (error) {
       console.error('Failed to update profile:', error);
-      Alert.alert('Error', 'Failed to update profile.');
+      global.showAppAlert('Error', 'Failed to update profile.');
     } finally {
       setSaving(false);
     }
@@ -101,7 +101,7 @@ export default function AccountSettingsScreen() {
       }
     } catch (error) {
       console.error('Error uploading image', error);
-      Alert.alert('Error', 'Could not upload profile picture.');
+      global.showAppAlert('Error', 'Could not upload profile picture.');
     } finally {
       setUploadingImage(false);
     }
@@ -109,11 +109,11 @@ export default function AccountSettingsScreen() {
 
   const handleChangePassword = async () => {
     if (passwords.new_password !== passwords.confirm_password) {
-      Alert.alert('Error', 'New passwords do not match.');
+      global.showAppAlert('Error', 'New passwords do not match.');
       return;
     }
     if (!passwords.old_password || !passwords.new_password) {
-      Alert.alert('Error', 'Please fill in all password fields.');
+      global.showAppAlert('Error', 'Please fill in all password fields.');
       return;
     }
     
@@ -127,11 +127,11 @@ export default function AccountSettingsScreen() {
         old_password: passwords.old_password, 
         new_password: passwords.new_password 
       });
-      Alert.alert('Success', 'Password changed successfully.');
+      global.showAppAlert('Success', 'Password changed successfully.');
       setShowPasswordSection(false);
       setPasswords({ old_password: '', new_password: '', confirm_password: '' });
     } catch (error: any) {
-      Alert.alert('Error', error.response?.data?.detail || 'Failed to change password.');
+      global.showAppAlert('Error', error.response?.data?.detail || 'Failed to change password.');
     } finally {
       setPasswordLoading(false);
     }

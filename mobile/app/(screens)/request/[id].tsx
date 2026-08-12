@@ -128,16 +128,16 @@ export default function RequestDetailScreen() {
           style: 'destructive',
           onPress: async (reason) => {
             if (!reason) {
-              Alert.alert('Reason Required', 'You must provide a reason to cancel the request.');
+              global.showAppAlert('Reason Required', 'You must provide a reason to cancel the request.');
               return;
             }
             try {
               setCancelling(true);
               await requestsApi.cancel(id as string, reason);
-              Alert.alert('Success', 'Request has been cancelled.');
+              global.showAppAlert('Success', 'Request has been cancelled.');
               fetchRequest();
             } catch (err: any) {
-              Alert.alert('Error', err.response?.data?.detail || 'Failed to cancel request.');
+              global.showAppAlert('Error', err.response?.data?.detail || 'Failed to cancel request.');
             } finally {
               setCancelling(false);
             }

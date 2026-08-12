@@ -40,7 +40,7 @@ export default function CheckoutScreen() {
 
   const handleCompleteOrder = async () => {
     if (items.length === 0) {
-      Alert.alert('Error', 'Your cart is empty');
+      global.showAppAlert('Error', 'Your cart is empty');
       return;
     }
 
@@ -95,7 +95,7 @@ export default function CheckoutScreen() {
       router.replace('/(screens)/orders');
     } catch (err: any) {
       const errMsg = err.response?.data?.message || 'Unable to complete your order. Please try again.';
-      Alert.alert('Checkout Failed', errMsg);
+      global.showAppAlert('Checkout Failed', errMsg);
       console.error(err);
     } finally {
       setLoading(false);

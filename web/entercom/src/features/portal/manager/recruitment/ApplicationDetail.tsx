@@ -42,7 +42,7 @@ export default function ApplicationDetail() {
       setApp((prev: any) => ({ ...prev, status: action }));
       setNotes('');
       setIsSubmitting(false);
-      alert(`Application ${action} successfully.`);
+      window.showAppAlert(`Application ${action} successfully.`, 'success');
     }, 800);
   };
 

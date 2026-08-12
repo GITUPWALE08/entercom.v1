@@ -7,6 +7,7 @@ import { router } from 'expo-router';
 import { ArrowLeft, Package, Clock, CheckCircle2, ChevronRight, XCircle, AlertCircle } from 'lucide-react-native';
 import { ordersApi, OrderItem } from '../../../src/api/orders';
 import { ensureArray } from '../../../src/utils/arrays';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 
 export default function OrdersScreen() {
   const {
@@ -89,21 +90,19 @@ export default function OrdersScreen() {
           refreshControl={<RefreshControl refreshing={isRefetching} onRefresh={onRefresh} tintColor="#081f3d" />}
         >
           {orders.length === 0 ? (
-            <View className="items-center justify-center py-20 mt-10">
-              <View className="bg-gray-100 p-6 rounded-full mb-6">
-                <Package size={48} color="#9ca3af" />
-              </View>
-              <Text className="text-xl font-bold text-gray-900 mb-2">No orders yet</Text>
-              <Text className="text-gray-500 text-center mb-8 px-8">
-                You haven't placed any orders yet. Start exploring our products!
-              </Text>
-              <Pressable
-                onPress={() => router.replace('/(drawer)/(tabs)/requests' as any)}
-                className="bg-ess-purple px-8 py-4 rounded-xl"
-              >
-                <Text className="text-white font-bold text-lg">View Requests</Text>
-              </Pressable>
-            </View>
+            <EmptyState 
+              title="No orders yet" 
+              description="You haven't placed any orders yet. Start exploring our products!" 
+              icon={<Package size={44} color="#6b7280" />}
+              action={
+                <Pressable
+                  onPress={() => router.replace('/(drawer)/(tabs)/requests' as any)}
+                  className="bg-ess-purple px-8 py-4 rounded-xl"
+                >
+                  <Text className="text-white font-bold text-lg">View Requests</Text>
+                </Pressable>
+              }
+            />
           ) : (
             orders.map((item) => {
               const statusStyle = getStatusStyle(item.status);

@@ -52,7 +52,7 @@ export default function CustomerPaymentDetail() {
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
       setIsEscalateModalOpen(false);
     },
-    onError: (err: any) => alert(err.response?.data?.message || 'Escalation failed')
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Escalation failed', 'error')
   });
 
   const paymentMutation = useMutation({
@@ -61,11 +61,11 @@ export default function CustomerPaymentDetail() {
       if (paymentData.authorization_url) {
         window.location.href = paymentData.authorization_url;
       } else {
-        alert("Payment initialization failed. Please try again.");
+        window.showAppAlert("Payment initialization failed. Please try again.", 'error');
       }
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || 'Failed to initialize payment.');
+      window.showAppAlert(err.response?.data?.message || 'Failed to initialize payment.', 'error');
     }
   });
 
@@ -167,7 +167,7 @@ export default function CustomerPaymentDetail() {
                     />
                     
                     <button 
-                      onClick={() => alert('Receipt download coming soon!')}
+                      onClick={() => window.showAppAlert('Receipt download coming soon!', 'info')}
                       className="w-full py-3 px-4 bg-ess-purple text-white font-medium rounded-xl hover:bg-ess-darkPurple transition-colors shadow-sm flex items-center justify-center gap-2"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>

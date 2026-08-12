@@ -112,7 +112,7 @@ export default function LoginScreen() {
       const savedPassword = await AsyncStorage.getItem('saved_password');
       
       if (!savedEmail || !savedPassword) {
-        Alert.alert('No Saved Credentials', 'Please login with email and password first to enable biometric login.');
+        global.showAppAlert('No Saved Credentials', 'Please login with email and password first to enable biometric login.');
         return;
       }
 

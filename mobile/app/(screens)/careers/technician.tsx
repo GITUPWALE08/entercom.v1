@@ -42,7 +42,7 @@ export default function TechnicianCareerScreen() {
       setSuccess(true);
     } catch (error) {
       console.error(error);
-      alert('Failed to submit application. Please try again.');
+      global.showAppAlert('Notice', 'Failed to submit application. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -11,6 +11,7 @@ import { Card, CardContent } from '../../../src/components/ui/Card';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 import { requestsApi, RequestItem } from '../../../src/api/requests';
 import { ensureArray } from '../../../src/utils/arrays';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 
 export default function RequestsScreen() {
   const [requests, setRequests] = useState<RequestItem[]>([]);
@@ -113,14 +114,12 @@ export default function RequestsScreen() {
             <Text className="text-red-500 text-center font-medium px-8">{error}</Text>
           </View>
         ) : filteredRequests.length === 0 ? (
-          <View className="items-center justify-center py-20">
-            <View className="bg-gray-100 p-6 rounded-full mb-6">
-              <Search size={48} color="#9ca3af" />
-            </View>
-            <Text className="text-xl font-bold text-gray-900 mb-2">No matching requests</Text>
-            <Text className="text-gray-500 text-center px-8 font-medium mb-2">
-              Try adjusting your search or filters.
-            </Text>
+          <View className="mb-24 pt-10">
+            <EmptyState
+              title="No matching requests"
+              description="Try adjusting your search or filters."
+              icon={<Search size={44} color="#6b7280" />}
+            />
           </View>
         ) : (
           <View className="mb-24">

@@ -6,6 +6,9 @@ import { router } from 'expo-router';
 import { ArrowLeft, FileText, ChevronRight } from 'lucide-react-native';
 import { Card, CardContent } from '../../../src/components/ui/Card';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { useAuthStore } from '../../../src/store/authStore';
+import { quoteApi, QuoteItem } from '../../../src/api/quotes';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { Button } from '../../../src/components/ui/Button';
 import { requestsApi } from '../../../src/api/requests';
 
@@ -110,23 +113,21 @@ export default function QuotesScreen() {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#081f3d" />
           }
           ListEmptyComponent={() => (
-            <View className="items-center justify-center py-20 mt-10">
-              <View className="bg-white w-24 h-24 rounded-full items-center justify-center shadow-sm shadow-black/5 mb-6">
-                <FileText size={40} color="#9ca3af" />
-              </View>
-              <Text className="text-[20px] font-bold text-gray-900 tracking-tight mb-2">No quotes yet</Text>
-              <Text className="text-gray-500 text-center mb-10 px-8 text-[15px] leading-relaxed">
-                You haven't requested any custom quotes yet.
-              </Text>
-              <Button 
-                variant="primary" 
-                size="lg"
-                onPress={() => router.replace('/(drawer)/(tabs)/requests')}
-                className="px-10"
-              >
-                Request a Service
-              </Button>
-            </View>
+            <EmptyState
+              title="No quotes yet"
+              description="You haven't requested any custom quotes yet."
+              icon={<FileText size={44} color="#6b7280" />}
+              action={
+                <Button 
+                  variant="primary" 
+                  size="lg"
+                  onPress={() => router.replace('/(drawer)/(tabs)/requests')}
+                  className="px-10"
+                >
+                  Request a Service
+                </Button>
+              }
+            />
           )}
         />
       )}

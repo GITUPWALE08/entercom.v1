@@ -109,7 +109,7 @@ export const downloadReceipt = async (data: any, type: 'order' | 'payment', form
           UTI: 'com.adobe.pdf'
         });
       } else {
-        Alert.alert('Error', 'Sharing is not available on this device');
+        global.showAppAlert('Error', 'Sharing is not available on this device');
       }
     } else {
       // Document (HTML)
@@ -124,11 +124,11 @@ export const downloadReceipt = async (data: any, type: 'order' | 'payment', form
           UTI: 'public.html'
         });
       } else {
-        Alert.alert('Error', 'Sharing is not available on this device');
+        global.showAppAlert('Error', 'Sharing is not available on this device');
       }
     }
   } catch (error) {
     console.error('Error generating receipt:', error);
-    Alert.alert('Error', 'Failed to generate receipt. Please try again.');
+    global.showAppAlert('Error', 'Failed to generate receipt. Please try again.');
   }
 };

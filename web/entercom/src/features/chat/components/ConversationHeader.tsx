@@ -101,7 +101,7 @@ export function ConversationHeader({ conversation, onAssign }: ConversationHeade
                     queryClient.invalidateQueries({ queryKey: ['chat', conversation.id] });
                     queryClient.invalidateQueries({ queryKey: ['chat'] });
                 }).catch(() => {
-                    alert('Failed to transfer conversation.');
+                    window.showAppAlert('Failed to transfer conversation.', 'error');
                 });
               }}
             />

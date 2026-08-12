@@ -7,6 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card } from '../../../src/components/ui/Card';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
 import { bookingsApi, BookingItem } from '../../../src/api/bookings';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 
 export default function BookingsScreen() {
   const [bookings, setBookings] = useState<BookingItem[]>([]);
@@ -64,8 +65,10 @@ export default function BookingsScreen() {
           </View>
         ) : bookings.length === 0 ? (
           <View className="py-20 items-center justify-center">
-            <CalendarIcon size={40} color="#9ca3af" />
-            <Text className="mt-4 text-gray-500 font-medium text-center">No appointments found.</Text>
+            <EmptyState
+              title="No appointments found"
+              icon={<CalendarIcon size={44} color="#6b7280" />}
+            />
           </View>
         ) : (
           <View className="mb-24 ml-2">
@@ -132,7 +135,7 @@ export default function BookingsScreen() {
 
       {/* Floating Action Button */}
       <Pressable
-        onPress={() => Alert.alert('Bookings', 'Bookings are automatically scheduled by our team once your service request is processed.')}
+        onPress={() => global.showAppAlert('Bookings', 'Bookings are automatically scheduled by our team once your service request is processed.')}
         className="absolute bottom-28 right-7 bg-ess-purple w-16 h-16 rounded-[24px] items-center justify-center shadow-lg shadow-ess-purple/40"
       >
         <Plus size={32} color="white" />

@@ -34,7 +34,7 @@ export default function TechnicianPortalScreen() {
       }
     } catch (error) {
       console.error('Failed to fetch applications:', error);
-      Alert.alert('Error', 'Failed to load technician portal data.');
+      global.showAppAlert('Error', 'Failed to load technician portal data.');
     } finally {
       setLoading(false);
     }
@@ -63,13 +63,13 @@ export default function TechnicianPortalScreen() {
       }
     } catch (error) {
       console.error('Error picking document', error);
-      Alert.alert('Error', 'Could not pick document.');
+      global.showAppAlert('Error', 'Could not pick document.');
     }
   };
 
   const handleSubmit = async () => {
     if (skills.length === 0) {
-      Alert.alert('Error', 'Please add at least one skill.');
+      global.showAppAlert('Error', 'Please add at least one skill.');
       return;
     }
 
@@ -100,7 +100,7 @@ export default function TechnicianPortalScreen() {
           docUrl = publicUrlData.publicUrl;
         } catch (uploadErr) {
           console.error('Upload error:', uploadErr);
-          Alert.alert('Error', 'Failed to upload document.');
+          global.showAppAlert('Error', 'Failed to upload document.');
           setUploadingDoc(false);
           setSubmitting(false);
           return;
@@ -115,9 +115,9 @@ export default function TechnicianPortalScreen() {
 
       const newApp = await technicianApi.submitApplication(applicationData);
       setApplication(newApp);
-      Alert.alert('Success', 'Your application has been submitted!');
+      global.showAppAlert('Success', 'Your application has been submitted!');
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to submit application');
+      global.showAppAlert('Error', error.message || 'Failed to submit application');
     } finally {
       setSubmitting(false);
     }

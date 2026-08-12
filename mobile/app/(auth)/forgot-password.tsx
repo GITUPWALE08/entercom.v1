@@ -17,7 +17,7 @@ export default function ForgotPasswordScreen() {
 
   const handleRequestOtp = async () => {
     if (!email) {
-      Alert.alert('Error', 'Please enter your email address');
+      global.showAppAlert('Error', 'Please enter your email address');
       return;
     }
 
@@ -26,7 +26,7 @@ export default function ForgotPasswordScreen() {
       await authApi.requestPasswordReset(email);
       setIsSuccess(true);
     } catch (error: any) {
-      Alert.alert('Request Failed', error?.message || 'Something went wrong');
+      global.showAppAlert('Request Failed', error?.message || 'Something went wrong');
     } finally {
       setIsLoading(false);
     }
@@ -34,18 +34,18 @@ export default function ForgotPasswordScreen() {
 
   const handleCompleteReset = async () => {
     if (!otp || !newPassword) {
-      Alert.alert('Error', 'Please enter the OTP and a new password');
+      global.showAppAlert('Error', 'Please enter the OTP and a new password');
       return;
     }
 
     try {
       setIsResetting(true);
       await authApi.resetPassword({ email, token: otp, new_password: newPassword });
-      Alert.alert('Success', 'Your password has been reset successfully. You can now login.', [
+      global.showAppAlert('Success', 'Your password has been reset successfully. You can now login.', [
         { text: 'OK', onPress: () => router.replace('/(auth)/login') }
       ]);
     } catch (error: any) {
-      Alert.alert('Reset Failed', error?.message || 'Invalid or expired OTP');
+      global.showAppAlert('Reset Failed', error?.message || 'Invalid or expired OTP');
     } finally {
       setIsResetting(false);
     }

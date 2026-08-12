@@ -163,7 +163,7 @@ export default function StaffInboxPage() {
               }
             });
         }).catch(_err => {
-            alert('Failed to assign staff.');
+            window.showAppAlert('Failed to assign staff.', 'error');
         });
     }
   };

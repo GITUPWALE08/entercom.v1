@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { ArrowLeft, Bell, CheckCircle2, ChevronRight, MessageSquare, Package, Calendar, CreditCard, Archive, Filter } from 'lucide-react-native';
 import { notificationsApi, Notification } from '../../../src/api/notifications';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 
 export default function NotificationsScreen() {
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
@@ -36,7 +37,7 @@ export default function NotificationsScreen() {
   const handleMarkAllRead = () => markAllReadMutation.mutate();
   
   const handleArchiveAll = () => {
-    Alert.alert('Archive All', 'Are you sure you want to archive all notifications?', [
+    global.showAppAlert('Archive All', 'Are you sure you want to archive all notifications?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Archive', style: 'destructive', onPress: () => archiveAllMutation.mutate() }
     ]);
@@ -158,12 +159,12 @@ export default function NotificationsScreen() {
           <ActivityIndicator size="large" color="#4f46e5" />
         </View>
       ) : notifications.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-6">
-          <View className="w-20 h-20 bg-gray-50 rounded-full items-center justify-center mb-4">
-            <Bell size={32} color="#9ca3af" />
-          </View>
-          <Text className="text-lg font-bold text-gray-900 mb-2">No Notifications</Text>
-          <Text className="text-gray-500 text-center">You're all caught up! New notifications will appear here.</Text>
+        <View className="flex-1 px-6 pt-20">
+          <EmptyState
+            title="No Notifications"
+            description="You're all caught up! New notifications will appear here."
+            icon={<Bell size={44} color="#6b7280" />}
+          />
         </View>
       ) : (
         <FlatList

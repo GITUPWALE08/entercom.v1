@@ -68,9 +68,9 @@ export default function StaffRequestDetail() {
     onSuccess: invalidate,
     onError: (err: any) => {
       if (err.response?.status === 409) {
-        alert('Request has already been claimed.');
+        window.showAppAlert('Request has already been claimed.', 'info');
       } else {
-        alert(err.response?.data?.message || 'Failed to pick up request');
+        window.showAppAlert(err.response?.data?.message || 'Failed to pick up request', 'error');
       }
     },
   });
@@ -81,13 +81,13 @@ export default function StaffRequestDetail() {
     mutationFn: (action: 'needs_quote' | 'require_payment' | 'assign_directly' | 'close_direct') =>
       requestsApi.triage(id!, action),
     onSuccess: invalidate,
-    onError: (err: any) => alert(err.response?.data?.message || 'Triage action failed'),
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Triage action failed', 'error'),
   });
 
   const assignMutation = useMutation({
     mutationFn: (technician_id: string) => requestsApi.assign(id!, technician_id),
     onSuccess: () => { invalidate(); setSelectedTechId(''); },
-    onError: (err: any) => alert(err.response?.data?.message || 'Failed to assign technician'),
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Failed to assign technician', 'error'),
   });
 
 

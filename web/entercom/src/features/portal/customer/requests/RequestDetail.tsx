@@ -87,7 +87,7 @@ export default function RequestDetail() {
       setShowReviseReason(false);
       setReviseReason('');
     },
-    onError: (err: any) => alert(err.response?.data?.message || 'Quote action failed'),
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Quote action failed', 'error'),
   });
 
   if (isLoading) {
@@ -125,7 +125,7 @@ export default function RequestDetail() {
         if (request.order_id && request.order_id !== 'null') {
           navigate(`/portal/customer/orders/${request.order_id}`);
         } else {
-          alert('No order has been generated for this payment yet.');
+          window.showAppAlert('No order has been generated for this payment yet.', 'info');
         }
         break;
       case 'review_quote':

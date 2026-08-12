@@ -81,7 +81,7 @@ export default function ChatScreen() {
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Failed to pick image');
+      global.showAppAlert('Error', 'Failed to pick image');
     }
   };
 
@@ -102,12 +102,12 @@ export default function ChatScreen() {
       }
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', 'Failed to pick document');
+      global.showAppAlert('Error', 'Failed to pick document');
     }
   };
 
   const handleAttachmentPress = () => {
-    Alert.alert(
+    global.showAppAlert(
       'Attach File',
       'Choose the type of file to attach',
       [
@@ -139,7 +139,7 @@ export default function ChatScreen() {
       handleNewMessage(newMsg);
     } catch (err) {
       console.error(err);
-      Alert.alert('Error', 'Failed to send message.');
+      global.showAppAlert('Error', 'Failed to send message.');
       setInputText(tempText);
       setAttachment(tempAttachment);
     } finally {

@@ -64,7 +64,7 @@ export default function ManagerRequestDetail() {
       queryClient.invalidateQueries({ queryKey: ['requests', id] });
       setShowResolve(false);
     },
-    onError: (err: any) => alert(err.response?.data?.message || 'Failed to resolve escalation'),
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Failed to resolve escalation', 'error'),
   });
 
   if (isLoading) {

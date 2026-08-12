@@ -64,15 +64,15 @@ export default function PaymentDetailsScreen() {
         const updatedPayment = await paymentsApi.get(id!);
         setPayment(updatedPayment);
         if (updatedPayment.status === 'completed' || updatedPayment.status === 'paid' || updatedPayment.status === 'successful') {
-          Alert.alert('Payment Successful', 'Your payment was processed successfully.', [
+          global.showAppAlert('Payment Successful', 'Your payment was processed successfully.', [
             { text: 'OK', onPress: () => router.replace('/') }
           ]);
         }
       } else {
-        Alert.alert('Notice', 'Payment already processed or no checkout URL available.');
+        global.showAppAlert('Notice', 'Payment already processed or no checkout URL available.');
       }
     } catch (err) {
-      Alert.alert('Error', 'Failed to initialize payment.');
+      global.showAppAlert('Error', 'Failed to initialize payment.');
     } finally {
       setActionLoading(false);
     }
@@ -91,9 +91,9 @@ export default function PaymentDetailsScreen() {
       setReason('');
       setCancelOrderToo(false);
       await fetchPayment();
-      Alert.alert('Success', 'Payment cancelled.');
+      global.showAppAlert('Success', 'Payment cancelled.');
     } catch (err) {
-      Alert.alert('Error', 'Failed to cancel payment.');
+      global.showAppAlert('Error', 'Failed to cancel payment.');
     } finally {
       setActionLoading(false);
     }
@@ -101,7 +101,7 @@ export default function PaymentDetailsScreen() {
 
   const handleEscalate = async () => {
     if (!reason.trim()) {
-      Alert.alert('Error', 'Reason is required for escalation.');
+      global.showAppAlert('Error', 'Reason is required for escalation.');
       return;
     }
     try {
@@ -110,9 +110,9 @@ export default function PaymentDetailsScreen() {
       setEscalateModalVisible(false);
       setReason('');
       await fetchPayment();
-      Alert.alert('Success', 'Payment escalated to support.');
+      global.showAppAlert('Success', 'Payment escalated to support.');
     } catch (err) {
-      Alert.alert('Error', 'Failed to escalate payment.');
+      global.showAppAlert('Error', 'Failed to escalate payment.');
     } finally {
       setActionLoading(false);
     }
@@ -121,7 +121,7 @@ export default function PaymentDetailsScreen() {
   const handleDownloadReceipt = () => {
     if (!payment) return;
     
-    Alert.alert(
+    global.showAppAlert(
       'Download Receipt',
       'Choose your preferred format',
       [

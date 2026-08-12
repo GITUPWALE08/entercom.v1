@@ -5,6 +5,7 @@ import { ArrowLeft, MessageCircle, Plus, ChevronRight } from 'lucide-react-nativ
 import { chatApi, ChatConversation } from '../../../src/api/chat';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Avatar } from '../../../src/components/ui/Avatar';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 
 export default function ChatListScreen() {
   const queryClient = useQueryClient();
@@ -34,7 +35,7 @@ export default function ChatListScreen() {
 
   const handleStartNewChat = () => {
     import('react-native').then(({ Alert }) => {
-      Alert.alert('Start New Chat', 'What kind of support do you need?', [
+      global.showAppAlert('Start New Chat', 'What kind of support do you need?', [
         { text: 'General Support', onPress: () => createChatMutation.mutate({ type: 'support', subject: 'Support Hub' }) },
         { text: 'Order Issue', onPress: () => createChatMutation.mutate({ type: 'order', subject: 'Order Support' }) },
         { text: 'Request Enquiry', onPress: () => createChatMutation.mutate({ type: 'request', subject: 'Request Support' }) },
@@ -103,19 +104,21 @@ export default function ChatListScreen() {
           <ActivityIndicator size="large" color="#0f4c81" />
         </View>
       ) : conversations.length === 0 ? (
-        <View className="flex-1 items-center justify-center px-6">
-          <View className="w-20 h-20 bg-gray-50 rounded-full items-center justify-center mb-4">
-            <MessageCircle size={32} color="#9ca3af" />
-          </View>
-          <Text className="text-lg font-bold text-gray-900 mb-2">No Conversations</Text>
-          <Text className="text-gray-500 text-center mb-6">You don't have any active chats yet.</Text>
-          <Pressable 
-            onPress={handleStartNewChat}
-            className="bg-ess-purple px-6 py-3 rounded-xl flex-row items-center"
-          >
-            <Text className="text-white font-bold mr-2">Start a New Chat</Text>
-            <Plus size={18} color="white" />
-          </Pressable>
+        <View className="flex-1 px-6 pt-10">
+          <EmptyState
+            title="No Conversations"
+            description="You don't have any active chats yet."
+            icon={<MessageCircle size={44} color="#6b7280" />}
+            action={
+              <Pressable 
+                onPress={handleStartNewChat}
+                className="bg-ess-purple px-6 py-4 rounded-xl flex-row items-center justify-center w-full shadow-sm"
+              >
+                <Text className="text-white font-bold mr-2 text-lg">Start a New Chat</Text>
+                <Plus size={20} color="white" />
+              </Pressable>
+            }
+          />
         </View>
       ) : (
         <FlatList

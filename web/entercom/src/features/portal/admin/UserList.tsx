@@ -35,13 +35,13 @@ export default function UserList() {
       setIsAssigning(false);
       setSelectedRole('');
       if (data?.message) {
-        alert(data.message);
+        window.showAppAlert(data.message, 'info');
       } else {
-        alert('Role assigned successfully.');
+        window.showAppAlert('Role assigned successfully.', 'success');
       }
     },
     onError: (err: any) => {
-      alert(err.response?.data?.detail || err.response?.data?.message || 'Failed to assign role.');
+      window.showAppAlert(err.response?.data?.detail || err.response?.data?.message || 'Failed to assign role.', 'error');
     }
   });
 
@@ -50,10 +50,10 @@ export default function UserList() {
       usersApi.deassignRole(userId, roleSlug),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
-      alert('Role revoked successfully.');
+      window.showAppAlert('Role revoked successfully.', 'success');
     },
     onError: (err: any) => {
-      alert(err.response?.data?.detail || err.response?.data?.message || 'Failed to revoke role.');
+      window.showAppAlert(err.response?.data?.detail || err.response?.data?.message || 'Failed to revoke role.', 'error');
     }
   });
 

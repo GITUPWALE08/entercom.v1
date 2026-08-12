@@ -48,7 +48,7 @@ export default function StaffPaymentDetail() {
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
       setIsRefundModalOpen(false);
     },
-    onError: (err: any) => alert(err.response?.data?.message || 'Refund failed')
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Refund failed', 'error')
   });
 
   const escalateMutation = useMutation({
@@ -57,7 +57,7 @@ export default function StaffPaymentDetail() {
       queryClient.invalidateQueries({ queryKey: ['payments', id] });
       setIsEscalateModalOpen(false);
     },
-    onError: (err: any) => alert(err.response?.data?.message || 'Escalation failed')
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Escalation failed', 'error')
   });
 
   if (isLoading) {

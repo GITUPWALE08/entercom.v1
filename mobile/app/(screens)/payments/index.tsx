@@ -7,6 +7,7 @@ import { ArrowLeft, CreditCard, ChevronRight, FileText, Plus, AlertCircle } from
 import { Card, CardContent } from '../../../src/components/ui/Card';
 import { Button } from '../../../src/components/ui/Button';
 import { StatusBadge } from '../../../src/components/ui/StatusBadge';
+import { EmptyState } from '../../../src/components/ui/EmptyState';
 import { paymentsApi, PaymentItem } from '../../../src/api/payments';
 
 export default function PaymentsScreen() {
@@ -127,15 +128,11 @@ export default function PaymentsScreen() {
             </View>
           )}
           ListEmptyComponent={() => (
-            <View className="items-center justify-center py-16">
-              <View className="bg-white w-24 h-24 rounded-full items-center justify-center shadow-sm shadow-black/5 mb-6">
-                <CreditCard size={40} color="#9ca3af" />
-              </View>
-              <Text className="text-[20px] font-bold text-gray-900 tracking-tight mb-2">No payments yet</Text>
-              <Text className="text-gray-500 text-center px-8 text-[15px] leading-relaxed">
-                You haven't made any payments yet. They will appear here once your orders are processed.
-              </Text>
-            </View>
+            <EmptyState
+              title="No payments yet"
+              description="You haven't made any payments yet. They will appear here once your orders are processed."
+              icon={<CreditCard size={44} color="#6b7280" />}
+            />
           )}
         />
       )}

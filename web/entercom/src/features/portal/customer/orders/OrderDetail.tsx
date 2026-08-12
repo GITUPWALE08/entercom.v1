@@ -45,22 +45,22 @@ export default function OrderDetail() {
       if (paymentData.authorization_url) {
         window.location.href = paymentData.authorization_url;
       } else {
-        alert("Payment initialization failed. Please try again.");
+        window.showAppAlert("Payment initialization failed. Please try again.", 'error');
       }
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || 'Failed to initialize payment.');
+      window.showAppAlert(err.response?.data?.message || 'Failed to initialize payment.', 'error');
     }
   });
 
   const simulateWebhookMutation = useMutation({
     mutationFn: (ref: string) => paymentsApi.simulateWebhook(ref),
     onSuccess: () => {
-      alert("Mock payment successful!");
+      window.showAppAlert("Mock payment successful!", 'success');
       navigate(`/portal/customer/orders/${id}`);
     },
     onError: (err: any) => {
-      alert(err.response?.data?.message || 'Failed to simulate payment webhook.');
+      window.showAppAlert(err.response?.data?.message || 'Failed to simulate payment webhook.', 'error');
     }
   });
 

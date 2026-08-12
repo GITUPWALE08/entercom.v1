@@ -28,7 +28,7 @@ export default function QuoteDetailsScreen() {
       if (foundQuote) setQuote(foundQuote);
     } catch (error) {
       console.error('Failed to fetch quote:', error);
-      Alert.alert('Error', 'Failed to load quote details.');
+      global.showAppAlert('Error', 'Failed to load quote details.');
     } finally {
       setLoading(false);
     }
@@ -45,7 +45,7 @@ export default function QuoteDetailsScreen() {
             text: 'Submit',
             onPress: async (reason) => {
               if (!reason) {
-                Alert.alert('Reason Required', `You must provide a reason to ${action} the quote.`);
+                global.showAppAlert('Reason Required', `You must provide a reason to ${action} the quote.`);
                 return;
               }
               await performAction(action, reason);
@@ -63,11 +63,11 @@ export default function QuoteDetailsScreen() {
     try {
       setProcessing(true);
       await requestsApi.quotes.action(requestId as string, action, reason);
-      Alert.alert('Success', `Quote ${action}d successfully.`);
+      global.showAppAlert('Success', `Quote ${action}d successfully.`);
       router.back();
     } catch (error: any) {
       console.error(`Failed to ${action} quote:`, error);
-      Alert.alert('Error', error.response?.data?.detail || `Failed to ${action} quote.`);
+      global.showAppAlert('Error', error.response?.data?.detail || `Failed to ${action} quote.`);
     } finally {
       setProcessing(false);
     }

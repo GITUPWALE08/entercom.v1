@@ -23,7 +23,7 @@ export default function CreateRequestScreen() {
 
   const handleSubmit = async () => {
     if (!description || !address || !city || !postalCode) {
-      Alert.alert('Error', 'Please fill in all required fields');
+      global.showAppAlert('Error', 'Please fill in all required fields');
       return;
     }
 
@@ -41,7 +41,7 @@ export default function CreateRequestScreen() {
       });
       setSuccess(true);
     } catch (error) {
-      Alert.alert('Error', 'Failed to create service request');
+      global.showAppAlert('Error', 'Failed to create service request');
     } finally {
       setLoading(false);
     }

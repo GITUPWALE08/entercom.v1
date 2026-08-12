@@ -80,7 +80,7 @@ export default function OrderDetailsScreen() {
         await fetchOrder(); // Refresh the order state after modal closes
       }
     } catch (err: any) {
-      Alert.alert('Payment Error', err.response?.data?.message || 'Failed to initialize payment.');
+      global.showAppAlert('Payment Error', err.response?.data?.message || 'Failed to initialize payment.');
     } finally {
       setProcessingPayment(false);
     }
@@ -88,7 +88,7 @@ export default function OrderDetailsScreen() {
 
   const handleCancelOrder = () => {
     if (!id) return;
-    Alert.alert(
+    global.showAppAlert(
       'Cancel Order',
       'Are you sure you want to cancel this order?',
       [
@@ -102,7 +102,7 @@ export default function OrderDetailsScreen() {
               await ordersApi.cancel(id, 'Cancelled via Mobile App');
               await fetchOrder();
             } catch (err: any) {
-              Alert.alert('Cancel Error', 'Failed to cancel the order. Please try again.');
+              global.showAppAlert('Cancel Error', 'Failed to cancel the order. Please try again.');
             } finally {
               setCancelling(false);
             }
@@ -203,7 +203,7 @@ export default function OrderDetailsScreen() {
 
           <Pressable 
             onPress={() => {
-              Alert.alert(
+              global.showAppAlert(
                 'Download Receipt',
                 'Choose your preferred format',
                 [

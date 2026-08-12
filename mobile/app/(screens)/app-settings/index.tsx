@@ -47,7 +47,7 @@ export default function AppSettingsScreen() {
       const isEnrolled = await LocalAuthentication.isEnrolledAsync();
       
       if (!hasHardware || !isEnrolled) {
-        alert('Biometric authentication is not available or not set up on this device.');
+        global.showAppAlert('Notice', 'Biometric authentication is not available or not set up on this device.');
         return;
       }
 
@@ -59,7 +59,7 @@ export default function AppSettingsScreen() {
       if (result.success) {
         toggleSwitch('@app_settings_bio', true, setBiometrics);
       } else {
-        alert('Authentication failed.');
+        global.showAppAlert('Notice', 'Authentication failed.');
       }
     } else {
       toggleSwitch('@app_settings_bio', false, setBiometrics);
@@ -98,9 +98,9 @@ export default function AppSettingsScreen() {
       if (value) {
         if (Constants.appOwnership !== 'expo') {
           // You could call registerForPushNotificationsAsync here and then usersApi.registerPushDevice
-          alert('Push notifications enabled for this device.');
+          global.showAppAlert('Notice', 'Push notifications enabled for this device.');
         } else {
-          alert('Push notifications are not supported inside Expo Go.');
+          global.showAppAlert('Notice', 'Push notifications are not supported inside Expo Go.');
         }
       }
     } catch (e) {

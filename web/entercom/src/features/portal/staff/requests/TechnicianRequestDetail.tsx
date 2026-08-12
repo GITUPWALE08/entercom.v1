@@ -42,8 +42,8 @@ export default function TechnicianRequestDetail() {
     mutationFn: () => requestsApi.pickup(id!),
     onSuccess: invalidate,
     onError: (err: any) => {
-      if (err.response?.status === 409) alert('Request has already been claimed.');
-      else alert(err.response?.data?.message || 'Failed to pick up request');
+      if (err.response?.status === 409) window.showAppAlert('Request has already been claimed.', 'info');
+      else window.showAppAlert(err.response?.data?.message || 'Failed to pick up request', 'error');
     },
   });
 
@@ -60,7 +60,7 @@ export default function TechnicianRequestDetail() {
   const completeMutation = useMutation({
     mutationFn: () => requestsApi.review_verification(id!, { action: 'approve' }),
     onSuccess: invalidate,
-    onError: (err: any) => alert(err.response?.data?.message || 'Failed to complete request. QA may be required by staff.'),
+    onError: (err: any) => window.showAppAlert(err.response?.data?.message || 'Failed to complete request. QA may be required by staff.', 'error'),
   });
 
   if (isLoading) {
