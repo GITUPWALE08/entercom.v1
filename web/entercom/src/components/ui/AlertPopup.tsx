@@ -1,6 +1,6 @@
-import React from 'react';
+// import React from 'react';
 import { useAlertStore } from '../../store/alertStore';
-import { CheckCircle, XCircle, AlertCircle, Info, Clock, Loader2 } from 'lucide-react';
+import { CheckCircle, XCircle, AlertCircle, Info, Loader2 } from 'lucide-react';
 
 export function AlertPopup() {
   const { isOpen, type, title, message, buttons, hideAlert } = useAlertStore();
