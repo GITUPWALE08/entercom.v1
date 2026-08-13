@@ -1,5 +1,5 @@
-now let's fix the popup alert issue that is using the native mobile alert interface, implement a new popup alert look customized for the platform and use that across all the frontend including the web app and the mobile app
--> anywhere there is alert it should show the new implemented popup alert
--> the alert should be custom for success, error (for error messages when things go wrong like when the backend isn't responding e.t.c), pending, and cancel
--> this should not look generic 
--> and it should be implemented accross the entire platform (mobile and web ) do not miss any page or file
+1786607572534_6lqewh_logo.png	(failed)net::ERR_NAME_NOT_RESOLVED	fetch	users-D-EZ9aSu.js:29	0.0 kB	189 ms
+1786607572534_6lqewh_logo.png	(failed)net::ERR_NAME_NOT_RESOLVED	preflight	Preflight
+0.0 kB	186 ms
+
+here is the file upload error on the network console, unable to upload the image both the mobile and web
