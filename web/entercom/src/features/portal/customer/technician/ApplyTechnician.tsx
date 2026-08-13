@@ -440,7 +440,7 @@ export default function ApplyTechnician() {
         <div className="logo-placeholder" aria-label="ESS logo placeholder">
           <div className="w-8 h-8 bg-ess-purple rounded-md flex items-center justify-center text-white font-bold text-sm tracking-wide shadow-sm flex-shrink-0">
               {/* Image Logo */}
-                <div className="group-hover:scale-105 transition-transform duration-100 flex items-center justify-center w-full h-full">
+                <div className="group-hover:scale-105 rounded-md transition-transform duration-100 flex items-center justify-center w-full h-full">
                   <img 
                     src={logo} 
                     alt="ESS Logo" 
