@@ -46,7 +46,7 @@ function CustomDrawerContent(props: any) {
           </View>
           
           <View className="flex-row items-center mt-4">
-            <Avatar size="lg" fallback={user?.first_name?.[0] || 'U'} className="mr-4 border-2 border-white/20" />
+            <Avatar size="lg" src={user?.profile_image} fallback={user?.first_name?.[0] || 'U'} className="mr-4 border-2 border-white/20" />
             <View className="flex-1">
               <Text className="text-white font-bold text-[18px] tracking-tight" numberOfLines={1}>
                 {user?.first_name ? `${user.first_name} ${user.last_name || ''}` : 'Jane Doe'}

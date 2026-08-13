@@ -233,8 +233,12 @@ export function PortalLayout() {
                 title={!isSidebarExpanded ? 'Account' : undefined}
               >
                 <div className="flex items-center truncate">
-                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-ess-purple font-semibold group-hover:bg-purple-100 flex-shrink-0">
-                    {user?.first_name?.charAt(0) || user?.email?.charAt(0)}
+                  <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-ess-purple font-semibold group-hover:bg-purple-100 flex-shrink-0 overflow-hidden">
+                    {user?.profile_image ? (
+                      <img src={user.profile_image} alt="Profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="uppercase">{user?.first_name?.charAt(0) || user?.email?.charAt(0) || '?'}</span>
+                    )}
                   </div>
                   {isSidebarExpanded && (
                     <div className="ml-3 truncate text-left">

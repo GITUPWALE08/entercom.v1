@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
 from apps.users.forms import UserAdminChangeForm, UserAdminCreationForm
-from apps.users.models import User, PushDevice
+from apps.users.models import User, PushDevice, TechnicianApplication, TechnicianApplicationActivity
 
 @admin.register(PushDevice)
 class PushDeviceAdmin(admin.ModelAdmin):
@@ -111,3 +111,17 @@ class UserAdmin(DjangoUserAdmin):
             },
         ),
     )
+
+@admin.register(TechnicianApplication)
+class TechnicianApplicationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'status', 'reviewer', 'created_at', 'updated_at')
+    list_filter = ('status', 'created_at')
+    search_fields = ('user__email', 'user__first_name', 'user__last_name', 'reviewer__email')
+    readonly_fields = ('created_at', 'updated_at')
+
+@admin.register(TechnicianApplicationActivity)
+class TechnicianApplicationActivityAdmin(admin.ModelAdmin):
+    list_display = ('application', 'actor', 'action', 'created_at')
+    list_filter = ('action', 'created_at')
+    search_fields = ('application__user__email', 'actor__email', 'action')
+    readonly_fields = ('created_at',)
