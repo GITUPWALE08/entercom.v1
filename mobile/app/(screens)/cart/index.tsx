@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, ScrollView, Pressable, Image } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Trash2, Plus, Minus, ShoppingBag } from 'lucide-react-native';
+import { ArrowLeft, Trash2, Plus, Minus,  ShoppingBag, ShoppingCart } from 'lucide-react-native';
 import { useCartStore } from '../../../src/store/cartStore';
 
 export default function CartScreen() {
@@ -23,7 +23,7 @@ export default function CartScreen() {
         {items.length === 0 ? (
           <View className="items-center justify-center py-20 mt-10">
             <View className="bg-gray-100 p-6 rounded-full mb-6">
-              <ShoppingBag size={48} color="#9ca3af" />
+              icon={<ShoppingCart className="w-10 h-10" />}
             </View>
             <Text className="text-xl font-bold text-gray-900 mb-2">Your cart is empty</Text>
             <Text className="text-gray-500 text-center mb-8 px-8">Looks like you haven't added any products or services yet.</Text>
