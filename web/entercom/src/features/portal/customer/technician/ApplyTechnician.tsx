@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../../../../shared/components/ui/toastStore';
 import { apiClient } from '../../../../api/axios';
-import logo from '../../../../assets/images/ess-logo.png';
+import logo from '../../../../assets/logo.png';
 
 export default function ApplyTechnician() {
   const queryClient = useQueryClient();
