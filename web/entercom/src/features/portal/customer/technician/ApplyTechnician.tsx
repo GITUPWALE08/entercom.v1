@@ -3,11 +3,52 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '../../../../shared/components/ui/toastStore';
 import { apiClient } from '../../../../api/axios';
+import { supabase } from '../../../../lib/supabase';
 import logo from '../../../../assets/logo.png';
+import { UploadCloud, X, Loader2 } from 'lucide-react';
 
 export default function ApplyTechnician() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+
+  const [uploadedDocs, setUploadedDocs] = React.useState<{name: string, url: string}[]>([]);
+  const [isUploading, setIsUploading] = React.useState(false);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    setIsUploading(true);
+    try {
+      const newDocs = [...uploadedDocs];
+      for (let i = 0; i < e.target.files.length; i++) {
+        const file = e.target.files[i];
+        const filename = `technician-docs/${Date.now()}_${Math.random().toString(36).substring(7)}_${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('entercom-media')
+          .upload(filename, file, { contentType: file.type });
+          
+        if (uploadError) throw uploadError;
+        
+        const { data: publicUrlData } = supabase.storage
+          .from('entercom-media')
+          .getPublicUrl(filename);
+          
+        newDocs.push({ name: file.name, url: publicUrlData.publicUrl });
+      }
+      setUploadedDocs(newDocs);
+      toast.success('Files uploaded successfully');
+    } catch (err: any) {
+      toast.error(err.message || 'Failed to upload files');
+    } finally {
+      setIsUploading(false);
+      // Reset input so same file can be selected again if removed
+      e.target.value = '';
+    }
+  };
+
+  const removeDoc = (index: number) => {
+    setUploadedDocs(prev => prev.filter((_, i) => i !== index));
+  };
 
   const submitMutation = useMutation({
     mutationFn: async (payload: any) => {
@@ -41,12 +82,15 @@ export default function ApplyTechnician() {
     }
     
     const skills = form.getAll('skills') as string[];
-    const documents = form.getAll('documents') as string[];
+    const checklist_documents = form.getAll('documents') as string[];
     
     submitMutation.mutate({
       skills: skills,
-      document_urls: documents,
-      form_data: data,
+      document_urls: uploadedDocs.map(d => d.url),
+      form_data: {
+        ...data,
+        checklist_documents,
+      },
     });
   };
 
@@ -838,6 +882,38 @@ export default function ApplyTechnician() {
             <label className="choice"><input type="checkbox" name="documents" value="trade-test" /> Trade Test / Vocational Certificate</label>
             <label className="choice"><input type="checkbox" name="documents" value="portfolio" /> Previous Work Photos / Portfolio</label>
             <label className="choice"><input type="checkbox" name="documents" value="other" /> Other Supporting Documents</label>
+          </div>
+
+          <div style={{ marginTop: '20px' }}>
+            <label className="field-label">Upload Files</label>
+            <div className="flex flex-col space-y-4 mt-2">
+              <label className="flex items-center justify-center w-full max-w-md h-32 px-4 transition bg-white border-2 border-gray-300 border-dashed rounded-md appearance-none cursor-pointer hover:border-gray-400 focus:outline-none">
+                <span className="flex items-center space-x-2">
+                  {isUploading ? (
+                    <Loader2 className="w-6 h-6 text-gray-600 animate-spin" />
+                  ) : (
+                    <UploadCloud className="w-6 h-6 text-gray-600" />
+                  )}
+                  <span className="font-medium text-gray-600">
+                    {isUploading ? 'Uploading...' : 'Drop files or click to upload'}
+                  </span>
+                </span>
+                <input type="file" name="file_upload" className="hidden" multiple onChange={handleFileUpload} disabled={isUploading} />
+              </label>
+              
+              {uploadedDocs.length > 0 && (
+                <div className="flex flex-wrap gap-3">
+                  {uploadedDocs.map((doc, idx) => (
+                    <div key={idx} className="flex items-center bg-gray-100 px-3 py-1.5 rounded-full border border-gray-200">
+                      <span className="text-sm text-gray-700 truncate max-w-[150px]">{doc.name}</span>
+                      <button type="button" onClick={() => removeDoc(idx)} className="ml-2 text-gray-500 hover:text-red-500">
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </section>

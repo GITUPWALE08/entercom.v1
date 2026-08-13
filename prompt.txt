@@ -1,5 +1,2 @@
-1786607572534_6lqewh_logo.png	(failed)net::ERR_NAME_NOT_RESOLVED	fetch	users-D-EZ9aSu.js:29	0.0 kB	189 ms
-1786607572534_6lqewh_logo.png	(failed)net::ERR_NAME_NOT_RESOLVED	preflight	Preflight
-0.0 kB	186 ms
-
-here is the file upload error on the network console, unable to upload the image both the mobile and web
+I am still getting same error with the file uploading
+-> let's isolate it just as we did the push notification
