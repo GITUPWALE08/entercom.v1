@@ -12,7 +12,7 @@ class TechnicianApplicationViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        if user.role in ['manager', 'super_admin']:
+        if user.role in ['MANAGER', 'SUPER_ADMIN']:
             return TechnicianApplication.objects.select_related('user').all().order_by('-created_at')
         return TechnicianApplication.objects.select_related('user').filter(user=user).order_by('-created_at')
 
