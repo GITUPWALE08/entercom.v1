@@ -1,46 +1,66 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, Shield, Users, BarChart3, Download, Archive, Clock } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/PageHeader';
 import { DataTable } from '../../../../shared/components/ui/DataTable';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../../../api/axios';
+
+interface UserData {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
 
 interface Application {
   id: string;
-  applicant_name: string;
-  position: string;
+  user_email: string;
+  first_name: string;
+  last_name: string;
+  form_data: {
+    position?: string;
+    [key: string]: any;
+  };
   status: string;
-  assigned_manager: string | null;
+  reviewer: UserData | null;
   created_at: string;
 }
 
 export default function AdminRecruitmentDashboard() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    // Mock API
-    setTimeout(() => {
-      setApplications([
-        { id: '1', applicant_name: 'John Doe', position: 'Senior Technician', status: 'pending', assigned_manager: null, created_at: '2026-07-20T10:00:00Z' },
-        { id: '2', applicant_name: 'Jane Smith', position: 'HVAC Specialist', status: 'reviewed', assigned_manager: 'Manager A', created_at: '2026-07-21T11:30:00Z' },
-      ]);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  const { data: applications = [], isLoading } = useQuery<Application[]>({
+    queryKey: ['admin-technician-applications'],
+    queryFn: async () => {
+      const response = await apiClient.get('/users/technician-applications/');
+      return response.data;
+    },
+  });
+
+  const filteredApps = applications.filter(app => {
+    const fullName = `${app.first_name} ${app.last_name}`.toLowerCase();
+    const email = app.user_email.toLowerCase();
+    const term = searchTerm.toLowerCase();
+    return fullName.includes(term) || email.includes(term);
+  });
 
   const columns = [
-    { header: 'Applicant', accessor: 'applicant_name', className: 'font-medium text-gray-900' },
-    { header: 'Position', accessor: 'position' },
-    { header: 'Manager', accessor: (row: Application) => row.assigned_manager || <span className="text-gray-400 italic">Unassigned</span> },
+    { header: 'Applicant', accessor: (row: Application) => (
+      <div>
+        <div className="font-medium text-gray-900">{row.first_name} {row.last_name}</div>
+        <div className="text-xs text-gray-500">{row.user_email}</div>
+      </div>
+    )},
+    { header: 'Position', accessor: (row: Application) => row.form_data?.position || 'Technician' },
+    { header: 'Manager', accessor: (row: Application) => row.reviewer ? `${row.reviewer.first_name || ''} ${row.reviewer.last_name || ''}`.trim() || row.reviewer.email : <span className="text-gray-400 italic">Unassigned</span> },
     { header: 'Status', accessor: (row: Application) => (
       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
         row.status === 'approved' ? 'bg-green-100 text-green-800' : 
         row.status === 'rejected' ? 'bg-red-100 text-red-800' : 
-        row.status === 'reviewed' ? 'bg-blue-100 text-blue-800' : 
+        row.status === 'under_review' ? 'bg-blue-100 text-blue-800' : 
         'bg-yellow-100 text-yellow-800'
       }`}>
-        {row.status.toUpperCase()}
+        {row.status.replace('_', ' ').toUpperCase()}
       </span>
     )},
     { header: 'Applied On', accessor: (row: Application) => new Date(row.created_at).toLocaleDateString() },
@@ -117,7 +137,7 @@ export default function AdminRecruitmentDashboard() {
       </div>
 
       <DataTable
-        data={applications.filter(a => a.applicant_name.toLowerCase().includes(searchTerm.toLowerCase()))}
+        data={filteredApps}
         columns={columns as any}
         keyExtractor={(row) => row.id}
         isLoading={isLoading}

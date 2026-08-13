@@ -1,39 +1,48 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Filter, Briefcase, FileText, CheckCircle, XCircle, Clock } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/PageHeader';
 import { DataTable } from '../../../../shared/components/ui/DataTable';
+import { useQuery } from '@tanstack/react-query';
+import { apiClient } from '../../../../api/axios';
+
+interface UserData {
+  first_name?: string;
+  last_name?: string;
+  email?: string;
+}
 
 interface Application {
   id: string;
-  applicant_name: string;
-  email: string;
-  position: string;
+  user_email: string;
+  first_name: string;
+  last_name: string;
+  form_data: {
+    position?: string;
+    [key: string]: any;
+  };
   status: string;
+  reviewer: UserData | null;
   created_at: string;
 }
 
 export default function ManagerRecruitmentDashboard() {
-  const [applications, setApplications] = useState<Application[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
-  useEffect(() => {
-    // Mock fetching data from API
-    setTimeout(() => {
-      setApplications([
-        { id: '1', applicant_name: 'John Doe', email: 'john@example.com', position: 'Senior Technician', status: 'pending', created_at: '2026-07-20T10:00:00Z' },
-        { id: '2', applicant_name: 'Jane Smith', email: 'jane@example.com', position: 'HVAC Specialist', status: 'reviewed', created_at: '2026-07-21T11:30:00Z' },
-        { id: '3', applicant_name: 'Bob Johnson', email: 'bob@example.com', position: 'Electrician', status: 'approved', created_at: '2026-07-19T09:15:00Z' },
-      ]);
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+  const { data: applications = [], isLoading } = useQuery<Application[]>({
+    queryKey: ['manager-technician-applications'],
+    queryFn: async () => {
+      const response = await apiClient.get('/users/technician-applications/');
+      return response.data;
+    },
+  });
 
   const filteredApps = applications.filter(app => {
-    const matchesSearch = app.applicant_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          app.email.toLowerCase().includes(searchTerm.toLowerCase());
+    const fullName = `${app.first_name} ${app.last_name}`.toLowerCase();
+    const email = app.user_email.toLowerCase();
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = fullName.includes(term) || email.includes(term);
     const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -41,20 +50,20 @@ export default function ManagerRecruitmentDashboard() {
   const columns = [
     { header: 'Applicant', accessor: (row: Application) => (
       <div>
-        <div className="font-medium text-gray-900">{row.applicant_name}</div>
-        <div className="text-xs text-gray-500">{row.email}</div>
+        <div className="font-medium text-gray-900">{row.first_name} {row.last_name}</div>
+        <div className="text-xs text-gray-500">{row.user_email}</div>
       </div>
     )},
-    { header: 'Position', accessor: 'position' },
+    { header: 'Position', accessor: (row: Application) => row.form_data?.position || 'Technician' },
     { header: 'Applied On', accessor: (row: Application) => new Date(row.created_at).toLocaleDateString() },
     { header: 'Status', accessor: (row: Application) => (
       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
         row.status === 'approved' ? 'bg-green-100 text-green-800' : 
         row.status === 'rejected' ? 'bg-red-100 text-red-800' : 
-        row.status === 'reviewed' ? 'bg-blue-100 text-blue-800' : 
+        row.status === 'under_review' ? 'bg-blue-100 text-blue-800' : 
         'bg-yellow-100 text-yellow-800'
       }`}>
-        {row.status.charAt(0).toUpperCase() + row.status.slice(1)}
+        {row.status.replace('_', ' ').toUpperCase()}
       </span>
     )},
     { header: 'Actions', accessor: (row: Application) => (
@@ -96,7 +105,7 @@ export default function ManagerRecruitmentDashboard() {
             <CheckCircle size={24} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-gray-900">{applications.filter(a => a.status === 'approved').length}</div>
+            <div className="text-2xl font-bold text-gray-900">{filteredApps.filter(a => a.status === 'approved').length}</div>
             <div className="text-sm text-gray-500">Approved</div>
           </div>
         </div>
@@ -105,7 +114,7 @@ export default function ManagerRecruitmentDashboard() {
             <XCircle size={24} />
           </div>
           <div>
-            <div className="text-2xl font-bold text-gray-900">{applications.filter(a => a.status === 'rejected').length}</div>
+            <div className="text-2xl font-bold text-gray-900">{filteredApps.filter(a => a.status === 'rejected').length}</div>
             <div className="text-sm text-gray-500">Rejected</div>
           </div>
         </div>
