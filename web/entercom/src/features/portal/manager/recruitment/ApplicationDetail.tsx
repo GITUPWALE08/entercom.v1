@@ -1,49 +1,49 @@
-import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useState } from 'react';
+import { useParams, Link, useLocation } from 'react-router-dom';
 import { ArrowLeft, CheckCircle, XCircle, Clock, FileText, User, Briefcase, AlertCircle } from 'lucide-react';
 import { PageHeader } from '../../../../shared/components/PageHeader';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiClient } from '../../../../api/axios';
 
 export default function ApplicationDetail() {
   const { id } = useParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [app, setApp] = useState<any>(null);
+  const location = useLocation();
+  const queryClient = useQueryClient();
   const [notes, setNotes] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const backUrl = location.pathname.includes('/admin/') ? '/portal/admin/recruitment' : '/portal/manager/recruitment';
 
-  useEffect(() => {
-    // Mock API call
-    setTimeout(() => {
-      setApp({
-        id,
-        applicant_name: 'John Doe',
-        email: 'john@example.com',
-        phone: '+1 234 567 8900',
-        position: 'Senior Technician',
-        status: 'pending',
-        created_at: '2026-07-20T10:00:00Z',
-        skills: ['HVAC', 'Electrical', 'Plumbing'],
-        experience_years: 5,
-        education: 'Associate Degree in Electrical Engineering',
-        resume_url: '#',
-        certifications: ['EPA Section 608', 'OSHA 10'],
-        timeline: [
-          { id: 1, action: 'Application Submitted', date: '2026-07-20T10:00:00Z', actor: 'System' },
-          { id: 2, action: 'Automated Screening Passed', date: '2026-07-20T10:05:00Z', actor: 'System' }
-        ]
+  const { data: app, isLoading } = useQuery({
+    queryKey: ['technician-application', id],
+    queryFn: async () => {
+      const response = await apiClient.get(`/users/technician-applications/${id}/`);
+      return response.data;
+    },
+    enabled: !!id,
+  });
+
+  const decideMutation = useMutation({
+    mutationFn: async ({ action, notes }: { action: string, notes: string }) => {
+      const response = await apiClient.post(`/users/technician-applications/${id}/decide/`, {
+        status: action,
+        notes: notes,
       });
-      setIsLoading(false);
-    }, 1000);
-  }, [id]);
+      return response.data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['technician-application', id] });
+      queryClient.invalidateQueries({ queryKey: ['admin-technician-applications'] });
+      queryClient.invalidateQueries({ queryKey: ['manager-technician-applications'] });
+      setNotes('');
+      window.showAppAlert(`Application updated successfully.`, 'success');
+    },
+    onError: (error: any) => {
+      window.showAppAlert(error?.response?.data?.error || 'Failed to update application.', 'error');
+    }
+  });
 
   const handleAction = async (action: string) => {
-    setIsSubmitting(true);
-    // Mock API call: PATCH /users/technician-applications/{id}/decide/
-    setTimeout(() => {
-      setApp((prev: any) => ({ ...prev, status: action }));
-      setNotes('');
-      setIsSubmitting(false);
-      window.showAppAlert(`Application ${action} successfully.`, 'success');
-    }, 800);
+    decideMutation.mutate({ action, notes });
   };
 
   if (isLoading) {
@@ -54,125 +54,122 @@ export default function ApplicationDetail() {
 
   return (
     <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
-      <Link to="/portal/manager/recruitment" className="inline-flex items-center text-sm text-gray-500 hover:text-ess-purple transition-colors mb-4">
+      <Link to={backUrl} className="inline-flex items-center text-sm text-gray-500 hover:text-ess-purple transition-colors mb-4">
         <ArrowLeft size={16} className="mr-1" /> Back to Recruitment
       </Link>
 
       <PageHeader 
-        title={`Application: ${app.applicant_name}`} 
-        description={`Applying for ${app.position}`}
+        title={`Application: ${app.first_name} ${app.last_name}`} 
+        description={`Applying for ${app.form_data?.position || 'Technician'}`}
         icon={User}
       >
         <span className={`ml-4 px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full ${
           app.status === 'approved' ? 'bg-green-100 text-green-800' : 
           app.status === 'rejected' ? 'bg-red-100 text-red-800' : 
-          app.status === 'reviewed' ? 'bg-blue-100 text-blue-800' : 
+          app.status === 'under_review' ? 'bg-blue-100 text-blue-800' : 
           'bg-yellow-100 text-yellow-800'
         }`}>
-          {app.status.charAt(0).toUpperCase() + app.status.slice(1)}
+          {app.status.replace('_', ' ').toUpperCase()}
         </span>
       </PageHeader>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><User className="mr-2 h-5 w-5 text-ess-purple" /> Applicant Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div><p className="text-sm text-gray-500">Full Name</p><p className="font-medium text-gray-900">{app.applicant_name}</p></div>
-              <div><p className="text-sm text-gray-500">Email</p><p className="font-medium text-gray-900">{app.email}</p></div>
-              <div><p className="text-sm text-gray-500">Phone</p><p className="font-medium text-gray-900">{app.phone}</p></div>
-              <div><p className="text-sm text-gray-500">Experience</p><p className="font-medium text-gray-900">{app.experience_years} years</p></div>
-              <div className="md:col-span-2"><p className="text-sm text-gray-500">Education</p><p className="font-medium text-gray-900">{app.education}</p></div>
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><User className="mr-2" size={20} /> Applicant Information</h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div><p className="text-sm text-gray-500">Email</p><p className="font-medium text-gray-900">{app.user_email}</p></div>
+              <div><p className="text-sm text-gray-500">Phone</p><p className="font-medium text-gray-900">{app.form_data?.phone || 'N/A'}</p></div>
+              <div><p className="text-sm text-gray-500">Applied On</p><p className="font-medium text-gray-900">{new Date(app.created_at).toLocaleString()}</p></div>
+              <div><p className="text-sm text-gray-500">Location</p><p className="font-medium text-gray-900">{app.form_data?.state || 'N/A'}</p></div>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><Briefcase className="mr-2 h-5 w-5 text-ess-purple" /> Skills & Qualifications</h3>
-            <div className="mb-4">
-              <p className="text-sm text-gray-500 mb-2">Skills</p>
-              <div className="flex flex-wrap gap-2">
-                {app.skills.map((skill: string, i: number) => (
-                  <span key={i} className="px-3 py-1 bg-purple-50 text-ess-purple text-sm rounded-full font-medium">{skill}</span>
-                ))}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><Briefcase className="mr-2" size={20} /> Qualifications</h3>
+            <div className="space-y-4">
+              <div><p className="text-sm text-gray-500 mb-1">Skills & Areas of Expertise</p>
+                <div className="flex flex-wrap gap-2">
+                  {app.skills?.map((skill: string, i: number) => (
+                    <span key={i} className="px-2 py-1 bg-gray-100 text-gray-700 rounded-md text-sm">{skill}</span>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500 mb-2">Certifications</p>
-              <div className="flex flex-wrap gap-2">
-                {app.certifications.map((cert: string, i: number) => (
-                  <span key={i} className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full font-medium border border-gray-200">{cert}</span>
-                ))}
+              <div><p className="text-sm text-gray-500 mb-1">Previous Experience</p>
+                {app.form_data?.work1_company && (
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <p className="font-semibold text-gray-900">{app.form_data.work1_company} - {app.form_data.work1_role}</p>
+                    <p className="text-sm text-gray-500">{app.form_data.work1_period}</p>
+                    <p className="text-sm mt-1">{app.form_data.work1_responsibilities}</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
-          
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><FileText className="mr-2 h-5 w-5 text-ess-purple" /> Documents</h3>
-            <a href={app.resume_url} className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              <div className="w-10 h-10 bg-red-50 text-red-600 rounded-lg flex items-center justify-center mr-3"><FileText size={20} /></div>
-              <div><p className="font-medium text-gray-900">Resume.pdf</p><p className="text-xs text-gray-500">View Document</p></div>
-            </a>
+
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><FileText className="mr-2" size={20} /> Attached Documents</h3>
+            <div className="space-y-2">
+              {app.document_urls?.map((url: string, i: number) => (
+                <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="flex items-center p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+                  <FileText className="text-ess-purple mr-3" size={20} />
+                  <span className="font-medium text-gray-900 truncate">Document {i + 1}</span>
+                </a>
+              ))}
+              {(!app.document_urls || app.document_urls.length === 0) && (
+                <p className="text-gray-500">No documents attached.</p>
+              )}
+            </div>
           </div>
         </div>
 
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-4">Manager Actions</h3>
-            {app.status === 'pending' || app.status === 'reviewed' ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><CheckCircle className="mr-2 text-ess-purple" size={20} /> Review Actions</h3>
+            {app.status === 'pending' || app.status === 'under_review' ? (
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Review Notes</label>
-                  <textarea 
-                    className="w-full border-gray-300 rounded-lg shadow-sm focus:border-ess-purple focus:ring-ess-purple sm:text-sm p-2 border" 
-                    rows={3} 
-                    placeholder="Add notes before deciding..."
-                    value={notes}
-                    onChange={(e) => setNotes(e.target.value)}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button 
-                    onClick={() => handleAction('approved')}
-                    disabled={isSubmitting}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors"
-                  >
-                    <CheckCircle size={16} className="mr-2" /> Approve
-                  </button>
-                  <button 
-                    onClick={() => handleAction('rejected')}
-                    disabled={isSubmitting}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 transition-colors"
-                  >
-                    <XCircle size={16} className="mr-2" /> Reject
-                  </button>
-                </div>
-                <button 
-                  onClick={() => handleAction('reviewed')}
-                  disabled={isSubmitting}
-                  className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 transition-colors"
+                <textarea
+                  className="w-full border border-gray-200 rounded-lg p-3 text-sm focus:ring-ess-purple focus:border-ess-purple"
+                  rows={3}
+                  placeholder="Add internal notes for this decision..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                />
+                <button
+                  onClick={() => handleAction('approved')}
+                  disabled={decideMutation.isPending}
+                  className="w-full py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors flex justify-center disabled:opacity-50"
                 >
-                  <AlertCircle size={16} className="mr-2" /> Request Info / Mark Reviewed
+                  {decideMutation.isPending ? 'Processing...' : 'Approve Application'}
+                </button>
+                <button
+                  onClick={() => handleAction('rejected')}
+                  disabled={decideMutation.isPending}
+                  className="w-full py-2 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors flex justify-center disabled:opacity-50"
+                >
+                  Reject
                 </button>
               </div>
             ) : (
-              <div className="p-4 bg-gray-50 rounded-lg text-center">
-                <p className="text-sm text-gray-600">This application has been {app.status}.</p>
+              <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                <p className="text-sm text-gray-700 font-medium mb-1">Decision Finalized</p>
+                <p className="text-xs text-gray-500">This application has been marked as <strong className="uppercase">{app.status.replace('_', ' ')}</strong>.</p>
               </div>
             )}
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><Clock className="mr-2 h-5 w-5 text-ess-purple" /> Timeline</h3>
-            <div className="space-y-4">
-              {app.timeline.map((event: any, i: number) => (
-                <div key={event.id} className="flex">
-                  <div className="flex flex-col items-center mr-4">
-                    <div className="w-2 h-2 bg-ess-purple rounded-full mt-1.5"></div>
-                    {i !== app.timeline.length - 1 && <div className="w-px h-full bg-gray-200 mt-1"></div>}
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center"><Clock className="mr-2" size={20} /> Application Timeline</h3>
+            <div className="relative border-l-2 border-gray-200 ml-3 space-y-6">
+              {app.activities?.map((activity: any) => (
+                <div key={activity.id} className="relative pl-6">
+                  <div className="absolute -left-[9px] top-1 bg-white rounded-full p-1">
+                    <div className="w-2 h-2 bg-ess-purple rounded-full" />
                   </div>
-                  <div className="pb-4">
-                    <p className="text-sm font-medium text-gray-900">{event.action}</p>
-                    <p className="text-xs text-gray-500">{new Date(event.date).toLocaleString()} • {event.actor}</p>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">{activity.action}</p>
+                    <p className="text-xs text-gray-500">{new Date(activity.created_at).toLocaleString()} • {activity.actor_name || 'System'}</p>
+                    {activity.details && <p className="text-sm text-gray-600 mt-1">{activity.details}</p>}
                   </div>
                 </div>
               ))}

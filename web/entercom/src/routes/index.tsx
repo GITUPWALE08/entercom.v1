@@ -195,6 +195,7 @@ export const router = createBrowserRouter([
               { path: 'audit-logs', element: <Suspense fallback={<LoadingScreen/>}><AuditLogList /></Suspense> },
               { path: 'users', element: <Suspense fallback={<LoadingScreen/>}><UserList /></Suspense> },
               { path: 'recruitment', element: <Suspense fallback={<LoadingScreen/>}><AdminRecruitmentDashboard /></Suspense> },
+              { path: 'recruitment/:id', element: <Suspense fallback={<LoadingScreen/>}><ManagerApplicationDetail /></Suspense> },
               { path: 'configuration', element: <Suspense fallback={<LoadingScreen/>}><Configuration /></Suspense> },
               { path: 'profile', element: <Suspense fallback={<LoadingScreen/>}><Profile /></Suspense> },
               { path: 'settings', element: <Suspense fallback={<LoadingScreen/>}><Settings /></Suspense> },

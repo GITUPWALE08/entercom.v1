@@ -55,25 +55,21 @@ export const usersApi = {
   },
   
   uploadProfileImage: async (imageUri: string, mimeType: string = 'image/jpeg'): Promise<{profile_image: string}> => {
-    const base64 = await FileSystem.readAsStringAsync(imageUri, { encoding: 'base64' });
-    const filename = `avatars/${Date.now()}_${Math.random().toString(36).substring(7)}.jpg`;
+    const formData = new FormData();
+    formData.append('image', {
+      uri: imageUri,
+      name: `avatar_${Date.now()}.jpg`,
+      type: mimeType
+    } as any);
 
-    const { error: uploadError } = await supabase.storage
-      .from('entercom-media')
-      .upload(filename, decode(base64), { contentType: mimeType });
+    // Upload directly to Django API
+    const { data } = await apiClient.post<{profile_image: string}>('/users/upload-image/', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
 
-    if (uploadError) throw uploadError;
-
-    const { data: publicUrlData } = supabase.storage
-      .from('entercom-media')
-      .getPublicUrl(filename);
-
-    const publicUrl = publicUrlData.publicUrl;
-
-    // Update profile on backend with the new URL
-    await usersApi.updateProfile({ profile_image: publicUrl });
-
-    return { profile_image: publicUrl };
+    return data;
   },
   
   registerPushDevice: async (token: string, deviceType: string): Promise<void> => {
